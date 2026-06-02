@@ -38,7 +38,13 @@ export interface Spec extends TurboModule {
     reason: string,
     cancelLabel: string,
     /** 允许在生物识别不可用时回退到设备 PIN/图案/密码 */
-    allowDeviceCredential: boolean
+    allowDeviceCredential: boolean,
+    /**
+     * 允许弱生物识别（Class 2，如安卓多数机型的摄像头人脸）做基础认证。
+     * 仅影响 authenticate()；createKey/signWithKey 的密钥签名始终要求强生物识别。
+     * iOS（Face ID 本就是强）忽略此参数。
+     */
+    allowWeak: boolean
   ): Promise<{ success: boolean }>;
 
   /**

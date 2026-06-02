@@ -75,6 +75,17 @@
 ### 16. Apple Silicon 上编译模拟器在 x86_64 切片失败
 - **解法**：加 `ONLY_ACTIVE_ARCH=YES`（只编 arm64）。Release 默认编全架构。
 
+### 16b. Xcode 跑 Debug 报 `tar: hermes-ios-0.77.0-debug.tar.gz: No such file or directory`
+- **现象**：Release 能编、**Debug 失败**（Xcode GUI 默认 Debug）。
+- **原因**：`hermes-engine` pod 只下载了 release 预编译包，**debug 包没下下来**（`Pods/hermes-engine-artifacts/` 里只有 `hermes-ios-0.77.0-release.tar.gz`）。
+- **解法**：手动补下 debug 包到该目录：
+  ```bash
+  cd apps/oa/ios/Pods/hermes-engine-artifacts
+  curl -fL -o hermes-ios-0.77.0-debug.tar.gz \
+    https://repo1.maven.org/maven2/com/facebook/react/react-native-artifacts/0.77.0/react-native-artifacts-0.77.0-hermes-ios-debug.tar.gz
+  ```
+  （URL 里的 `0.77.0` 换成你的 RN 版本。）
+
 ### 17. 真机 .ipa 无法产出
 - **原因**：Apple 要求开发者签名（Team + Provisioning + 设备 UDID），无法代办。
 - **解法**：Xcode 打开 `.xcworkspace` 选自己的 Team → Archive → Distribute。

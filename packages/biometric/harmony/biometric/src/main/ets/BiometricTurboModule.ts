@@ -67,7 +67,8 @@ export class ItcBiometricTurboModule extends TurboModule {
     subtitle: string,
     _reason: string,
     _cancelLabel: string,
-    _allowDeviceCredential: boolean
+    _allowDeviceCredential: boolean,
+    allowWeak: boolean
   ): Promise<{ success: boolean }> {
     return new Promise((resolve, reject) => {
       try {
@@ -75,7 +76,10 @@ export class ItcBiometricTurboModule extends TurboModule {
         const authParam: userAuth.AuthParam = {
           challenge,
           authType: ItcBiometricTurboModule.AUTH_TYPES,
-          authTrustLevel: userAuth.AuthTrustLevel.ATL3,
+          // allowWeak 时放宽到 ATL1（弱），否则 ATL3（强，密钥签名仍单独用强）
+          authTrustLevel: allowWeak
+            ? userAuth.AuthTrustLevel.ATL1
+            : userAuth.AuthTrustLevel.ATL3,
         };
         const widgetParam: userAuth.WidgetParam = {
           title: title || '身份验证',

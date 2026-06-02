@@ -101,20 +101,31 @@ class ItcBiometricModule(reactContext: ReactApplicationContext) :
     reason: String,
     cancelLabel: String,
     allowDeviceCredential: Boolean,
+    allowWeak: Boolean,
     promise: Promise
   ) {
     val activity = requireActivity(promise) ?: return
+
+    // 基础认证：默认仅强生物识别；allowWeak 时叠加弱生物识别（Class 2，如摄像头人脸）。
+    // 注意：密钥签名(signWithKey)不走这里，始终用强生物识别。
+    val bioAuthenticators =
+      if (allowWeak)
+        BiometricManager.Authenticators.BIOMETRIC_STRONG or
+          BiometricManager.Authenticators.BIOMETRIC_WEAK
+      else
+        AUTHENTICATORS
 
     activity.runOnUiThread {
       val promptInfoBuilder = BiometricPrompt.PromptInfo.Builder()
         .setTitle(title.ifBlank { "身份验证" })
       if (subtitle.isNotBlank()) promptInfoBuilder.setSubtitle(subtitle)
       if (allowDeviceCredential) {
+        // 设备凭据不能与弱生物识别叠加，这里用强生物识别 + 设备凭据
         promptInfoBuilder.setAllowedAuthenticators(
           AUTHENTICATORS or BiometricManager.Authenticators.DEVICE_CREDENTIAL
         )
       } else {
-        promptInfoBuilder.setAllowedAuthenticators(AUTHENTICATORS)
+        promptInfoBuilder.setAllowedAuthenticators(bioAuthenticators)
         promptInfoBuilder.setNegativeButtonText(cancelLabel.ifBlank { "取消" })
       }
 
@@ -154,8 +165,13 @@ class ItcBiometricModule(reactContext: ReactApplicationContext) :
     try {
       val ks = KeyStore.getInstance(KEYSTORE).apply { load(null) }
       if (ks.containsAlias(alias)) {
-        promise.resolve(exportPublicKey(ks, alias))
-        return
+        // 已存在：校验是否仍有效（重新录入生物特征会使其永久失效）。
+        // 有效则复用并返回公钥；已失效则删除后走下面的重建流程。
+        if (isKeyValid(ks, alias)) {
+          promise.resolve(exportPublicKey(ks, alias))
+          return
+        }
+        ks.deleteEntry(alias)
       }
       val generator = KeyPairGenerator.getInstance(
         KeyProperties.KEY_ALGORITHM_EC, KEYSTORE
@@ -177,6 +193,19 @@ class ItcBiometricModule(reactContext: ReactApplicationContext) :
       promise.resolve(exportPublicKey(ks, alias))
     } catch (e: Exception) {
       promise.reject("UNKNOWN", e.message, e)
+    }
+  }
+
+  /** 密钥是否仍有效（未因重新录入生物特征而失效）。initSign 会对已失效密钥抛异常。 */
+  private fun isKeyValid(ks: KeyStore, alias: String): Boolean {
+    return try {
+      val entry = ks.getEntry(alias, null) as? KeyStore.PrivateKeyEntry ?: return false
+      Signature.getInstance("SHA256withECDSA").initSign(entry.privateKey)
+      true
+    } catch (e: android.security.keystore.KeyPermanentlyInvalidatedException) {
+      false
+    } catch (e: Exception) {
+      false
     }
   }
 

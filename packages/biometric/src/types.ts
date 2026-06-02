@@ -20,6 +20,12 @@ export interface AuthenticateOptions {
   cancelLabel?: string;
   /** 生物识别不可用时是否允许回退到设备密码/PIN */
   allowDeviceCredential?: boolean;
+  /**
+   * 是否允许弱生物识别（Class 2，如安卓摄像头人脸）做基础认证。默认 false（仅强生物识别）。
+   * 注意：仅作用于 authenticate()；免密登录的密钥签名（createKey/signWithKey）始终要求强生物识别。
+   * iOS Face ID 本身即强，忽略此项。
+   */
+  allowWeakBiometric?: boolean;
 }
 
 export interface KeyPairInfo {

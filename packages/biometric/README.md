@@ -15,13 +15,26 @@ await biometric.getAvailability();         // { available, biometryType, reason?
 await biometric.authenticate({ title: '验证身份', reason: '解锁应用', allowDeviceCredential: true });
 
 // 免密登录闭环
-const { publicKey } = await biometric.createKey('login');   // 注册到后端
+const { publicKey } = await biometric.createKey('login');   // 注册到后端；若旧密钥已失效会自动重建
 const { signatureBase64 } = await biometric.signWithKey('login', challengeBase64, '指纹登录');
 await biometric.keyExists('login');
 await biometric.deleteKey('login');
 ```
 
 失败统一抛 `@itc/base` 的 `ItcError`（`error.code` 为 `ErrorCode`，如 `USER_CANCELED` / `BIOMETRY_LOCKOUT`）。
+
+### 认证强度（`allowWeakBiometric`）
+
+`authenticate({ allowWeakBiometric })` 控制基础认证可接受的生物识别强度：
+
+- `false`（默认）：仅强生物识别（Class 3，指纹 / 3D 结构光人脸）。
+- `true`：额外允许弱生物识别（Class 2，安卓多数机型的摄像头人脸）。
+
+⚠️ 平台约束：**Android 不允许 App 指定用指纹还是人脸**，只能请求安全等级，由系统决定弹哪种（有强的就不会用弱）。**免密签名 `createKey`/`signWithKey` 始终要求强生物识别**——安卓摄像头人脸是弱的，用不了密钥签名。iOS Face ID 本即强，忽略此参数。
+
+### 密钥失效保护
+
+密钥绑定 `setInvalidatedByBiometricEnrollment` / `biometryCurrentSet`：**系统增删指纹/人脸后旧密钥永久失效**（抛 `BIOMETRY_KEY_INVALIDATED` / 2004）。`createKey` 会检测失效密钥并**自动删除重建**，上层重新拿到新公钥注册即可。
 
 ## 三端实现
 

@@ -69,8 +69,11 @@ static SecKeyRef CopyPrivateKey(NSString *alias) {
               reason:(NSString *)reason
          cancelLabel:(NSString *)cancelLabel
 allowDeviceCredential:(BOOL)allowDeviceCredential
+           allowWeak:(BOOL)allowWeak
              resolve:(RCTPromiseResolveBlock)resolve
               reject:(RCTPromiseRejectBlock)reject {
+  // allowWeak 在 iOS 无意义：Face ID / Touch ID 均为强生物识别，忽略此参数。
+  (void)allowWeak;
   LAContext *context = [LAContext new];
   if (cancelLabel.length > 0) {
     context.localizedCancelTitle = cancelLabel;

@@ -6,6 +6,7 @@ node_modules/
 lib/
 dist/
 build/
+build-debug/
 *.tsbuildinfo
 # 误 emit 到源码目录的声明产物（应在 lib/typescript 下）
 packages/**/src/**/*.d.ts

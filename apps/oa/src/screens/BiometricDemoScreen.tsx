@@ -61,7 +61,8 @@ export function BiometricDemoScreen(): React.JSX.Element {
         title: '身份验证',
         subtitle: '请验证你的生物特征',
         reason: '解锁 OpenDingDing',
-        allowDeviceCredential: true,
+        // 允许弱生物识别：仅当系统没有可用的强生物识别时才会落到弱人脸
+        allowWeakBiometric: true,
       });
       append('✅ 认证通过');
     });
@@ -113,6 +114,10 @@ export function BiometricDemoScreen(): React.JSX.Element {
         disabled={busy || !registered}
       />
 
+      <Text style={styles.hint}>
+        注：Android 由系统决定用指纹还是人脸（App 无法指定），且摄像头人脸属弱生物识别、用不了免密签名；iOS 统一走 Face ID。
+      </Text>
+
       {busy && <ActivityIndicator style={styles.spinner} />}
 
       <View style={styles.card}>
@@ -156,6 +161,7 @@ const styles = StyleSheet.create({
   container: { padding: 20, gap: 12 },
   h1: { fontSize: 22, fontWeight: '700', color: '#1f2329' },
   platform: { fontSize: 13, color: '#646a73' },
+  hint: { fontSize: 11, color: '#8a9099', lineHeight: 16 },
   card: {
     backgroundColor: '#fff',
     borderRadius: 12,

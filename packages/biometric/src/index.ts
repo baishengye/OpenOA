@@ -83,7 +83,8 @@ class BiometricModule extends BaseModule {
         options.subtitle ?? '',
         options.reason ?? options.title,
         options.cancelLabel ?? '取消',
-        options.allowDeviceCredential ?? false
+        options.allowDeviceCredential ?? false,
+        options.allowWeakBiometric ?? false
       );
     } catch (e) {
       throw ItcError.from(e, MODULE_NAME);
