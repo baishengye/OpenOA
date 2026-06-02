@@ -61,10 +61,23 @@ export function BiometricDemoScreen(): React.JSX.Element {
         title: '身份验证',
         subtitle: '请验证你的生物特征',
         reason: '解锁 OpenDingDing',
-        // 允许弱生物识别：仅当系统没有可用的强生物识别时才会落到弱人脸
-        allowWeakBiometric: true,
+        // 仅强生物识别：与②③免密签名保持一致（安卓上即指纹），避免选了弱人脸后签名失败
+        allowWeakBiometric: false,
       });
       append('✅ 认证通过');
+    });
+
+  const onAuthFace = () =>
+    run('人脸/弱认证', async () => {
+      await biometric.authenticate({
+        title: '人脸/弱认证',
+        subtitle: '允许摄像头人脸（弱生物识别）',
+        reason: '解锁 OpenDingDing',
+        // 允许弱生物识别：三星会弹「指纹/面容」让你选面容；
+        // 若机型不弹（如小米优先指纹），可临时删掉系统里的指纹只留人脸再试。
+        allowWeakBiometric: true,
+      });
+      append('✅ 弱认证通过（可含摄像头人脸）');
     });
 
   const onRegister = () =>
@@ -106,6 +119,7 @@ export function BiometricDemoScreen(): React.JSX.Element {
         <Text style={styles.mono}>已注册免密: {String(registered)}</Text>
       </View>
 
+      <Text style={styles.section}>免密登录（强生物识别 / 指纹）</Text>
       <Button label="① 生物识别认证" onPress={onAuthenticate} disabled={busy} />
       <Button label="② 注册免密登录（生成密钥）" onPress={onRegister} disabled={busy} />
       <Button
@@ -114,8 +128,11 @@ export function BiometricDemoScreen(): React.JSX.Element {
         disabled={busy || !registered}
       />
 
+      <Text style={styles.section}>人脸验证（弱生物识别 · 仅基础认证）</Text>
+      <Button label="④ 人脸 / 弱认证" onPress={onAuthFace} disabled={busy} />
+
       <Text style={styles.hint}>
-        注：Android 由系统决定用指纹还是人脸（App 无法指定），且摄像头人脸属弱生物识别、用不了免密签名；iOS 统一走 Face ID。
+        注：①②③ 用强生物识别（安卓即指纹，iOS 为 Face ID），是完整免密链路。④ 演示弱生物识别（安卓摄像头人脸）——三星会弹「指纹/面容」选面容即可；摄像头人脸属弱、不能用于免密签名，故不参与 ②③。
       </Text>
 
       {busy && <ActivityIndicator style={styles.spinner} />}
@@ -162,6 +179,7 @@ const styles = StyleSheet.create({
   h1: { fontSize: 22, fontWeight: '700', color: '#1f2329' },
   platform: { fontSize: 13, color: '#646a73' },
   hint: { fontSize: 11, color: '#8a9099', lineHeight: 16 },
+  section: { fontSize: 13, fontWeight: '600', color: '#1f2329', marginTop: 6 },
   card: {
     backgroundColor: '#fff',
     borderRadius: 12,
