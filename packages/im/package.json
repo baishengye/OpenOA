@@ -1,0 +1,45 @@
+{
+  "name": "@itc/im",
+  "version": "0.0.0",
+  "description": "可剥离复用的即时 IM 模块（占位骨架）：封装 OpenIM。A/iOS 用官方 open-im-sdk-rn；鸿蒙 NEXT 自编译 Go core 为 .so + ArkTS NAPI 绑定。",
+  "source": "./src/index.ts",
+  "main": "./lib/module/index.js",
+  "module": "./lib/module/index.js",
+  "types": "./lib/typescript/module/index.d.ts",
+  "react-native": "./src/index.ts",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "react-native": "./src/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/index.d.ts",
+        "default": "./lib/module/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": ["src", "lib", "android", "ios", "harmony", "*.podspec"],
+  "scripts": {
+    "build": "bob build",
+    "clean": "rimraf lib",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts,.tsx"
+  },
+  "peerDependencies": {
+    "@itc/base": "workspace:*",
+    "react": "*",
+    "react-native": ">=0.77.0"
+  },
+  "devDependencies": {
+    "@itc/base": "workspace:*",
+    "react-native": "0.77.0",
+    "react-native-builder-bob": "^0.32.1"
+  },
+  "react-native-builder-bob": {
+    "source": "src",
+    "output": "lib",
+    "targets": [["module", { "esm": true }], ["typescript", { "esm": true }]]
+  },
+  "publishConfig": { "access": "restricted" },
+  "license": "UNLICENSED"
+}

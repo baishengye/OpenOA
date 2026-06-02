@@ -1,0 +1,59 @@
+# deps
+node_modules/
+.pnpm-store/
+
+# build output
+lib/
+dist/
+build/
+*.tsbuildinfo
+# 误 emit 到源码目录的声明产物（应在 lib/typescript 下）
+packages/**/src/**/*.d.ts
+packages/**/src/**/*.d.ts.map
+
+# RN / Metro
+.metro-health-check*
+.expo/
+*.jsbundle
+
+# Android（无前缀写法匹配 monorepo 任意层级）
+*.iml
+.gradle/
+local.properties
+.cxx/
+*.hprof
+*.keystore
+!debug.keystore
+
+# iOS / Xcode（用无路径前缀写法，匹配 monorepo 下任意层级）
+Pods/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcuserstate
+DerivedData/
+*.ipa
+*.xcarchive
+.xcode.env.local
+
+# Ruby / CocoaPods（bundler 装在项目本地，无前缀写法匹配任意层级）
+vendor/
+.bundle/
+
+# 鸿蒙 / DevEco Studio
+harmony/.hvigor/
+harmony/.cxx/
+harmony/build/
+harmony/oh_modules/
+harmony/.idea/
+harmony/local.properties
+*.har
+
+# misc
+.DS_Store
+.env*
+!.env.example
+*.log
+coverage/
+.vscode/
+.idea/
+.artifacts/

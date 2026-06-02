@@ -1,0 +1,68 @@
+{
+  "name": "@itc/biometric",
+  "version": "0.1.0",
+  "description": "可剥离复用的生物识别模块：指纹/人脸认证 + 生物特征绑定的密钥签名（钉钉式免密登录）。三端 Android / iOS / 鸿蒙 NEXT。",
+  "source": "./src/index.ts",
+  "main": "./lib/module/index.js",
+  "module": "./lib/module/index.js",
+  "types": "./lib/typescript/module/index.d.ts",
+  "react-native": "./src/index.ts",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "react-native": "./src/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/index.d.ts",
+        "default": "./lib/module/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "lib",
+    "android",
+    "ios",
+    "harmony",
+    "*.podspec",
+    "react-native.config.js",
+    "!**/build",
+    "!**/__tests__"
+  ],
+  "scripts": {
+    "build": "bob build",
+    "clean": "rimraf lib",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts,.tsx"
+  },
+  "peerDependencies": {
+    "@itc/base": "workspace:*",
+    "react": "*",
+    "react-native": ">=0.77.0"
+  },
+  "devDependencies": {
+    "@itc/base": "workspace:*",
+    "react-native": "0.77.0",
+    "react-native-builder-bob": "^0.32.1"
+  },
+  "react-native-builder-bob": {
+    "source": "src",
+    "output": "lib",
+    "targets": [
+      ["module", { "esm": true }],
+      ["typescript", { "esm": true }]
+    ]
+  },
+  "codegenConfig": {
+    "name": "RNItcBiometricSpec",
+    "type": "modules",
+    "jsSrcsDir": "src",
+    "android": {
+      "javaPackageName": "com.itc.biometric"
+    }
+  },
+  "publishConfig": {
+    "access": "restricted"
+  },
+  "license": "UNLICENSED"
+}

@@ -1,0 +1,11 @@
+{
+  "name": "@itc/biometric",
+  "version": "0.1.0",
+  "description": "OpenDingDing 生物识别 RNOH 模块（鸿蒙 NEXT，ArkTS）",
+  "main": "Index.ets",
+  "author": "ITC",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@rnoh/react-native-openharmony": "file:../../react-native-openharmony"
+  }
+}

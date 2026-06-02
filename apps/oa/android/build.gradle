@@ -1,0 +1,23 @@
+buildscript {
+    ext {
+        buildToolsVersion = "35.0.0"
+        minSdkVersion = 24
+        // 本机已装 android-34/36（无 35），用 36 作为编译 SDK（向后兼容 RN 0.77 所需的 35）
+        compileSdkVersion = 36
+        targetSdkVersion = 34
+        // 本机已装 NDK 26.1/29（无 27.1），用 26.1 避免大体积下载
+        ndkVersion = "26.1.10909125"
+        kotlinVersion = "2.0.21"
+    }
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("com.android.tools.build:gradle")
+        classpath("com.facebook.react:react-native-gradle-plugin")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
+    }
+}
+
+apply plugin: "com.facebook.react.rootproject"

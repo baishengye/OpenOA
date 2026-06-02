@@ -1,0 +1,38 @@
+{
+  "name": "@itc-oa/app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OpenDingDing OA App 宿主（对标钉钉），消费 @itc/* 模块。",
+  "scripts": {
+    "start": "react-native start",
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext .ts,.tsx",
+    "clean": "rimraf android/app/build ios/build"
+  },
+  "dependencies": {
+    "@itc/base": "workspace:*",
+    "@itc/biometric": "workspace:*",
+    "@itc/im": "workspace:*",
+    "@itc/push": "workspace:*",
+    "react": "18.3.1",
+    "react-native": "0.77.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.0",
+    "@babel/preset-env": "^7.25.0",
+    "@babel/runtime": "^7.25.0",
+    "@react-native/babel-preset": "0.77.0",
+    "@react-native/metro-config": "0.77.0",
+    "@react-native/typescript-config": "0.77.0",
+    "@react-native-oh/react-native-harmony": "0.72.101-5",
+    "@react-native-community/cli": "15.0.1",
+    "@react-native-community/cli-platform-android": "15.0.1",
+    "@react-native-community/cli-platform-ios": "15.0.1",
+    "@react-native-community/template": "0.77.0",
+    "@react-native/gradle-plugin": "0.77.0",
+    "@react-native/codegen": "0.77.0",
+    "@types/react": "^18.3.12"
+  }
+}

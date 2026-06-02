@@ -1,0 +1,28 @@
+{
+  "name": "opendingding-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "description": "对标钉钉的模块化 OA App —— @itc/base 基座 + 可剥离复用的端能力模块（生物识别/推送/IM），三端适配 Android / iOS / 鸿蒙 NEXT",
+  "packageManager": "pnpm@11.2.2",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "pnpm -r --filter \"./packages/*\" build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint",
+    "clean": "pnpm -r clean && rimraf node_modules",
+    "oa:start": "pnpm --filter @itc-oa/app start",
+    "oa:android": "pnpm --filter @itc-oa/app android",
+    "oa:ios": "pnpm --filter @itc-oa/app ios",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "pnpm build && changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.10",
+    "@types/react": "^18.3.12",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.6.3"
+  }
+}

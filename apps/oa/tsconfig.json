@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@itc/base": ["../../packages/base/src/index.ts"],
+      "@itc/biometric": ["../../packages/biometric/src/index.ts"],
+      "@itc/push": ["../../packages/push/src/index.ts"],
+      "@itc/im": ["../../packages/im/src/index.ts"]
+    }
+  },
+  "include": ["src", "index.js"]
+}

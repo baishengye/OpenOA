@@ -1,0 +1,118 @@
+# 新增一个可剥离复用模块（以 @itc/biometric 为样板）
+
+所有端能力模块结构一致：**TS 统一 API + codegen spec + 三端原生 + 实现 `ItcModule` 契约**。下面以新建 `@itc/foo` 为例。
+
+> 直接参考样板：[packages/biometric/](../packages/biometric/)。
+
+---
+
+## 1. 建包骨架
+
+```
+packages/foo/
+├── package.json            # name=@itc/foo；codegenConfig；builder-bob
+├── tsconfig.json           # 见下（不要 composite/references/paths-to-源码）
+├── src/
+│   ├── index.ts            # 对外统一 API + 实现 ItcModule（继承 BaseModule）
+│   ├── NativeItcFoo.ts      # TurboModule spec（codegen 输入）
+│   └── types.ts
+├── android/                # Kotlin TurboModule + ReactPackage
+│   ├── build.gradle
+│   └── src/main/java/com/itc/foo/{ItcFooModule.kt,ItcFooPackage.kt}
+├── ios/                    # ObjC++ TurboModule（.h/.mm）
+├── harmony/biometric/...   # ArkTS RNOH TurboModule + RNPackage
+└── ItcFoo.podspec
+```
+
+**关键 package.json 字段**（照抄 biometric，改名）：
+```jsonc
+{
+  "name": "@itc/foo",
+  "exports": { ".": { "source": "./src/index.ts", "react-native": "./src/index.ts",
+    "import": { "types": "./lib/typescript/module/index.d.ts", "default": "./lib/module/index.js" } } },
+  "peerDependencies": { "@itc/base": "workspace:*", "react": "*", "react-native": ">=0.77.0" },
+  "react-native-builder-bob": { "source": "src", "output": "lib",
+    "targets": [["module", {"esm": true}], ["typescript", {"esm": true}]] },
+  "codegenConfig": { "name": "RNItcFooSpec", "type": "modules", "jsSrcsDir": "src",
+    "android": { "javaPackageName": "com.itc.foo" } }
+}
+```
+
+**tsconfig.json**：`extends ../../tsconfig.base.json`，只设 `rootDir/outDir/noEmit:false`。**不要** composite/references/`paths` 指向 base 源码（见 [TROUBLESHOOTING #4](TROUBLESHOOTING.md)）。
+
+---
+
+## 2. codegen spec（src/NativeItcFoo.ts）
+
+```ts
+import type { TurboModule } from 'react-native';
+import { TurboModuleRegistry } from 'react-native';
+
+export interface Spec extends TurboModule {
+  doSomething(arg: string, count: number): Promise<{ ok: boolean }>;
+}
+export default TurboModuleRegistry.getEnforcing<Spec>('ItcFoo');
+```
+
+铁律：**入参只用基本类型**（string/number/boolean），避免 iOS codegen 为对象入参生成 C++ 结构体。需要传对象时，由 `src/index.ts` 拆成位置参数。
+
+---
+
+## 3. 统一 API（src/index.ts，实现契约）
+
+```ts
+import { BaseModule, ItcError } from '@itc/base';
+import NativeItcFoo from './NativeItcFoo';
+
+class FooModule extends BaseModule {
+  readonly name = 'foo';
+  async isSupported() { try { /* 探测 */ return true; } catch { return false; } }
+  protected async onInit() {}
+  protected async onDestroy() {}
+  async doSomething(arg: string, count: number) {
+    try { return await NativeItcFoo.doSomething(arg, count); }
+    catch (e) { throw ItcError.from(e, 'foo'); }
+  }
+}
+export const foo = new FooModule();
+```
+
+错误统一 `throw ItcError.from(e, '<module>')`；事件经 `@itc/base` 的 `eventBus` 下发（推送/IM 类）。
+
+---
+
+## 4. 三端原生（签名对应 spec）
+
+- **Android**：`ItcFooModule.kt extends NativeItcFooSpec`（codegen 生成的抽象类，名取自 spec 文件名）；`ItcFooPackage.kt extends BaseReactPackage`，`isTurboModule=true`。`build.gradle` 只声明 kotlin classpath（见 [TROUBLESHOOTING #10](TROUBLESHOOTING.md)）。
+- **iOS**：`ItcFoo.mm` 实现 `<NativeItcFooSpec>`（头文件 `<RNItcFooSpec/RNItcFooSpec.h>` 来自 codegenConfig.name）；`getTurboModule` 返回 `std::make_shared<NativeItcFooSpecJSI>(params)`；`RCT_EXPORT_MODULE()`。
+- **鸿蒙**：`ItcFooTurboModule extends TurboModule`（`@rnoh/react-native-openharmony/ts`）；`ItcFooPackage extends RNPackage` 注册。
+
+> Android 抽象类名 = `Native<SpecFileBaseName>Spec`；iOS 协议/JSI 名同理；JS 端 `getEnforcing('ItcFoo')` 的字符串 = 原生 `getName()` 返回值。三者要对齐。
+
+---
+
+## 5. 接入与验证
+
+```bash
+pnpm install                       # 软链新包
+pnpm --filter @itc/foo build       # 构建
+pnpm --filter @itc/foo typecheck
+
+# App 里使用
+# import { foo } from '@itc/foo';
+
+# Android：autolink 自动注册；重装
+cd apps/oa/android && ./gradlew :app:assembleRelease --no-daemon
+
+# iOS：重新 pod install 触发新 codegen，再编译
+cd apps/oa/ios && RCT_NEW_ARCH_ENABLED=1 bundle exec pod install
+```
+
+iOS 全局命令、环境变量、各端排错见根 [README.md](../README.md) 与 [TROUBLESHOOTING.md](TROUBLESHOOTING.md)。
+
+---
+
+## 6. 推送 / IM 的特别说明
+
+- `@itc/push`：底层走第三方聚合（友盟/极光）+ iOS APNs + 鸿蒙 Push Kit；回调统一经 `eventBus.emit('push:message'|'push:opened')`。
+- `@itc/im`：A/iOS 用官方 `open-im-sdk-rn`；**鸿蒙端需自编译 `openim-sdk-core`(Go) 为 OHOS arm64 `.so` + ArkTS NAPI 绑定**（最大风险项，建议独立 PoC）。
