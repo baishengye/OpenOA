@@ -1,12 +1,19 @@
 #include "RNOH/PackageProvider.h"
 #include "generated/RNOHGeneratedPackage.h"
+// @itc/* 库自带的 C++ Package（codegen-lib-harmony 产物，提供各自的 TurboModule C++ 桥）。
+// 头文件来自各库的 cpp include 根（CMakeLists 已把 STORAGE/BIOMETRIC_LIB_CPP 加入 include 路径）。
+#include "RNOH/generated/BaseItcStoragePackage.h"
+#include "RNOH/generated/BaseItcBiometricPackage.h"
 
 using namespace rnoh;
 
-// 返回 codegen 生成的 RNOHGeneratedPackage：建立 C++ 侧 TurboModule 工厂委托，
-// 启用对纯 ArkTS TurboModule（RNPackagesFactory 注册的 ItcBiometric/ItcStorage）的回退查找。
+// app 级 RNOHGeneratedPackage：当前空壳（storage / biometric 的 C++ 均已自包含到各自库）。
+// 库级 BaseItc*Package：ItcStorage / ItcBiometric 的 C++ 桥分别在 @itc/storage、@itc/biometric 库内。
+// 每个 Package 都建立 C++→ArkTS 的 TurboModule 工厂委托。
 std::vector<std::shared_ptr<Package>> PackageProvider::getPackages(Package::Context ctx) {
   return {
     std::make_shared<RNOHGeneratedPackage>(ctx),
+    std::make_shared<BaseItcStoragePackage>(ctx),
+    std::make_shared<BaseItcBiometricPackage>(ctx),
   };
 }

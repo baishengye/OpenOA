@@ -61,11 +61,6 @@
       "javaPackageName": "com.itc.biometric"
     }
   },
-  "harmony": {
-    "codegenConfig": {
-      "specPaths": ["./src/NativeItcBiometric.ts"]
-    }
-  },
   "publishConfig": {
     "access": "restricted"
   },

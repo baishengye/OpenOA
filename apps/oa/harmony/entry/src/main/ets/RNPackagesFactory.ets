@@ -1,6 +1,8 @@
 import type { RNPackageContext, RNPackage } from '@rnoh/react-native-openharmony/ts';
-import { ItcBiometricPackage } from './biometric/BiometricPackage';
-import { ItcStoragePackage } from './storage/StoragePackage';
+// storage / biometric 均走自包含 .har 库（方式B）：ArkTS Package 从二进制库导入，
+// 各自的 C++ 桥也在库内（见库的 src/main/cpp）。app 不再内嵌任何模块副本。
+import { ItcStoragePackage } from '@itc/storage';
+import { ItcBiometricPackage } from '@itc/biometric';
 
 export function createRNPackages(ctx: RNPackageContext): RNPackage[] {
   return [

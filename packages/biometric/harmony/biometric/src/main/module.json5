@@ -1,0 +1,7 @@
+{
+  "module": {
+    "name": "biometric",
+    "type": "har",
+    "deviceTypes": ["phone", "tablet"]
+  }
+}
