@@ -1,5 +1,6 @@
 # 在鸿蒙（HarmonyOS NEXT / RNOH）上运行 OpenDingDing（全过程要点）
 
+> 本文是「运行已有工程」的速查。**从零搭建（建 RN 工程 → 接 RNOH → 配置文件逐项 → TurboModule 三层桥接 ts/ets/c++ → codegen 两种模式 → 子模块引入）见 [SCRATCH_HARMONY.md](./SCRATCH_HARMONY.md)。**
 > 配套：架构 / 版本矩阵 / .har 复用方式见 [HARMONY.md](./HARMONY.md)（**先读它**）；
 > 本文聚焦「跑起来」与「加一个鸿蒙原生 TurboModule」的实操要点。
 

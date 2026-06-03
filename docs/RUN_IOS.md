@@ -1,5 +1,6 @@
 # 在 iOS 上运行 OpenDingDing（全过程要点）
 
+> 本文是「运行已有工程」的速查。**从零搭建（含 TurboModule 三层桥接）见 [SCRATCH_IOS.md](./SCRATCH_IOS.md)。**
 > 配套：通用环境见 [ENVIRONMENT.md](./ENVIRONMENT.md)，报错速查见 [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)，
 > 新增原生模块见 [ADDING_A_MODULE.md](./ADDING_A_MODULE.md)。
 

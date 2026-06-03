@@ -2,7 +2,9 @@
 
 对标钉钉的**模块化 OA App**。业务与端能力解耦，端能力模块（生物识别 / 推送 / IM）可从本项目**剥离复用**到其他项目。三端：Android / iOS / 鸿蒙 NEXT。
 
-> 本文件是开发手册，命令可直接复制执行。三端运行全过程要点见 [docs/RUN_ANDROID.md](docs/RUN_ANDROID.md) / [docs/RUN_IOS.md](docs/RUN_IOS.md) / [docs/RUN_HARMONY.md](docs/RUN_HARMONY.md)，模块作者指南见 [docs/ADDING_A_MODULE.md](docs/ADDING_A_MODULE.md)，踩坑速查见 [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)，环境与磁盘布局（缓存迁外置盘）见 [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md)，App 三端构建细节见 [apps/oa/README.md](apps/oa/README.md)。
+> 本文件是开发手册，命令可直接复制执行。
+> **从零搭建教程（事无巨细，可据此独立重建）**：[docs/SCRATCH_ANDROID.md](docs/SCRATCH_ANDROID.md) / [docs/SCRATCH_IOS.md](docs/SCRATCH_IOS.md) / [docs/SCRATCH_HARMONY.md](docs/SCRATCH_HARMONY.md)。
+> 三端运行速查见 [docs/RUN_ANDROID.md](docs/RUN_ANDROID.md) / [docs/RUN_IOS.md](docs/RUN_IOS.md) / [docs/RUN_HARMONY.md](docs/RUN_HARMONY.md)，模块作者指南见 [docs/ADDING_A_MODULE.md](docs/ADDING_A_MODULE.md)，踩坑速查见 [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)，环境与磁盘布局（缓存迁外置盘）见 [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md)，App 三端构建细节见 [apps/oa/README.md](apps/oa/README.md)。
 
 ---
 

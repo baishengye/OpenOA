@@ -1,0 +1,500 @@
+# 从零搭建：RN 0.82 + 鸿蒙（RNOH）+ TurboModule 完整教程
+
+> 目标：不依赖任何人，照本文从空目录一步步建出「RN 0.82 工程 + 鸿蒙宿主 + 一个跑通的原生 TurboModule（三层桥接：JS spec → ArkTS 实现 → C++ 桥）」。
+> 每条命令可直接复制。涉及的概念都解释「为什么」。
+>
+> 配套：架构/版本矩阵见 [HARMONY.md](./HARMONY.md)，运行速查见 [RUN_HARMONY.md](./RUN_HARMONY.md)。
+
+---
+
+## 0. 名词与全局心智模型（先看，省得后面懵）
+
+一个鸿蒙原生 TurboModule 要打通，需要**三层 + 两套 codegen**：
+
+```
+JS 调用  TurboModuleRegistry.get('ItcStorage').getString('k')
+   │
+   ▼
+[① JS 规格]  packages/<mod>/src/NativeItcStorage.ts   ← codegen 的“真理来源”
+   │  （只声明类型，不含实现；codegen 读它生成 C++ 桥）
+   ▼
+[③ C++ 桥]  Itc<Mod>.cpp/.h（继承 ArkTSTurboModule）  ← codegen 生成，不手写
+   │  （JSI HostObject，按方法名 methodMap_ 把调用转发到 ArkTS）
+   ▼
+[② ArkTS 实现]  Xxx TurboModule.ets（extends UITurboModule）← 你手写
+        （真正干活：调 ArkData / HUKS / preferences 等鸿蒙 Kit）
+```
+
+- **codegen 有两套命令**：
+  - `react-native codegen-harmony`（**app 级**）：在宿主工程里扫所有依赖，把 C++ 桥生成到 **app** 的 cpp 目录。简单，适合模块内嵌在 app 里。
+  - `react-native codegen-lib-harmony`（**库级**）：把 C++ 桥生成到**库自身**，库自带 C++、可剥离复用。本文最终用这套。
+- **RNOH** = React Native OpenHarmony，鸿蒙端的 RN 运行时，npm 包名 `@react-native-oh/react-native-harmony`，ArkTS 侧依赖名 `@rnoh/react-native-openharmony`（一个 .har）。
+
+---
+
+## 1. 前置环境
+
+| 工具 | 用途 | 验证命令 |
+|---|---|---|
+| Node ≥ 18 | RN / Metro / codegen | `node -v` |
+| DevEco Studio | 鸿蒙 IDE + hvigor + 模拟器/真机 | 启动它 |
+| HarmonyOS SDK + ohpm | ArkTS/C++ 编译、依赖管理 | `ohpm -v` |
+| hdc | 鸿蒙 adb（装包/抓日志） | `hdc -v` |
+
+> 本机工具链位置见 [ENVIRONMENT.md](./ENVIRONMENT.md)。DevEco 自带 hvigor/ohpm/hdc，把它们的 bin 加进 PATH 即可。
+
+**版本对齐（必须，否则编译全崩）**：RN `0.82.1` ↔ `@react-native-oh/react-native-harmony` `0.82.x`（大版本要跟 RN 一致）。
+
+---
+
+## 2. 创建 RN 0.82 工程
+
+普通单工程：
+
+```bash
+npx @react-native-community/cli@latest init MyApp --version 0.82.1
+cd MyApp
+```
+
+> 本仓库是 pnpm monorepo（app 在 `apps/oa`，模块在 `packages/*`）。monorepo 要点见末尾「附录 A」。下面以单工程视角讲，monorepo 差异处会标注。
+
+确认新架构已开（0.82 强制新架构，TurboModule 才可用）：`android/gradle.properties` 里 `newArchEnabled=true`（鸿蒙不读它，但保持三端一致）。
+
+---
+
+## 3. 装 RNOH（鸿蒙运行时 + CLI）
+
+```bash
+npm i -D @react-native-oh/react-native-harmony@0.82.30 \
+         @react-native-oh/react-native-harmony-cli@0.82.30
+```
+
+- `react-native-harmony`：包含 `react_native_openharmony.har`（ArkTS/C++ 运行时）+ Metro 的 harmony 解析。
+- `react-native-harmony-cli`：提供 `codegen-harmony` / `codegen-lib-harmony` / `init-harmony` / `bundle-harmony` / `link-harmony` 等命令（通过它的 `react-native.config.js` 自动挂到 `react-native` CLI 上）。
+
+验证命令已挂上：
+```bash
+npx react-native --help | grep -i harmony   # 应看到 codegen-harmony 等
+```
+
+---
+
+## 4. 生成鸿蒙宿主工程
+
+两种方式，推荐 ①：
+
+### ① 用 CLI 脚手架（推荐）
+```bash
+npx react-native init-harmony --project-root-path . --bundle-name com.example.myapp
+```
+它会在工程里生成 `harmony/` 目录（DevEco 工程：`AppScope/`、`entry/`、`build-profile.json5`、`hvigorfile.ts` 等）。
+
+### ② 用 DevEco 新建（手动）
+DevEco → New Project → Empty Ability → 选 Stage 模型。然后把它放到工程的 `harmony/` 子目录，再手动改下面 §5 的配置。
+
+无论哪种，最终 `harmony/` 结构应是：
+```
+harmony/
+├── AppScope/app.json5
+├── build-profile.json5          # 工程级：签名 + 产品 + modules 列表
+├── hvigorfile.ts                # appTasks
+├── oh-package.json5             # 工程级依赖/overrides
+└── entry/                        # 宿主 HAP 模块
+    ├── build-profile.json5
+    ├── hvigorfile.ts            # hapTasks
+    ├── oh-package.json5         # entry 依赖（含 RNOH .har）
+    └── src/main/
+        ├── module.json5
+        ├── ets/
+        │   ├── entryability/EntryAbility.ets
+        │   ├── pages/Index.ets          # 挂载 RNApp 的页面
+        │   └── RNPackagesFactory.ets    # 注册原生 Package（你维护）
+        └── cpp/
+            ├── CMakeLists.txt
+            ├── PackageProvider.cpp
+            └── generated/                # codegen 产物
+```
+
+---
+
+## 5. 鸿蒙工程配置文件逐个详解
+
+### 5.1 `entry/oh-package.json5` —— entry 的依赖
+```json5
+{
+  "name": "entry",
+  "version": "1.0.0",
+  "main": "",
+  "dependencies": {
+    // RNOH 运行时 .har（路径指向 node_modules 里的 har 文件）
+    "@rnoh/react-native-openharmony": "file:../../node_modules/@react-native-oh/react-native-harmony/react_native_openharmony.har"
+    // 子模块在 §10 这里追加
+  }
+}
+```
+
+### 5.2 工程级 `oh-package.json5`
+```json5
+{
+  "modelVersion": "6.1.1",
+  "dependencies": {},
+  "overrides": {
+    // 保证整个工程的 RNOH 解析到同一个 har，避免重复
+    "@rnoh/react-native-openharmony": "file:./node_modules/@react-native-oh/react-native-harmony/react_native_openharmony.har"
+  }
+}
+```
+
+### 5.3 工程级 `build-profile.json5` —— 签名 + modules
+关键是底部 `modules` 数组（§10 在这里挂子模块）：
+```json5
+{
+  "app": {
+    "signingConfigs": [ /* DevEco 自动生成的调试签名，保持即可 */ ],
+    "products": [{
+      "name": "default",
+      "signingConfig": "default",
+      "compatibleSdkVersion": "5.0.0(12)",
+      "targetSdkVersion": "6.1.1(24)",
+      "runtimeOS": "HarmonyOS",
+      "buildOption": { "strictMode": { "useNormalizedOHMUrl": true } }
+    }],
+    "buildModeSet": [{ "name": "debug" }, { "name": "release" }]
+  },
+  "modules": [
+    { "name": "entry", "srcPath": "./entry", "targets": [{ "name": "default", "applyToProducts": ["default"] }] }
+  ]
+}
+```
+
+### 5.4 `entry/src/main/ets/entryability/EntryAbility.ets`
+继承 RNOH 的 RNAbility，指定首页：
+```typescript
+import { RNAbility } from '@rnoh/react-native-openharmony';
+export default class EntryAbility extends RNAbility {
+  getPagePath(): string { return 'pages/Index'; }
+}
+```
+
+### 5.5 `entry/src/main/ets/pages/Index.ets` —— 挂载 RN + 注册 Package
+这是最关键的接线点：
+```typescript
+import { AnyJSBundleProvider, ComponentBuilderContext, MetroJSBundleProvider,
+  ResourceJSBundleProvider, RNApp, RNOHCoreContext, TraceJSBundleProviderDecorator
+} from '@rnoh/react-native-openharmony';
+import { createRNPackages } from '../RNPackagesFactory';   // ← 你注册原生模块的地方
+
+@Builder function buildCustomRNComponent(_ctx: ComponentBuilderContext) {}
+const builder: WrappedBuilder<[ComponentBuilderContext]> = wrapBuilder(buildCustomRNComponent);
+
+@Entry @Component
+struct Index {
+  @StorageLink('RNOHCoreContext') private core: RNOHCoreContext | undefined = undefined;
+  @State show: boolean = false;
+  aboutToAppear() { this.show = true; }
+  onBackPress(): boolean { this.core?.dispatchBackPress(); return true; }
+  build() {
+    Column() {
+      if (this.core && this.show) {
+        RNApp({
+          rnInstanceConfig: {
+            createRNPackages,                 // ← 注册原生 Package
+            enableNDKTextMeasuring: true,
+            enableBackgroundExecutor: false,
+            enableCAPIArchitecture: true,     // 保持 true；TurboModule 找不到不是它的锅
+            arkTsComponentNames: [],
+          },
+          appKey: 'MyApp',                    // 必须 == JS 端 AppRegistry.registerComponent 的名字
+          wrappedCustomRNComponentBuilder: builder,
+          jsBundleProvider: new TraceJSBundleProviderDecorator(
+            new AnyJSBundleProvider([
+              new MetroJSBundleProvider(),    // 开发态连 Metro
+              new ResourceJSBundleProvider(this.core.uiAbilityContext.resourceManager, 'bundle.harmony.js'), // 离线兜底
+            ]), this.core.logger),
+        })
+      }
+    }.height('100%').width('100%')
+  }
+}
+```
+
+### 5.6 `entry/src/main/ets/RNPackagesFactory.ets` —— 注册表（你维护）
+```typescript
+import type { RNPackageContext, RNPackage } from '@rnoh/react-native-openharmony/ts';
+// 模块的 ArkTS Package 从这里 import（内嵌则用相对路径，.har 则用包名，见 §10）
+export function createRNPackages(ctx: RNPackageContext): RNPackage[] {
+  return [ /* new ItcStoragePackage(ctx), ... */ ];
+}
+```
+
+---
+
+## 6. 写一个 TurboModule —— ① JS 规格（codegen 输入）
+
+`packages/storage/src/NativeItcStorage.ts`（单工程则放 `src/`）：
+
+```typescript
+import type { TurboModule } from 'react-native';
+import { TurboModuleRegistry } from 'react-native';
+
+// ⚠️ codegen 约束：只能用 boolean/number/string/数组/内联 object/Promise<...>/可选?；
+//   不要 import 任何运行时依赖（codegen 只解析类型）。
+export interface Spec extends TurboModule {
+  setString(key: string, value: string): void;
+  getString(key: string): string;
+  contains(key: string): boolean;
+  remove(key: string): void;
+  clearAll(): void;
+}
+
+// get（找不到返回 null，import 不崩）；getEnforcing（找不到直接抛）
+export default TurboModuleRegistry.get<Spec>('ItcStorage');
+//                                          ^^^^^^^^^^^ 模块名，三层必须一致
+```
+
+> **codegen 从 `TurboModuleRegistry.get<Spec>('名字')` 里抽出模块名 `ItcStorage`**，并据此命名 C++ 类、生成 methodMap。
+
+可选：统一 JS API `src/index.ts`，把上面的原生模块包装成业务友好的接口（与鸿蒙无关，略）。
+
+---
+
+## 7. 写 TurboModule —— ② ArkTS 实现（你手写）
+
+`XxxTurboModule.ets`（extends `UITurboModule`，方法名/参数个数必须与 §6 spec 完全一致）：
+
+```typescript
+import { UITurboModule } from '@rnoh/react-native-openharmony/ts';
+import { preferences } from '@kit.ArkData';
+
+export class ItcStorageTurboModule extends UITurboModule {
+  static readonly NAME: string = 'ItcStorage';     // == spec 里的名字
+  private store: preferences.Preferences | null = null;
+  private pref(): preferences.Preferences {
+    if (this.store === null) {
+      const opt: preferences.Options = { name: 'itc-storage' };
+      // this.ctx 由 UITurboModule 提供，含 uiAbilityContext
+      this.store = preferences.getPreferencesSync(this.ctx.uiAbilityContext, opt);
+    }
+    return this.store;
+  }
+  setString(key: string, value: string): void { const p = this.pref(); p.putSync(key, value); p.flush(); }
+  getString(key: string): string { return this.pref().getSync(key, '') as string; }
+  contains(key: string): boolean { return this.pref().hasSync(key); }
+  remove(key: string): void { const p = this.pref(); p.deleteSync(key); p.flush(); }
+  clearAll(): void { const p = this.pref(); p.clearSync(); p.flush(); }
+}
+```
+
+> **ArkTS 严格模式**：不能用内联对象类型、对象 spread 等；异步用 `Promise`。复杂例子（HUKS 密钥签名）见 `packages/biometric/harmony/biometric/src/main/ets/BiometricTurboModule.ets`。
+
+`XxxPackage.ets`（extends `RNOHPackage`，把上面的 TurboModule 注册进工厂表）：
+
+```typescript
+import type { UITurboModule, UITurboModuleContext } from '@rnoh/react-native-openharmony/ts';
+import { ItcStorageTurboModule } from './StorageTurboModule';
+import { RNOHPackage } from '@rnoh/react-native-openharmony';
+
+export class ItcStoragePackage extends RNOHPackage {
+  override getUITurboModuleFactoryByNameMap(): Map<string, (ctx: UITurboModuleContext) => UITurboModule | null> {
+    return new Map<string, (ctx: UITurboModuleContext) => UITurboModule | null>()
+      .set(ItcStorageTurboModule.NAME, (ctx) => new ItcStorageTurboModule(ctx));
+  }
+}
+```
+
+> RNOH 0.82 用 `RNOHPackage` + `getUITurboModuleFactoryByNameMap`（旧的 `RNPackage`/`UITurboModuleFactory` 已 deprecated）。
+
+---
+
+## 8. 写 TurboModule —— ③ C++ 桥（codegen 生成，别手写）
+
+C++ 桥不手写，由 codegen 从 §6 的 spec 生成。**两种 codegen 模式选一**：
+
+### 模式 A：app 级 codegen（C++ 生成到 app，模块内嵌或半复用）
+
+1. **让 codegen 发现你的 spec**：模块包 `package.json` 加（注意是 `harmony.codegenConfig.specPaths`，**不是**标准 RN 的 `jsSrcsDir`）：
+   ```jsonc
+   "harmony": { "codegenConfig": { "specPaths": ["./src/NativeItcStorage.ts"] } }
+   ```
+2. **跑命令**（在 RN 工程根，需 node 在 PATH）：
+   ```bash
+   npx react-native codegen-harmony \
+     --rnoh-module-path harmony/entry/src/main/ets \
+     --cpp-output-path  harmony/entry/src/main/cpp/generated \
+     --project-root-path .
+   ```
+3. **产物**（`harmony/entry/src/main/cpp/generated/`）：
+   - `ItcStorage.{cpp,h}`：`class ItcStorage : public ArkTSTurboModule`，`.cpp` 里 `methodMap_` 用 `ARK_METHOD_METADATA(getString, 1)` 列出方法名+参数个数（同步）/`ARK_ASYNC_METHOD_METADATA`（Promise）。
+   - `RNOHGeneratedPackage.h`：委托 `createTurboModule(name)`：`if (name=="ItcStorage") return make_shared<ItcStorage>(...)`。
+4. **CMake 编译产物**（§9）+ **PackageProvider 注册** `RNOHGeneratedPackage`。
+
+### 模式 B：库级 codegen（C++ 生成到库自身，完全自包含可剥离）—— 推荐
+
+1. **跑命令**（输出到**库**的目录，`--no-safety-check` 允许写到 cwd 外）：
+   ```bash
+   npx react-native codegen-lib-harmony \
+     --npm-package-name @itc/storage \
+     --turbo-modules-spec-paths ../../packages/storage/src/NativeItcStorage.ts \
+     --cpp-output-path ../../packages/storage/harmony/storage/src/main/cpp \
+     --ets-output-path ../../packages/storage/harmony/storage/src/main/ets/generated \
+     --no-safety-check
+   ```
+2. **产物**（库的 `src/main/cpp/`）：
+   - `RNOH/generated/turbo_modules/ItcStorage.{cpp,h}`：C++ 桥。
+   - `RNOH/generated/BaseItcStoragePackage.h`：**库自己的 C++ Package**（含委托，返回上面的桥）。
+   - `react/renderer/components/_itc_storage/*`：Fabric 组件空壳（纯 TurboModule 用不到，可不编）。
+3. **app 不再为这个模块跑 app 级 codegen**（删掉模块 package.json 的 `harmony.codegenConfig`，否则 C++ 类重复定义、链接冲突）。
+4. CMake 引用库 cpp + PackageProvider 注册库的 `BaseItcStoragePackage`（§9、§10）。
+
+> **怎么区分该用哪套**：模块要剥离复用 → B；快速验证/只在本 app 用 → A。本仓库最终全用 B。
+
+---
+
+## 9. CMakeLists 接线
+
+`entry/src/main/cpp/CMakeLists.txt`。最小可用：
+
+```cmake
+project(rnapp)
+cmake_minimum_required(VERSION 3.4.1)
+set(CMAKE_SKIP_BUILD_RPATH TRUE)
+set(RNOH_CPP_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../oh_modules/@rnoh/react-native-openharmony/src/main/cpp")
+add_subdirectory("${RNOH_CPP_DIR}" ./rn)
+
+# 模式A：app 级 codegen 产物
+file(GLOB GENERATED_CPP_FILES "${CMAKE_CURRENT_SOURCE_DIR}/generated/*.cpp")
+
+# 模式B：库自带 C++（把库 cpp 目录设为 include 根 + 编 turbo_modules 桥）
+# 路径从本 cpp 目录上溯 7 级到仓库根（apps/oa/harmony/entry/src/main/cpp → 根）
+set(STORAGE_LIB_CPP "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../../packages/storage/harmony/storage/src/main/cpp")
+file(GLOB STORAGE_LIB_CPP_FILES "${STORAGE_LIB_CPP}/RNOH/generated/turbo_modules/*.cpp")
+
+add_library(rnoh_app SHARED
+    ${GENERATED_CPP_FILES}
+    ${STORAGE_LIB_CPP_FILES}
+    "./PackageProvider.cpp"
+    "${RNOH_CPP_DIR}/RNOHAppNapiBridge.cpp"
+)
+target_include_directories(rnoh_app PUBLIC "${STORAGE_LIB_CPP}")  # 让 #include "RNOH/generated/..." 解析到库
+target_link_libraries(rnoh_app PUBLIC rnoh)
+```
+
+`PackageProvider.cpp`（注册各 Package；C++ 委托建 TurboModule 工厂）：
+
+```cpp
+#include "RNOH/PackageProvider.h"
+#include "generated/RNOHGeneratedPackage.h"          // app 级（模式A）
+#include "RNOH/generated/BaseItcStoragePackage.h"    // 库级（模式B，来自库 cpp include 根）
+using namespace rnoh;
+std::vector<std::shared_ptr<Package>> PackageProvider::getPackages(Package::Context ctx) {
+  return {
+    std::make_shared<RNOHGeneratedPackage>(ctx),       // 模式A 的模块在这
+    std::make_shared<BaseItcStoragePackage>(ctx),      // 模式B 的库 Package
+  };
+}
+```
+
+---
+
+## 10. 把子模块（.har）引入主工程
+
+让 ArkTS 实现也住在库里（剥离复用）。库 = DevEco HAR 模块。
+
+### 10.1 库目录结构（`packages/storage/harmony/storage/`）
+```
+Index.ets                 # 导出 Package/TurboModule
+oh-package.json5          # name=@itc/storage, main=Index.ets, 依赖 RNOH har
+build-profile.json5       # { "apiType": "stageMode", ... }
+hvigorfile.ts             # export default { system: harTasks }
+BuildProfile.ets          # DevEco 兼容样板（可从别的库拷）
+src/main/module.json5     # { "module": { "name": "storage", "type": "har", "deviceTypes": ["phone","tablet"] } }
+src/main/ets/             # §7 的 ArkTS 实现 + 库级 codegen 的 generated/
+src/main/cpp/             # §8 模式B 的 C++ 产物
+```
+
+`Index.ets`：
+```typescript
+export { ItcStoragePackage } from './src/main/ets/StoragePackage';
+export { ItcStorageTurboModule } from './src/main/ets/StorageTurboModule';
+```
+
+库 `oh-package.json5`：
+```json5
+{
+  "name": "@itc/storage", "version": "0.1.0", "main": "Index.ets",
+  "dependencies": {
+    "@rnoh/react-native-openharmony": "file:../../../../apps/oa/node_modules/@react-native-oh/react-native-harmony/react_native_openharmony.har"
+  }
+}
+```
+
+### 10.2 主工程挂载该模块
+1. 工程 `build-profile.json5` 的 `modules` 追加（srcPath 用相对路径指向库源）：
+   ```json5
+   { "name": "storage", "srcPath": "../../../packages/storage/harmony/storage" }
+   ```
+2. `entry/oh-package.json5` 依赖它（按包名）：
+   ```json5
+   "@itc/storage": "file:../../../../packages/storage/harmony/storage"
+   ```
+3. `RNPackagesFactory.ets` 从包名 import（替代内嵌相对路径）：
+   ```typescript
+   import { ItcStoragePackage } from '@itc/storage';
+   export function createRNPackages(ctx) { return [ new ItcStoragePackage(ctx) ]; }
+   ```
+4. C++（§9）：CMake 引用库 cpp + PackageProvider 注册库的 `BaseItcStoragePackage`。
+
+> 结果：storage 的 **ts/ets/c++ 全在库里**，app 只剩"引用 + 注册"几行，不含任何模块逻辑。
+
+---
+
+## 11. 构建、运行、抓日志
+
+```bash
+# 1) JS bundle：开发态用 Metro（鸿蒙单独的 metro 配置）
+npx react-native start --config metro.config.harmony.js     # 或离线：bundle-harmony
+
+# 2) DevEco 打开 harmony/ 工程 → Sync（ohpm install，识别 modules）
+#    → Build → Clean Project → Rebuild（CMake 编 C++，含库 cpp）→ Run
+
+# 3) 抓日志
+hdc hilog | grep -iE "ItcStorage|TurboModule|RNOH"
+```
+
+`metro.config.harmony.js`（鸿蒙专用，不能用标准 metro.config.js）：
+```javascript
+const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
+const { createHarmonyMetroConfig } = require('@react-native-oh/react-native-harmony/metro.config');
+module.exports = mergeConfig(
+  getDefaultConfig(__dirname),
+  createHarmonyMetroConfig({ reactNativeHarmonyPackageName: '@react-native-oh/react-native-harmony' }),
+);
+```
+
+---
+
+## 12. 排错速查
+
+| 现象 | 含义 / 修法 |
+|---|---|
+| `Couldn't find Turbo Module on the ArkTs side ... on the CPP side` | ArkTS 注册好了但**缺 C++ 桥**：codegen 没生成/没编进去。查 §8 的 `harmony.codegenConfig`、§9 的 CMake glob。 |
+| `Couldn't find Turbo Module on the ArkTs side`（建议 on the ArkTS side） | ArkTS 没注册：查 `RNPackagesFactory` 是否 new 了 Package、`getUITurboModuleFactoryByNameMap` 的 NAME。 |
+| 链接报 `ItcStorage` 重复定义 | app 级和库级 codegen 同时生成了：删掉模块 package.json 的 `harmony.codegenConfig`（改纯库级）。 |
+| `codegen "modules": {}` 空 | spec 没被发现：`harmony.codegenConfig.specPaths` 写错/缺失。 |
+| CMake 找不到 `BaseItcStoragePackage.h` | §9 的上溯路径层数不对，或没 `target_include_directories` 库 cpp。 |
+| 白屏 / 连不上 Metro | Metro 没用 harmony 配置；或离线 bundle 没打。 |
+
+---
+
+## 附录 A：pnpm monorepo 差异
+
+- app 在 `apps/oa`，鸿蒙工程在 `apps/oa/harmony`，模块在 `packages/*`。
+- codegen 命令在 `apps/oa` 里跑，`--project-root-path .`。
+- 路径上溯层数按实际目录深度数（本仓库 entry cpp 到根是 7 级）。
+- `.npmrc` 用 `node-linker=hoisted`（RN 对扁平 node_modules 有强假设）。
+
+## 附录 B：本仓库现成样例
+
+- storage（KV，纯同步 TurboModule）：`packages/storage/harmony/storage/`
+- biometric（HUKS 密钥/签名，异步 TurboModule）：`packages/biometric/harmony/biometric/`
+- 两者都已是「库级 codegen + C++ 进库 + app autolink 引用」的完整自包含形态，可直接照抄。
