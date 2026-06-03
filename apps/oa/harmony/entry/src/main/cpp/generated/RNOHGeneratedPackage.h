@@ -11,12 +11,20 @@
 
 #include "RNOH/Package.h"
 #include "RNOH/ArkTSTurboModule.h"
+#include "generated/ItcBiometric.h"
+#include "generated/ItcStorage.h"
 
 namespace rnoh {
 
 class RNOHGeneratedPackageTurboModuleFactoryDelegate : public TurboModuleFactoryDelegate {
   public:
     SharedTurboModule createTurboModule(Context ctx, const std::string &name) const override {
+        if (name == "ItcBiometric") {
+            return std::make_shared<ItcBiometric>(ctx, name);
+        }
+        if (name == "ItcStorage") {
+            return std::make_shared<ItcStorage>(ctx, name);
+        }
         return nullptr;
     };
 };

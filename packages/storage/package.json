@@ -46,6 +46,11 @@
     "jsSrcsDir": "src",
     "android": { "javaPackageName": "com.itc.storage" }
   },
+  "harmony": {
+    "codegenConfig": {
+      "specPaths": ["./src/NativeItcStorage.ts"]
+    }
+  },
   "publishConfig": { "access": "restricted" },
   "license": "UNLICENSED"
 }
