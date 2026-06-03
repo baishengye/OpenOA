@@ -1,4 +1,4 @@
-import { TurboModule } from '@rnoh/react-native-openharmony/ts';
+import { UITurboModule } from '@rnoh/react-native-openharmony/ts';
 import { preferences } from '@kit.ArkData';
 
 /**
@@ -7,7 +7,7 @@ import { preferences } from '@kit.ArkData';
  *
  * ArkTS 严格模式：无内联对象类型 / 无对象 spread（见 docs/HARMONY.md §4）。
  */
-export class ItcStorageTurboModule extends TurboModule {
+export class ItcStorageTurboModule extends UITurboModule {
   static readonly NAME: string = 'ItcStorage';
 
   private store: preferences.Preferences | null = null;

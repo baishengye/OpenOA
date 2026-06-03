@@ -1,22 +1,14 @@
-import { RNPackage, TurboModulesFactory } from '@rnoh/react-native-openharmony/ts';
-import type { TurboModule, TurboModuleContext } from '@rnoh/react-native-openharmony/ts';
+import { RNPackage } from '@rnoh/react-native-openharmony/ts';
+import type { UITurboModule, UITurboModuleContext } from '@rnoh/react-native-openharmony/ts';
 import { ItcStorageTurboModule } from './StorageTurboModule';
 
-class ItcStorageTurboModulesFactory extends TurboModulesFactory {
-  createTurboModule(name: string): TurboModule | null {
-    if (name === ItcStorageTurboModule.NAME) {
-      return new ItcStorageTurboModule(this.ctx);
-    }
-    return null;
-  }
-
-  hasTurboModule(name: string): boolean {
-    return name === ItcStorageTurboModule.NAME;
-  }
-}
-
+/** RNOH 0.82：用 getUITurboModuleFactoryByNameMap 注册 ArkTS TurboModule。 */
 export class ItcStoragePackage extends RNPackage {
-  createTurboModulesFactory(ctx: TurboModuleContext): TurboModulesFactory {
-    return new ItcStorageTurboModulesFactory(ctx);
+  override getUITurboModuleFactoryByNameMap(): Map<
+    string,
+    (ctx: UITurboModuleContext) => UITurboModule | null
+  > {
+    return new Map<string, (ctx: UITurboModuleContext) => UITurboModule | null>()
+      .set(ItcStorageTurboModule.NAME, (ctx) => new ItcStorageTurboModule(ctx));
   }
 }

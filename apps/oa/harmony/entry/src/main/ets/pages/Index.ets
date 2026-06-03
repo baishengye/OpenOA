@@ -44,9 +44,7 @@ struct Index {
             createRNPackages,
             enableNDKTextMeasuring: true,
             enableBackgroundExecutor: false,
-            // CAPI 架构下 TurboModule 解析以 C++ 为主，纯 ArkTS TurboModule（createRNPackages 注册）
-            // 找不到。关掉 CAPI 用经典 ArkTS 架构，让 ItcBiometric/ItcStorage 能被发现。
-            enableCAPIArchitecture: false,
+            enableCAPIArchitecture: true,
             arkTsComponentNames: [],
           },
           // 必须与 JS 端 AppRegistry.registerComponent 的名字一致（app.json: OpenDingDing）

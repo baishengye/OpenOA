@@ -1,4 +1,4 @@
-import { TurboModule } from '@rnoh/react-native-openharmony/ts';
+import { UITurboModule } from '@rnoh/react-native-openharmony/ts';
 import { userAuth } from '@kit.UserAuthenticationKit';
 import { huks } from '@kit.UniversalKeystoreKit';
 import { cryptoFramework } from '@kit.CryptoArchitectureKit';
@@ -41,7 +41,7 @@ class CodedError extends Error {
   }
 }
 
-export class ItcBiometricTurboModule extends TurboModule {
+export class ItcBiometricTurboModule extends UITurboModule {
   static readonly NAME: string = 'ItcBiometric';
 
   private static readonly AUTH_TYPES: userAuth.UserAuthType[] = [
