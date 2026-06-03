@@ -35,7 +35,17 @@ class ItcStorage implements KVStorage {
 /** 单例。 */
 export const storage: KVStorage = new ItcStorage();
 
-/** 便捷：注入到 @itc/base 全局 storage 代理（宿主启动时调用一次）。 */
-export function installStorage(): void {
-  setStorage(storage);
+/**
+ * 注入到 @itc/base 全局 storage 代理（宿主启动时调用一次）。
+ * **探测式**：先试调原生，原生未构建（某端没接入/没重编）则不注入、保留 @itc/base 内存兜底，
+ * 避免崩溃。返回是否启用了持久化后端。
+ */
+export function installStorage(): boolean {
+  try {
+    NativeItcStorage.contains('__itc_storage_probe__');
+    setStorage(storage);
+    return true;
+  } catch (e) {
+    return false;
+  }
 }

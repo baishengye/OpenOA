@@ -7,11 +7,13 @@ import {
   Text,
   View,
 } from 'react-native';
-import { ItcError, currentPlatform } from '@itc/base';
+import { ItcError, currentPlatform, storage } from '@itc/base';
 import { biometric, type BiometryAvailability } from '@itc/biometric';
+import { installStorage } from '@itc/storage';
 import { asciiToBase64 } from '../utils/base64';
 
 const KEY_ALIAS = 'oa-login';
+const LAUNCH_KEY = 'oa.launchCount';
 
 /**
  * 生物识别端到端演示页：能力探测 → 认证 → 免密登录（注册公钥 + 验签）。
@@ -22,6 +24,7 @@ export function BiometricDemoScreen(): React.JSX.Element {
   const [busy, setBusy] = useState(false);
   const [log, setLog] = useState<string[]>([]);
   const [registered, setRegistered] = useState(false);
+  const [storageInfo, setStorageInfo] = useState('探测中…');
 
   const append = useCallback((line: string) => {
     setLog((prev) => [`${line}`, ...prev].slice(0, 12));
@@ -34,6 +37,17 @@ export function BiometricDemoScreen(): React.JSX.Element {
       setRegistered(await biometric.keyExists(KEY_ALIAS));
     } catch (e) {
       append(`探测失败: ${describe(e)}`);
+    }
+    // @itc/storage 持久化演示：注入后做启动计数（跨次启动验证持久化）
+    try {
+      const persistent = installStorage();
+      const prev = parseInt(storage.getString(LAUNCH_KEY) ?? '0', 10) || 0;
+      const next = prev + 1;
+      storage.set(LAUNCH_KEY, String(next));
+      const backend = persistent ? '原生持久化' : '内存兜底(原生未构建)';
+      setStorageInfo(`启动次数: ${next} · 后端: ${backend}`);
+    } catch (e) {
+      setStorageInfo(`storage 异常: ${describe(e)}`);
     }
   }, [append]);
 
@@ -117,6 +131,12 @@ export function BiometricDemoScreen(): React.JSX.Element {
           <Text style={styles.mono}>探测中…</Text>
         )}
         <Text style={styles.mono}>已注册免密: {String(registered)}</Text>
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>持久化（@itc/storage）</Text>
+        <Text style={styles.mono}>{storageInfo}</Text>
+        <Text style={styles.mono}>每次启动 +1；杀掉重开数字应递增（原生持久化时）</Text>
       </View>
 
       <Text style={styles.section}>免密登录（强生物识别 / 指纹）</Text>
