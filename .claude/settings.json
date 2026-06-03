@@ -20,7 +20,12 @@
       "Bash(grep -E \"hermesvm.xcframework/[^/]+/$|hermesvm.xcframework/[^/]+$\")",
       "Bash(plutil -p Pods/hermes-engine/destroot/Library/Frameworks/universal/hermesvm.xcframework/Info.plist)",
       "Bash(git rm *)",
-      "Bash(grep -iE \"oh_modules|bundle.harmony|\\\\.har$|\\\\.hap$\")"
+      "Bash(grep -iE \"oh_modules|bundle.harmony|\\\\.har$|\\\\.hap$\")",
+      "Bash(mkdir -p android/src/main/java/com/itc/storage)",
+      "Bash(cat)",
+      "Bash(node -e \"const f='tsconfig.json';const p=require\\('./'+f\\);if\\(!p.references.find\\(r=>r.path.includes\\('storage'\\)\\)\\)p.references.push\\({path:'./packages/storage'}\\);require\\('fs'\\).writeFileSync\\(f,JSON.stringify\\(p,null,2\\)+'\\\\n'\\)\")",
+      "Bash(node -e \"const f='apps/oa/tsconfig.json';const p=require\\('./'+f\\);p.compilerOptions.paths['@itc/storage']=['../../packages/storage/src/index.ts'];require\\('fs'\\).writeFileSync\\(f,JSON.stringify\\(p,null,2\\)+'\\\\n'\\)\")",
+      "Bash(grep -iE \"\\\\.har$|oh_modules|/build/|\\\\.hap$|node_modules\")"
     ]
   }
 }

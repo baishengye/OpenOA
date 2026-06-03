@@ -147,3 +147,17 @@ cp "$SRC/BiometricPackage.ts"      "$DST/BiometricPackage.ets"
 适用：模块稳定、要正式复用到多个鸿蒙工程时。
 
 > 当前 `@itc/biometric` 用**方式 A**（内嵌副本）。功能稳定后按方式 B 打 .har 收口。
+
+### ✅ 方式 B 实例：`@itc/storage`（已验证）
+
+`@itc/storage`（KV 持久化，鸿蒙用 ArkData preferences）就是方式 B 的可复用样例：
+- HAR 模块源：`packages/storage/harmony/storage/`（`oh-package.json5` / `build-profile.json5` / `hvigorfile.ts(harTasks)` / `src/main/module.json5(type:"har")` / `Index.ets`）。
+- `apps/oa/harmony/build-profile.json5` 的 `modules` 加 `{ "name": "storage", "srcPath": "../../../packages/storage/harmony/storage" }`。
+- 出包（**HAR 不需签名，无方式 A 的签名 quirk**）：
+  ```bash
+  cd apps/oa/harmony
+  node $TOOLS/hvigor/bin/hvigorw.js --mode module -p product=default -p module=storage@default assembleHar
+  # → packages/storage/harmony/storage/build/default/outputs/default/storage.har
+  ```
+- entry 依赖该 .har、`RNPackagesFactory.ets` 注册 `ItcStoragePackage`（`import ... from '@itc/storage'`）。已验证 `ohpm install` + `CompileArkTS` 通过。
+- 改了鸿蒙源后重跑 `assembleHar` 即可，**不用手动 cp 同步**（方式 A 才要）。

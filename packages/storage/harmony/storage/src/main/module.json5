@@ -1,0 +1,7 @@
+{
+  "module": {
+    "name": "storage",
+    "type": "har",
+    "deviceTypes": ["phone", "tablet"]
+  }
+}
