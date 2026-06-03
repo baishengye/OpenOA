@@ -51,10 +51,6 @@
           ]
         }
       ]
-    },
-    {
-      "name": "storage",
-      "srcPath": "../../../packages/storage/harmony/storage"
     }
   ]
 }
