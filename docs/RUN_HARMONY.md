@@ -1,0 +1,83 @@
+# 在鸿蒙（HarmonyOS NEXT / RNOH）上运行 OpenDingDing（全过程要点）
+
+> 配套：架构 / 版本矩阵 / .har 复用方式见 [HARMONY.md](./HARMONY.md)（**先读它**）；
+> 本文聚焦「跑起来」与「加一个鸿蒙原生 TurboModule」的实操要点。
+
+## 0. 前置
+
+- DevEco Studio + HarmonyOS SDK + ohpm（位置见 [ENVIRONMENT.md](./ENVIRONMENT.md)）。
+- RNOH：`@react-native-oh/react-native-harmony(-cli)`，版本须与 RN 对齐（见 [HARMONY.md](./HARMONY.md) §1）。
+- 鸿蒙宿主工程在 `apps/oa/harmony`（DevEco 打开这个目录）。
+
+## 1. JS bundle（鸿蒙单独的 Metro）
+
+鸿蒙打包用 **`apps/oa/metro.config.harmony.js`**（接 RNOH 的 harmony 解析 / polyfill），
+**不能**用标准 `metro.config.js`（会把 harmony 分支混进 RN 运行时导致崩溃）。
+
+- 开发态：`RNApp` 的 `MetroJSBundleProvider` 直连 Metro。
+- 离线包：`react-native bundle-harmony --config metro.config.harmony.js` → 打进 rawfile 的 `bundle.harmony.js`。
+
+## 2. ⚠️ 鸿蒙原生 TurboModule 的注册链（最易踩坑）
+
+JS 调 `TurboModuleRegistry.get('ItcXxx')` 后，RNOH 的解析链是：
+**C++ TurboModuleProvider → 委托给 codegen 生成的 C++ 桥（ArkTSTurboModule 子类）→ 转发到 ArkTS 实现**。
+任何一环缺失都会在运行时报：
+
+```
+Couldn't find Turbo Module on the ArkTs side, name: 'ItcXxx'
+```
+
+> 这句话**有歧义**：它既可能是 ArkTS 没注册，也可能是 **C++ 桥缺失**（ArkTS 其实注册好了）。
+> 看建议词区分：`...on the CPP side` = ArkTS OK 但缺 C++ 桥；`...on the ArkTS side` = ArkTS 没注册。
+
+一个能用的鸿蒙 TurboModule 需要**三样齐全**：
+
+| 层 | 文件 | 谁写 |
+|---|---|---|
+| ① ArkTS 实现 + 注册 | `entry/.../ets/<mod>/XxxTurboModule.ets`（extends `UITurboModule`）+ `XxxPackage.ets`（extends `RNOHPackage`，override `getUITurboModuleFactoryByNameMap`），并在 `RNPackagesFactory.ets` 的 `createRNPackages` 里 new | 手写 |
+| ② C++ 桥 | `entry/.../cpp/generated/Xxx.{cpp,h}` + `RNOHGeneratedPackage.h` 的 `createTurboModule` 返回它 | **codegen 生成** |
+| ③ 编译接线 | `cpp/CMakeLists.txt` 必须 `file(GLOB GENERATED_CPP_FILES generated/*.cpp)` 并加入 `add_library` | 手写（一次性） |
+
+## 3. 让 codegen 生成 C++ 桥（根因 + 修法）
+
+`react-native codegen-harmony` **只从模块包 `package.json` 的 `harmony.codegenConfig` 读规格**，
+形状是 `{ specPaths: [...] }`，**与标准 RN 的 `codegenConfig.jsSrcsDir` 不同**。缺这个字段，
+codegen 发现 0 个模块 → 生成空 `RNOHGeneratedPackage`（`createTurboModule` 全返回 `nullptr`）→ ②缺失。
+
+**给每个鸿蒙模块的 package.json 加**（与标准 `codegenConfig` 并存，互不影响 A/iOS）：
+```jsonc
+"harmony": {
+  "codegenConfig": { "specPaths": ["./src/NativeItcXxx.ts"] }   // version 默认 1 = ArkTS TurboModule
+}
+```
+
+**重跑 codegen**（在 `apps/oa`，需 node 在 PATH）：
+```bash
+./node_modules/.bin/react-native codegen-harmony \
+  --rnoh-module-path harmony/entry/src/main/ets \
+  --cpp-output-path harmony/entry/src/main/cpp/generated \
+  --project-root-path .
+```
+它会扫描**所有**带 `harmony.codegenConfig` 的依赖，一次性生成 `generated/`（C++ 桥 + ArkTS Spec）。
+产物已纳入 git；**spec 改了就要重跑**。
+
+> 生成的 `Xxx.cpp` 里 `ARK_METHOD_METADATA` / `ARK_ASYNC_METHOD_METADATA` 是 JSI→ArkTS 的
+> 方法转发表，方法名 + 参数个数必须与 ArkTS 实现一致（codegen 已保证与 spec 一致）。
+
+## 4. 在 DevEco 里运行
+
+- **改了 `CMakeLists.txt` 或 `cpp/generated/` 后**：`Build → Clean Project` 再 `Rebuild`（让 CMake 重编 C++ 桥）。
+- 抓日志：`hdc hilog | grep -iE "ItcStorage|ItcBiometric|TurboModule|RNOH"`。
+- `RNApp` 的 `enableCAPIArchitecture: true` **保持不变**——TurboModule 找不到的根因是缺 codegen 产物，
+  **不是 CAPI**；关 CAPI 是误判方向（会破坏 Fabric 渲染）。
+
+## 5. 新增一个鸿蒙原生 TurboModule —— 清单
+
+1. 写 spec `packages/<mod>/src/NativeItcXxx.ts`（仅 codegen 支持的类型，见 [ADDING_A_MODULE.md](./ADDING_A_MODULE.md)）。
+2. `packages/<mod>/package.json` 加 `harmony.codegenConfig.specPaths`（§3）。
+3. ArkTS 实现 + Package + 在 `RNPackagesFactory` 注册（§2 表 ①）。
+4. 重跑 codegen-harmony（§3）。
+5. 确认 `CMakeLists.txt` 有 generated glob（§2 表 ③，已存在则跳过）。
+6. DevEco Clean + Rebuild，跑，看 hilog 无 `Couldn't find Turbo Module`。
+
+> 实战记录：storage / biometric 即按此修复（2026-06-03），从「运行时找不到模块」到三端打通。
