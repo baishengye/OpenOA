@@ -58,3 +58,15 @@ coverage/
 .vscode/
 .idea/
 .artifacts/
+
+# 鸿蒙生成产物（RNOH）
+apps/oa/harmony/oh_modules/
+apps/oa/harmony/**/oh_modules/
+apps/oa/harmony/.hvigor/
+apps/oa/harmony/.idea/
+apps/oa/harmony/**/build/
+apps/oa/harmony/entry/.preview/
+**/bundle.harmony.js
+**/rawfile/assets/
+local.properties
+oh_modules/

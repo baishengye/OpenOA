@@ -32,7 +32,7 @@
   },
   "devDependencies": {
     "@itc/base": "workspace:*",
-    "react-native": "0.77.0",
+    "react-native": "0.82.1",
     "react-native-builder-bob": "^0.32.1"
   },
   "react-native-builder-bob": {

@@ -1,0 +1,56 @@
+{
+  "app": {
+    "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "certpath": "/Users/baishengye/.ohos/config/default_harmony_H5O_laxgI9yj-9Okf8-ZMrgMh2gTig7HQfWUzWg0LGc=.cer",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001BA9C5BFBB8AB01F15B781A14ECA3992830ABC108B45248F15A390D5074B3C2132948D146AD92F0C",
+          "profile": "/Users/baishengye/.ohos/config/default_harmony_H5O_laxgI9yj-9Okf8-ZMrgMh2gTig7HQfWUzWg0LGc=.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "/Users/baishengye/.ohos/config/default_harmony_H5O_laxgI9yj-9Okf8-ZMrgMh2gTig7HQfWUzWg0LGc=.p12",
+          "storePassword": "0000001B5F2CB4E1E0C0ABBCA22A108724B2A0F1C4F4E9A84DCB76324A4C343480EEB9F6A8D79002AB61D8"
+        }
+      }
+    ],
+    "products": [
+      {
+        "name": "default",
+        "signingConfig": "default",
+        "targetSdkVersion": "6.1.1(24)",
+        "compatibleSdkVersion": "5.0.0(12)",
+        "runtimeOS": "HarmonyOS",
+        "buildOption": {
+          "strictMode": {
+            "caseSensitiveCheck": true,
+            "useNormalizedOHMUrl": true
+          }
+        }
+      }
+    ],
+    "buildModeSet": [
+      {
+        "name": "debug",
+      },
+      {
+        "name": "release"
+      }
+    ]
+  },
+  "modules": [
+    {
+      "name": "entry",
+      "srcPath": "./entry",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"const p=require\\('@react-native-oh/react-native-harmony/package.json'\\); console.log\\('version:',p.version\\); console.log\\('peerDeps:',JSON.stringify\\(p.peerDependencies||{}\\)\\); console.log\\('deps.react-native:',\\(p.dependencies||{}\\)['react-native']\\); console.log\\('deps.metro:',\\(p.dependencies||{}\\)['metro']\\); console.log\\('harmonyRN:', p.harmony && p.harmony.alias\\)\")",
+      "Bash(npm view *)",
+      "Bash(node -e \"const p=require\\('./apps/oa/node_modules/@react-native-oh/react-native-harmony/package.json'\\); console.log\\('RNOH:',p.version,'| peer RN:',JSON.stringify\\(p.peerDependencies\\)\\)\")",
+      "Bash(awk '{print \"HAR:\",$5}')",
+      "Bash(grep -v \"^$\")",
+      "Bash(sed -i '' 's/\"react-native\": \"0.77.0\"/\"react-native\": \"0.82.1\"/' packages/__TRACKED_VAR__/package.json)",
+      "Bash(sed -i '' 's/\"@types\\\\/react\": \"\\\\^18.3.12\"/\"@types\\\\/react\": \"^19.1.1\"/' package.json)",
+      "Bash(node -e \"console.log\\('RN:', require\\('./apps/oa/node_modules/react-native/package.json'\\).version\\)\")",
+      "Bash(node -e \"console.log\\('React:', require\\('./apps/oa/node_modules/react/package.json'\\).version\\)\")",
+      "Bash(node -e \"console.log\\('RNOH:', require\\('./apps/oa/node_modules/@react-native-oh/react-native-harmony/package.json'\\).version\\)\")",
+      "Bash(pkill -9 -f \"GradleDaemon\")",
+      "Bash(sleep 1)",
+      "Bash(./gradlew :app:assembleDebug --no-daemon --console=plain)",
+      "Bash(cd /Volumes/MacExtend/Code/ReactNative/OpenDingDing/apps/oa/ios *)",
+      "Read(//Users/baishengye/Library/Caches/CocoaPods/**)",
+      "Bash(tar -tzf Pods/hermes-engine-artifacts/hermes-ios-0.82.1-release.tar.gz)",
+      "Bash(grep -E \"hermesvm.xcframework/[^/]+/$|hermesvm.xcframework/[^/]+$\")",
+      "Bash(plutil -p Pods/hermes-engine/destroot/Library/Frameworks/universal/hermesvm.xcframework/Info.plist)",
+      "Bash(git rm *)",
+      "Bash(grep -iE \"oh_modules|bundle.harmony|\\\\.har$|\\\\.hap$\")"
+    ]
+  }
+}
