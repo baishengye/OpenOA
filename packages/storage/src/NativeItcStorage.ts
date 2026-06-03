@@ -23,4 +23,6 @@ export interface Spec extends TurboModule {
   clearAll(): void;
 }
 
-export default TurboModuleRegistry.getEnforcing<Spec>('ItcStorage');
+// 用 get（找不到返回 null）而非 getEnforcing（找不到会在 import 时抛 TypeError），
+// 以便某端未接入原生时 import 本模块也不崩；可用性由 index.ts 的 installStorage 探测。
+export default TurboModuleRegistry.get<Spec>('ItcStorage');

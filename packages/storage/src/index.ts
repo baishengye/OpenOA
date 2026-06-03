@@ -41,6 +41,7 @@ export const storage: KVStorage = new ItcStorage();
  * 避免崩溃。返回是否启用了持久化后端。
  */
 export function installStorage(): boolean {
+  if (NativeItcStorage == null) return false; // 原生未接入 → 保留 @itc/base 内存兜底
   try {
     NativeItcStorage.contains('__itc_storage_probe__');
     setStorage(storage);

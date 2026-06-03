@@ -25,7 +25,8 @@
       "Bash(cat)",
       "Bash(node -e \"const f='tsconfig.json';const p=require\\('./'+f\\);if\\(!p.references.find\\(r=>r.path.includes\\('storage'\\)\\)\\)p.references.push\\({path:'./packages/storage'}\\);require\\('fs'\\).writeFileSync\\(f,JSON.stringify\\(p,null,2\\)+'\\\\n'\\)\")",
       "Bash(node -e \"const f='apps/oa/tsconfig.json';const p=require\\('./'+f\\);p.compilerOptions.paths['@itc/storage']=['../../packages/storage/src/index.ts'];require\\('fs'\\).writeFileSync\\(f,JSON.stringify\\(p,null,2\\)+'\\\\n'\\)\")",
-      "Bash(grep -iE \"\\\\.har$|oh_modules|/build/|\\\\.hap$|node_modules\")"
+      "Bash(grep -iE \"\\\\.har$|oh_modules|/build/|\\\\.hap$|node_modules\")",
+      "Bash(node node_modules/react-native/cli.js bundle-harmony --config metro.config.harmony.js --dev false)"
     ]
   }
 }
