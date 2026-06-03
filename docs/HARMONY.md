@@ -94,3 +94,56 @@ node $TOOLS/hvigor/bin/hvigorw.js --mode module -p product=default -p module=ent
 | 鸿蒙 | API 12（全 NEXT） | compatibleSdkVersion 5.0.0(12) |
 | Android | minSdk 24（覆盖 28+） | androidx.biometric 回退到 23 |
 | iOS | 15.1 | RN 0.82 底线；Face ID/Secure Enclave 远早于此 |
+
+## 8. 鸿蒙端能力模块的复用方式 ⚠️ 重要
+
+鸿蒙的 ArkTS **不允许把工作区里另一个目录的源码当本地源码编进来**（报 `Cannot import files outside of the current module`）。所以可复用模块（`packages/<mod>/harmony/`）的 ArkTS 不能像 Android(Kotlin)/iOS(ObjC) 那样直接被 autolink 进 App，有两种接法：
+
+### 方式 A（当前用的）：内嵌副本 —— 每次改都要同步！
+
+把模块的 ArkTS **复制进主工程 entry**（参考 RNOH 官方示例的做法）：
+
+```
+packages/biometric/harmony/biometric/src/main/ets/   ← 真源（可复用）
+apps/oa/harmony/entry/src/main/ets/biometric/         ← 复制进来的副本（实际参与编译）
+```
+
+> 🔴 **铁律：每次改了 `packages/<mod>/harmony/` 下的鸿蒙 ArkTS，必须同步复制到 `apps/oa/harmony/entry/src/main/ets/<mod>/`**，否则主工程用的还是旧代码。
+> 文件后缀：源里是 `.ts`，复制到 entry 改成 `.ets`（ArkTS）。
+
+同步命令（biometric 为例）：
+```bash
+SRC=packages/biometric/harmony/biometric/src/main/ets
+DST=apps/oa/harmony/entry/src/main/ets/biometric
+cp "$SRC/BiometricTurboModule.ts"  "$DST/BiometricTurboModule.ets"
+cp "$SRC/BiometricPackage.ts"      "$DST/BiometricPackage.ets"
+```
+然后在 `entry/.../RNPackagesFactory.ets` 里 `import { XxxPackage } from './<mod>/XxxPackage'` 注册。
+
+适用：模块还在频繁改、未稳定时。优点：改完即编、无需打包。缺点：**有重复、要手动同步**。
+
+### 方式 B（正式复用）：打成 .har，主工程依赖二进制
+
+模块稳定后，把它做成独立 HAR（像 RNOH 自己的 `react_native_openharmony.har`），entry 依赖 .har，**删掉内嵌副本、无重复、可剥离到任何鸿蒙工程**。
+
+1. 把 `packages/<mod>/harmony/<mod>` 配成 DevEco **HAR 模块**（需补这些文件）：
+   - `oh-package.json5`（`"main": "Index.ets"`，依赖 `@rnoh/react-native-openharmony` HAR）
+   - `build-profile.json5`（`"apiType": "stageMode"`，library 配置）
+   - `hvigorfile.ts`（`import { harTasks } from '@ohos/hvigor-ohos-plugin'; export default { system: harTasks }`）
+   - `src/main/module.json5`（`"type": "har"` 或 shared library 配置）
+   - 源文件用 `.ets`；`Index.ets` re-export `XxxPackage` / `XxxTurboModule`
+2. 出包：
+   ```bash
+   cd packages/<mod>/harmony   # 或把它纳入一个 DevEco 工程的 modules
+   node $TOOLS/hvigor/bin/hvigorw.js --mode module -p product=default -p module=<mod>@default assembleHar
+   # 产物：<mod>/build/default/outputs/default/<mod>.har
+   ```
+3. 主工程 `entry/oh-package.json5` 依赖该 .har：
+   ```json5
+   "dependencies": { "@itc/<mod>": "file:../../../../packages/<mod>/harmony/<mod>/build/.../<mod>.har" }
+   ```
+   `RNPackagesFactory.ets` 改 `import { XxxPackage } from '@itc/<mod>'`，删除 entry 内嵌副本。
+
+适用：模块稳定、要正式复用到多个鸿蒙工程时。
+
+> 当前 `@itc/biometric` 用**方式 A**（内嵌副本）。功能稳定后按方式 B 打 .har 收口。
