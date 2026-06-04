@@ -12,8 +12,9 @@ export interface SmokeResult {
 export async function runDbSmoke(): Promise<SmokeResult> {
   const lines: string[] = [];
   try {
+    // 经平台 wrapper（opsqlite.ts / opsqlite.harmony.ts）选用对应平台的 op-sqlite。
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const opsqlite = require('@op-engineering/op-sqlite');
+    const opsqlite = require('./opsqlite');
     const open: (opts: { name: string }) => any = opsqlite.open;
 
     const db = open({ name: 'oa-smoke.db' });

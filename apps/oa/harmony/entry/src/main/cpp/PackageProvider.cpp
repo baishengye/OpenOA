@@ -4,6 +4,8 @@
 // 头文件来自各库的 cpp include 根（CMakeLists 已把 STORAGE/BIOMETRIC_LIB_CPP 加入 include 路径）。
 #include "RNOH/generated/BaseItcStoragePackage.h"
 #include "RNOH/generated/BaseItcBiometricPackage.h"
+// 第三方库 op-sqlite 的 C++ Package（头来自其 cpp 子工程，CMake 已 add_subdirectory）。
+#include "RNOpSqlitePackage.h"
 
 using namespace rnoh;
 
@@ -15,5 +17,6 @@ std::vector<std::shared_ptr<Package>> PackageProvider::getPackages(Package::Cont
     std::make_shared<RNOHGeneratedPackage>(ctx),
     std::make_shared<BaseItcStoragePackage>(ctx),
     std::make_shared<BaseItcBiometricPackage>(ctx),
+    std::make_shared<RNOpSqlitePackage>(ctx),
   };
 }

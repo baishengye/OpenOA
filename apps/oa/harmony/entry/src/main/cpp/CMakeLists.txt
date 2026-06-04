@@ -7,6 +7,10 @@ set(RNOH_CPP_DIR "${OH_MODULE_DIR}/@rnoh/react-native-openharmony/src/main/cpp")
 
 add_subdirectory("${RNOH_CPP_DIR}" ./rn)
 
+# 第三方库 op-sqlite（@react-native-ohos/op-sqlite，ohpm 从 .har 解出 cpp 到 oh_modules）。
+# 它自带 CMake 子工程，产出 rnoh_rn_op_sqlite 供链接。
+add_subdirectory("${OH_MODULE_DIR}/@react-native-ohos/op-sqlite/src/main/cpp" ./rn_op_sqlite)
+
 # codegen-harmony v1 产物（app 级）：storage / biometric 的 C++ 均已迁到各自库里，此处现为空壳。
 file(GLOB GENERATED_CPP_FILES "${CMAKE_CURRENT_SOURCE_DIR}/generated/*.cpp")
 
@@ -28,4 +32,4 @@ add_library(rnoh_app SHARED
 )
 
 target_include_directories(rnoh_app PUBLIC "${STORAGE_LIB_CPP}" "${BIOMETRIC_LIB_CPP}")
-target_link_libraries(rnoh_app PUBLIC rnoh)
+target_link_libraries(rnoh_app PUBLIC rnoh rnoh_rn_op_sqlite)

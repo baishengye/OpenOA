@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "description": "OpenDingDing OA App 宿主（对标钉钉），消费 @itc/* 模块。",
+  "op-sqlite": {
+    "sqlcipher": false,
+    "libsql": false
+  },
   "scripts": {
     "start": "react-native start",
     "android": "react-native run-android",
@@ -18,6 +22,7 @@
     "@itc/push": "workspace:*",
     "@itc/storage": "workspace:*",
     "@op-engineering/op-sqlite": "^16.2.0",
+    "@react-native-ohos/op-sqlite": "^14.0.1",
     "react": "19.1.1",
     "react-native": "0.82.1"
   },
