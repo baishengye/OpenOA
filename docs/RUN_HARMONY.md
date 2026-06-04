@@ -15,8 +15,23 @@
 鸿蒙打包用 **`apps/oa/metro.config.harmony.js`**（接 RNOH 的 harmony 解析 / polyfill），
 **不能**用标准 `metro.config.js`（会把 harmony 分支混进 RN 运行时导致崩溃）。
 
-- 开发态：`RNApp` 的 `MetroJSBundleProvider` 直连 Metro。
-- 离线包：`react-native bundle-harmony --config metro.config.harmony.js` → 打进 rawfile 的 `bundle.harmony.js`。
+- 开发态：`RNApp` 的 `MetroJSBundleProvider` 直连 Metro（默认 `localhost:8081`）。
+- 离线包：`react-native bundle-harmony --config metro.config.harmony.js --dev false` → 打进 rawfile 的 `bundle.harmony.js`（`ResourceJSBundleProvider` 兜底）。
+
+### 1.1 改代码后怎么更新（热更新 vs 重编）
+
+**改的是 JS（.ts/.tsx）→ 走 Metro 热更新，不用重编原生：**
+```bash
+# 1) 用鸿蒙专用配置起 Metro（8081 同时只能跑一个；要跑鸿蒙就停掉给 A/iOS 开的标准 Metro）
+cd apps/oa && npx react-native start --config metro.config.harmony.js
+# 2) 让设备能连到 Metro（相当于安卓的 adb reverse）：反向端口 设备:8081 → 电脑:8081
+hdc rport tcp:8081 tcp:8081        # 真机必须；模拟器连不上时也补这条。重连设备/重启 hdc 要重做
+# 3) 触发重载：App 内 RNOH 开发菜单点 Reload，或杀掉 App 重开（重新从 Metro 拉最新 JS）
+```
+> 连上的标志：Metro 终端能看到 bundle 请求日志。`hdc fport`（正向）是反过来的，连不上先确认用的是 `rport`。
+
+**改的是原生（ArkTS .ets / C++ / 配置文件 / codegen 产物）→ 必须 DevEco 重编：**
+`Build → Clean Project → Rebuild → Run`（见 §4）。
 
 ## 2. ⚠️ 鸿蒙原生 TurboModule 的注册链（最易踩坑）
 

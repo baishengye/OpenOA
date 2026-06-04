@@ -55,6 +55,14 @@ export function BiometricDemoScreen(): React.JSX.Element {
     void refresh();
   }, [refresh]);
 
+  // 文案按当前生物类型自适应：iOS=面容 / 安卓多为指纹 / 其它回退「生物识别」。
+  const bioName =
+    availability?.biometryType === 'face'
+      ? '面容'
+      : availability?.biometryType === 'fingerprint'
+      ? '指纹'
+      : '生物识别';
+
   const run = useCallback(
     async (label: string, fn: () => Promise<void>) => {
       setBusy(true);
@@ -103,13 +111,13 @@ export function BiometricDemoScreen(): React.JSX.Element {
     });
 
   const onLogin = () =>
-    run('指纹登录', async () => {
+    run(`${bioName}登录`, async () => {
       // 真实场景：challenge 由后端下发，这里本地造一个演示
       const challenge = asciiToBase64(`login:${currentPlatform}:demo-nonce`);
       const { signatureBase64 } = await biometric.signWithKey(
         KEY_ALIAS,
         challenge,
-        '指纹登录'
+        `${bioName}登录`
       );
       // 真实场景：把 signature 提交后端用注册公钥验签
       append(`✅ 验签完成，签名(前24): ${signatureBase64.slice(0, 24)}…`);
@@ -139,11 +147,11 @@ export function BiometricDemoScreen(): React.JSX.Element {
         <Text style={styles.mono}>每次启动 +1；杀掉重开数字应递增（原生持久化时）</Text>
       </View>
 
-      <Text style={styles.section}>免密登录（强生物识别 / 指纹）</Text>
+      <Text style={styles.section}>免密登录（强生物识别 / {bioName}）</Text>
       <Button label="① 生物识别认证" onPress={onAuthenticate} disabled={busy} />
       <Button label="② 注册免密登录（生成密钥）" onPress={onRegister} disabled={busy} />
       <Button
-        label="③ 指纹登录（验签）"
+        label={`③ ${bioName}登录（验签）`}
         onPress={onLogin}
         disabled={busy || !registered}
       />
