@@ -47,69 +47,90 @@ class ItcBiometricModule(reactContext: ReactApplicationContext) :
     return activity
   }
 
-  // ---- 能力探测 ----------------------------------------------------------
+  // ---- 能力枚举 ----------------------------------------------------------
 
-  override fun isAvailable(promise: Promise) {
-    val manager = BiometricManager.from(ctx)
-    val result = Arguments.createMap()
-    when (manager.canAuthenticate(AUTHENTICATORS)) {
-      BiometricManager.BIOMETRIC_SUCCESS -> {
-        result.putBoolean("available", true)
-        result.putString("biometryType", guessBiometryType())
-        result.putString("errorCode", "")
-      }
-      BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE,
-      BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE -> {
-        result.putBoolean("available", false)
-        result.putString("biometryType", "none")
-        result.putString("errorCode", "BIOMETRY_NO_HARDWARE")
-      }
-      BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED -> {
-        result.putBoolean("available", false)
-        result.putString("biometryType", guessBiometryType())
-        result.putString("errorCode", "BIOMETRY_NOT_ENROLLED")
-      }
-      else -> {
-        result.putBoolean("available", false)
-        result.putString("biometryType", "none")
-        result.putString("errorCode", "UNSUPPORTED")
-      }
-    }
-    promise.resolve(result)
-  }
+  /**
+   * Android 限制：可逐模态查"硬件是否存在"（PackageManager.FEATURE_*），但
+   * BiometricManager 只能给"强/弱聚合"的可用性，无法逐模态判定"是否已录入/可用"，
+   * 也无法定向到指定模态。因此 available/enrolled/strength 为聚合 best-effort，directable=false。
+   */
+  override fun getCapabilities(promise: Promise) {
+    val mgr = BiometricManager.from(ctx)
+    val strongStatus = mgr.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG)
+    val weakStatus = mgr.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK)
+    val strongOk = strongStatus == BiometricManager.BIOMETRIC_SUCCESS
+    val weakOk = weakStatus == BiometricManager.BIOMETRIC_SUCCESS
+    val available = strongOk || weakOk
+    val strength = if (strongOk) "strong" else if (weakOk) "weak" else "none"
+    val noneEnrolled =
+      strongStatus == BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED ||
+        weakStatus == BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED
+    val aggReason = if (available) "" else if (noneEnrolled) "not_enrolled" else "not_supported"
 
-  /** Android 无法精确区分指纹/人脸，统一上报 fingerprint（多数设备语义），face 由设备能力决定。 */
-  private fun guessBiometryType(): String {
     val pm = ctx.packageManager
-    val hasFace =
-      Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
-        pm.hasSystemFeature(android.content.pm.PackageManager.FEATURE_FACE)
-    val hasFinger =
-      pm.hasSystemFeature(android.content.pm.PackageManager.FEATURE_FINGERPRINT)
-    return when {
-      hasFinger -> "fingerprint"
-      hasFace -> "face"
-      else -> "none"
+    val items = Arguments.createArray()
+    var mask = 0
+
+    fun addModality(kind: String, hasHardware: Boolean, bit: Int) {
+      val item = Arguments.createMap()
+      item.putString("kind", kind)
+      item.putBoolean("hardware", hasHardware)
+      item.putBoolean("directable", false)
+      if (hasHardware) {
+        item.putBoolean("enrolled", available)
+        item.putBoolean("available", available)
+        item.putString("strength", strength)
+        item.putString("reason", aggReason)
+        if (available) mask = mask or bit
+      } else {
+        item.putBoolean("enrolled", false)
+        item.putBoolean("available", false)
+        item.putString("strength", "none")
+        item.putString("reason", "not_supported")
+      }
+      items.pushMap(item)
     }
+
+    val q = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+    addModality(
+      "fingerprint",
+      pm.hasSystemFeature(android.content.pm.PackageManager.FEATURE_FINGERPRINT),
+      1
+    )
+    addModality(
+      "face",
+      q && pm.hasSystemFeature(android.content.pm.PackageManager.FEATURE_FACE),
+      2
+    )
+    addModality(
+      "iris",
+      q && pm.hasSystemFeature(android.content.pm.PackageManager.FEATURE_IRIS),
+      4
+    )
+
+    val result = Arguments.createMap()
+    result.putInt("mask", mask)
+    result.putArray("items", items)
+    promise.resolve(result)
   }
 
   // ---- 认证 --------------------------------------------------------------
 
+  /** 按强度认证（系统选模态）。结果类语义：失败也 resolve({success=false, reason})，不 reject。 */
   override fun authenticate(
     title: String,
     subtitle: String,
     reason: String,
     cancelLabel: String,
     allowDeviceCredential: Boolean,
-    allowWeak: Boolean,
+    strength: String,
     promise: Promise
   ) {
     val activity = requireActivity(promise) ?: return
 
-    // 基础认证：默认仅强生物识别；allowWeak 时叠加弱生物识别（Class 2，如摄像头人脸）。
-    // 注意：密钥签名(signWithKey)不走这里，始终用强生物识别。
+    // strength=weak 叠加弱生物识别（Class 2，如摄像头人脸）；默认仅强。
     val bioAuthenticators =
-      if (allowWeak)
+      if (strength == "weak")
         BiometricManager.Authenticators.BIOMETRIC_STRONG or
           BiometricManager.Authenticators.BIOMETRIC_WEAK
       else
@@ -120,7 +141,6 @@ class ItcBiometricModule(reactContext: ReactApplicationContext) :
         .setTitle(title.ifBlank { "身份验证" })
       if (subtitle.isNotBlank()) promptInfoBuilder.setSubtitle(subtitle)
       if (allowDeviceCredential) {
-        // 设备凭据不能与弱生物识别叠加，这里用强生物识别 + 设备凭据
         promptInfoBuilder.setAllowedAuthenticators(
           AUTHENTICATORS or BiometricManager.Authenticators.DEVICE_CREDENTIAL
         )
@@ -134,12 +154,12 @@ class ItcBiometricModule(reactContext: ReactApplicationContext) :
         mainExecutor(),
         object : BiometricPrompt.AuthenticationCallback() {
           override fun onAuthenticationSucceeded(r: BiometricPrompt.AuthenticationResult) {
-            val map = Arguments.createMap().apply { putBoolean("success", true) }
-            promise.resolve(map)
+            // Android 不告知实际使用的是指纹还是人脸 → usedKind 未知。
+            promise.resolve(authOutcome(true, "unknown", ""))
           }
 
           override fun onAuthenticationError(code: Int, msg: CharSequence) {
-            promise.reject(mapErrorCode(code), msg.toString())
+            promise.resolve(authOutcome(false, "", mapErrorCode(code)))
           }
         }
       )
@@ -147,16 +167,41 @@ class ItcBiometricModule(reactContext: ReactApplicationContext) :
     }
   }
 
+  /** Android 无法定向到指定模态（系统按强度选），统一返回 not_directable。 */
+  override fun authenticateWith(
+    kind: String,
+    title: String,
+    subtitle: String,
+    reason: String,
+    cancelLabel: String,
+    allowDeviceCredential: Boolean,
+    promise: Promise
+  ) {
+    promise.resolve(authOutcome(false, "", "not_directable"))
+  }
+
+  private fun authOutcome(
+    success: Boolean,
+    usedKind: String,
+    reason: String
+  ): com.facebook.react.bridge.WritableMap = Arguments.createMap().apply {
+    putBoolean("success", success)
+    putString("usedKind", usedKind)
+    putString("reason", reason)
+  }
+
+  /** BiometricPrompt 错误码 → AuthFailReason token（与 JS types.ts 对齐）。 */
   private fun mapErrorCode(code: Int): String = when (code) {
     BiometricPrompt.ERROR_USER_CANCELED,
     BiometricPrompt.ERROR_NEGATIVE_BUTTON,
-    BiometricPrompt.ERROR_CANCELED -> "USER_CANCELED"
+    BiometricPrompt.ERROR_CANCELED -> "canceled"
     BiometricPrompt.ERROR_LOCKOUT,
-    BiometricPrompt.ERROR_LOCKOUT_PERMANENT -> "BIOMETRY_LOCKOUT"
-    BiometricPrompt.ERROR_NO_BIOMETRICS -> "BIOMETRY_NOT_ENROLLED"
+    BiometricPrompt.ERROR_LOCKOUT_PERMANENT -> "lockout"
+    BiometricPrompt.ERROR_TIMEOUT -> "timeout"
+    BiometricPrompt.ERROR_NO_BIOMETRICS -> "not_enrolled"
     BiometricPrompt.ERROR_HW_NOT_PRESENT,
-    BiometricPrompt.ERROR_HW_UNAVAILABLE -> "BIOMETRY_NO_HARDWARE"
-    else -> "BIOMETRY_AUTH_FAILED"
+    BiometricPrompt.ERROR_HW_UNAVAILABLE -> "not_supported"
+    else -> "failed"
   }
 
   // ---- 生物绑定密钥 ------------------------------------------------------

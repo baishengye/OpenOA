@@ -9,8 +9,9 @@ using namespace facebook;
 
 ItcBiometric::ItcBiometric(const ArkTSTurboModule::Context ctx, const std::string name) : ArkTSTurboModule(ctx, name) {
     methodMap_ = {
-        ARK_ASYNC_METHOD_METADATA(isAvailable, 0),
+        ARK_ASYNC_METHOD_METADATA(getCapabilities, 0),
         ARK_ASYNC_METHOD_METADATA(authenticate, 6),
+        ARK_ASYNC_METHOD_METADATA(authenticateWith, 6),
         ARK_ASYNC_METHOD_METADATA(createKey, 1),
         ARK_ASYNC_METHOD_METADATA(signWithKey, 3),
         ARK_ASYNC_METHOD_METADATA(deleteKey, 1),

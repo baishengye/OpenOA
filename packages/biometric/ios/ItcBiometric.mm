@@ -29,51 +29,66 @@ static SecKeyRef CopyPrivateKey(NSString *alias) {
   return status == errSecSuccess ? key : NULL;
 }
 
-#pragma mark - 能力探测
+#pragma mark - 能力枚举
 
-- (void)isAvailable:(RCTPromiseResolveBlock)resolve
-             reject:(RCTPromiseRejectBlock)reject {
+// iOS 一台设备只有一种生物模态（Face ID 或 Touch ID），无法定向、无法枚举多模态。
+- (void)getCapabilities:(RCTPromiseResolveBlock)resolve
+                 reject:(RCTPromiseRejectBlock)reject {
   LAContext *context = [LAContext new];
   NSError *error = nil;
-  BOOL canBiometric =
+  BOOL available =
       [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
                            error:&error];
 
-  NSString *type = @"none";
+  NSString *kind = nil;
+  NSUInteger bit = 0;
   if (context.biometryType == LABiometryTypeFaceID) {
-    type = @"face";
+    kind = @"face"; bit = 2;
   } else if (context.biometryType == LABiometryTypeTouchID) {
-    type = @"fingerprint";
+    kind = @"fingerprint"; bit = 1;
   }
 
-  if (canBiometric) {
-    resolve(@{ @"available" : @YES, @"biometryType" : type, @"errorCode" : @"" });
-    return;
+  NSMutableArray *items = [NSMutableArray array];
+  NSUInteger mask = 0;
+  if (kind != nil) {
+    BOOL hardware = YES;
+    BOOL enrolled = available;
+    NSString *reason = @"";
+    if (!available) {
+      switch (error.code) {
+        case LAErrorBiometryNotEnrolled: enrolled = NO; reason = @"not_enrolled"; break;
+        case LAErrorBiometryLockout: enrolled = YES; reason = @"lockout"; break;
+        case LAErrorBiometryNotAvailable: hardware = NO; enrolled = NO; reason = @"not_supported"; break;
+        default: reason = @"unknown"; break;
+      }
+    }
+    if (available) mask = bit;
+    [items addObject:@{
+      @"kind" : kind,
+      @"hardware" : @(hardware),
+      @"enrolled" : @(enrolled),
+      @"available" : @(available),
+      @"strength" : @"strong",   // iOS 生物识别均为强
+      @"directable" : @NO,
+      @"reason" : reason,
+    }];
   }
-
-  NSString *code = @"UNSUPPORTED";
-  if (error.code == LAErrorBiometryNotEnrolled) {
-    code = @"BIOMETRY_NOT_ENROLLED";
-  } else if (error.code == LAErrorBiometryNotAvailable) {
-    code = @"BIOMETRY_NO_HARDWARE";
-  } else if (error.code == LAErrorBiometryLockout) {
-    code = @"BIOMETRY_LOCKOUT";
-  }
-  resolve(@{ @"available" : @NO, @"biometryType" : type, @"errorCode" : code });
+  resolve(@{ @"mask" : @(mask), @"items" : items });
 }
 
 #pragma mark - 认证
 
+// 按强度认证（iOS 无弱生物，strength 忽略；系统用设备唯一的生物模态）。结果类语义：失败也 resolve。
 - (void)authenticate:(NSString *)title
             subtitle:(NSString *)subtitle
               reason:(NSString *)reason
          cancelLabel:(NSString *)cancelLabel
 allowDeviceCredential:(BOOL)allowDeviceCredential
-           allowWeak:(BOOL)allowWeak
+            strength:(NSString *)strength
              resolve:(RCTPromiseResolveBlock)resolve
               reject:(RCTPromiseRejectBlock)reject {
-  // allowWeak 在 iOS 无意义：Face ID / Touch ID 均为强生物识别，忽略此参数。
-  (void)allowWeak;
+  (void)subtitle;
+  (void)strength;
   LAContext *context = [LAContext new];
   if (cancelLabel.length > 0) {
     context.localizedCancelTitle = cancelLabel;
@@ -82,35 +97,52 @@ allowDeviceCredential:(BOOL)allowDeviceCredential
       ? LAPolicyDeviceOwnerAuthentication
       : LAPolicyDeviceOwnerAuthenticationWithBiometrics;
   NSString *localizedReason = reason.length > 0 ? reason : title;
+  NSString *usedKind = (context.biometryType == LABiometryTypeFaceID)
+      ? @"face"
+      : (context.biometryType == LABiometryTypeTouchID ? @"fingerprint" : @"");
 
   [context evaluatePolicy:policy
           localizedReason:localizedReason
                     reply:^(BOOL success, NSError *_Nullable err) {
     if (success) {
-      resolve(@{ @"success" : @YES });
+      resolve(@{ @"success" : @YES, @"usedKind" : usedKind, @"reason" : @"" });
       return;
     }
-    NSString *code = @"BIOMETRY_AUTH_FAILED";
+    NSString *r = @"failed";
     switch (err.code) {
       case LAErrorUserCancel:
       case LAErrorAppCancel:
       case LAErrorSystemCancel:
-        code = @"USER_CANCELED";
+        r = @"canceled";
         break;
       case LAErrorBiometryLockout:
-        code = @"BIOMETRY_LOCKOUT";
+        r = @"lockout";
         break;
       case LAErrorBiometryNotEnrolled:
-        code = @"BIOMETRY_NOT_ENROLLED";
+        r = @"not_enrolled";
         break;
       case LAErrorBiometryNotAvailable:
-        code = @"BIOMETRY_NO_HARDWARE";
+        r = @"not_supported";
         break;
       default:
         break;
     }
-    reject(code, err.localizedDescription, err);
+    resolve(@{ @"success" : @NO, @"usedKind" : @"", @"reason" : r });
   }];
+}
+
+// iOS 无法定向到指定模态（系统 API 不接受模态参数）。统一返回 not_directable。
+- (void)authenticateWith:(NSString *)kind
+                   title:(NSString *)title
+                subtitle:(NSString *)subtitle
+                  reason:(NSString *)reason
+             cancelLabel:(NSString *)cancelLabel
+   allowDeviceCredential:(BOOL)allowDeviceCredential
+                 resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject {
+  (void)kind; (void)title; (void)subtitle; (void)reason;
+  (void)cancelLabel; (void)allowDeviceCredential;
+  resolve(@{ @"success" : @NO, @"usedKind" : @"", @"reason" : @"not_directable" });
 }
 
 #pragma mark - 生物绑定密钥（Secure Enclave）

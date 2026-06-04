@@ -8,60 +8,47 @@ import {
   View,
 } from 'react-native';
 import { ItcError, currentPlatform, storage } from '@itc/base';
-import { biometric, type BiometryAvailability } from '@itc/biometric';
+import {
+  biometric,
+  BIOMETRY_BIT,
+  type BiometryKind,
+  type CapabilitiesResult,
+  type AuthResult,
+} from '@itc/biometric';
 import { installStorage } from '@itc/storage';
 import { asciiToBase64 } from '../utils/base64';
 
 const KEY_ALIAS = 'oa-login';
 const LAUNCH_KEY = 'oa.launchCount';
+const KINDS: BiometryKind[] = ['fingerprint', 'face', 'iris'];
+const KIND_LABEL: Record<BiometryKind, string> = {
+  fingerprint: '指纹',
+  face: '人脸',
+  iris: '虹膜',
+};
+type TabKey = 'caps' | 'auth' | 'key' | 'storage';
+const TABS: { key: TabKey; label: string }[] = [
+  { key: 'caps', label: '能力' },
+  { key: 'auth', label: '认证' },
+  { key: 'key', label: '免密' },
+  { key: 'storage', label: '存储' },
+];
 
 /**
- * 生物识别端到端演示页：能力探测 → 认证 → 免密登录（注册公钥 + 验签）。
- * 用于验证 @itc/biometric 在 Android / iOS / 鸿蒙三端跑通。
+ * 生物识别端到端演示页（Tab 分页）：能力枚举 / 按强度+定向认证 / 免密登录 / 存储持久化。
+ * 三端一致；定向认证在 iOS/Android 会返回 not_directable，直观体现平台差异。
  */
 export function BiometricDemoScreen(): React.JSX.Element {
-  const [availability, setAvailability] = useState<BiometryAvailability | null>(null);
+  const [tab, setTab] = useState<TabKey>('caps');
+  const [caps, setCaps] = useState<CapabilitiesResult | null>(null);
+  const [registered, setRegistered] = useState(false);
+  const [storageInfo, setStorageInfo] = useState('—');
   const [busy, setBusy] = useState(false);
   const [log, setLog] = useState<string[]>([]);
-  const [registered, setRegistered] = useState(false);
-  const [storageInfo, setStorageInfo] = useState('探测中…');
 
   const append = useCallback((line: string) => {
-    setLog((prev) => [`${line}`, ...prev].slice(0, 12));
+    setLog((prev) => [line, ...prev].slice(0, 12));
   }, []);
-
-  const refresh = useCallback(async () => {
-    try {
-      const a = await biometric.getAvailability();
-      setAvailability(a);
-      setRegistered(await biometric.keyExists(KEY_ALIAS));
-    } catch (e) {
-      append(`探测失败: ${describe(e)}`);
-    }
-    // @itc/storage 持久化演示：注入后做启动计数（跨次启动验证持久化）
-    try {
-      const persistent = installStorage();
-      const prev = parseInt(storage.getString(LAUNCH_KEY) ?? '0', 10) || 0;
-      const next = prev + 1;
-      storage.set(LAUNCH_KEY, String(next));
-      const backend = persistent ? '原生持久化' : '内存兜底(原生未构建)';
-      setStorageInfo(`启动次数: ${next} · 后端: ${backend}`);
-    } catch (e) {
-      setStorageInfo(`storage 异常: ${describe(e)}`);
-    }
-  }, [append]);
-
-  useEffect(() => {
-    void refresh();
-  }, [refresh]);
-
-  // 文案按当前生物类型自适应：iOS=面容 / 安卓多为指纹 / 其它回退「生物识别」。
-  const bioName =
-    availability?.biometryType === 'face'
-      ? '面容'
-      : availability?.biometryType === 'fingerprint'
-      ? '指纹'
-      : '生物识别';
 
   const run = useCallback(
     async (label: string, fn: () => Promise<void>) => {
@@ -77,50 +64,69 @@ export function BiometricDemoScreen(): React.JSX.Element {
     [append]
   );
 
-  const onAuthenticate = () =>
-    run('认证', async () => {
-      await biometric.authenticate({
-        title: '身份验证',
-        subtitle: '请验证你的生物特征',
-        reason: '解锁 OpenDingDing',
-        // 仅强生物识别：与②③免密签名保持一致（安卓上即指纹），避免选了弱人脸后签名失败
-        allowWeakBiometric: false,
-      });
-      append('✅ 认证通过');
+  const refreshCaps = useCallback(
+    () =>
+      run('能力枚举', async () => {
+        const c = await biometric.getCapabilities();
+        setCaps(c);
+        setRegistered(await biometric.keyExists(KEY_ALIAS));
+        append(`✅ 能力 mask=${maskBits(c.mask)}（${c.capabilities.length} 个模态）`);
+      }),
+    [run, append]
+  );
+
+  const refreshStorage = useCallback(() => {
+    try {
+      const persistent = installStorage();
+      const prev = parseInt(storage.getString(LAUNCH_KEY) ?? '0', 10) || 0;
+      const next = prev + 1;
+      storage.set(LAUNCH_KEY, String(next));
+      const backend = persistent ? '原生持久化' : '内存兜底(原生未构建)';
+      setStorageInfo(`启动次数: ${next} · 后端: ${backend}`);
+    } catch (e) {
+      setStorageInfo(`storage 异常: ${describe(e)}`);
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshCaps();
+    refreshStorage();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ---- 认证 ----
+  const onAuth = (strength: 'strong' | 'weak') =>
+    run(`${strength} 认证`, async () => {
+      const r = await biometric.authenticate({ title: '身份验证', strength });
+      append(fmtAuth(`${strength} 认证`, r));
     });
 
-  const onAuthFace = () =>
-    run('人脸/弱认证', async () => {
-      await biometric.authenticate({
-        title: '人脸/弱认证',
-        subtitle: '允许摄像头人脸（弱生物识别）',
-        reason: '解锁 OpenDingDing',
-        // 允许弱生物识别：三星会弹「指纹/面容」让你选面容；
-        // 若机型不弹（如小米优先指纹），可临时删掉系统里的指纹只留人脸再试。
-        allowWeakBiometric: true,
-      });
-      append('✅ 弱认证通过（可含摄像头人脸）');
+  const onAuthWith = (kind: BiometryKind) =>
+    run(`定向${KIND_LABEL[kind]}`, async () => {
+      const r = await biometric.authenticateWith(kind, { title: `${KIND_LABEL[kind]}认证` });
+      append(fmtAuth(`定向${KIND_LABEL[kind]}`, r));
     });
 
+  // ---- 免密 ----
   const onRegister = () =>
-    run('注册免密登录', async () => {
+    run('注册免密', async () => {
       const { publicKey } = await biometric.createKey(KEY_ALIAS);
-      // 真实场景：把 publicKey 提交后端绑定当前账号
       append(`✅ 已生成密钥，公钥(前24): ${publicKey.slice(0, 24)}…`);
       setRegistered(true);
     });
 
   const onLogin = () =>
-    run(`${bioName}登录`, async () => {
-      // 真实场景：challenge 由后端下发，这里本地造一个演示
+    run('免密登录', async () => {
       const challenge = asciiToBase64(`login:${currentPlatform}:demo-nonce`);
-      const { signatureBase64 } = await biometric.signWithKey(
-        KEY_ALIAS,
-        challenge,
-        `${bioName}登录`
-      );
-      // 真实场景：把 signature 提交后端用注册公钥验签
+      const { signatureBase64 } = await biometric.signWithKey(KEY_ALIAS, challenge, '免密登录');
       append(`✅ 验签完成，签名(前24): ${signatureBase64.slice(0, 24)}…`);
+    });
+
+  const onDeleteKey = () =>
+    run('删除密钥', async () => {
+      await biometric.deleteKey(KEY_ALIAS);
+      setRegistered(false);
+      append('✅ 已删除密钥');
     });
 
   return (
@@ -128,40 +134,88 @@ export function BiometricDemoScreen(): React.JSX.Element {
       <Text style={styles.h1}>生物识别 · 三端演示</Text>
       <Text style={styles.platform}>当前平台：{currentPlatform}</Text>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>能力</Text>
-        {availability ? (
-          <Text style={styles.mono}>
-            可用: {String(availability.available)} · 类型: {availability.biometryType}
-            {availability.reason ? ` · 原因: ${availability.reason}` : ''}
+      <View style={styles.tabBar}>
+        {TABS.map((t) => (
+          <Pressable
+            key={t.key}
+            onPress={() => setTab(t.key)}
+            style={[styles.tab, tab === t.key && styles.tabActive]}
+          >
+            <Text style={[styles.tabText, tab === t.key && styles.tabTextActive]}>
+              {t.label}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+
+      {tab === 'caps' && (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>能力枚举</Text>
+          {caps ? (
+            <>
+              <Text style={styles.mono}>
+                mask = {maskBits(caps.mask)}（指纹|人脸|虹膜）
+              </Text>
+              {caps.capabilities.map((c) => (
+                <Text key={c.kind} style={styles.mono}>
+                  {KIND_LABEL[c.kind]}: 硬件{yn(c.hardware)} 录入{yn(c.enrolled)}{' '}
+                  可用{yn(c.available)} 强度={c.strength} 定向{yn(c.directable)}
+                  {c.reason ? ` (${c.reason})` : ''}
+                </Text>
+              ))}
+            </>
+          ) : (
+            <Text style={styles.mono}>探测中…</Text>
+          )}
+          <Button label="刷新能力" onPress={refreshCaps} disabled={busy} />
+        </View>
+      )}
+
+      {tab === 'auth' && (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>认证（按强度）</Text>
+          <Button label="强认证（strong）" onPress={() => onAuth('strong')} disabled={busy} />
+          <Button label="弱认证（weak）" onPress={() => onAuth('weak')} disabled={busy} />
+          <Text style={styles.cardTitle}>定向认证（仅鸿蒙真支持）</Text>
+          {KINDS.map((k) => (
+            <Button
+              key={k}
+              label={`定向：${KIND_LABEL[k]}`}
+              onPress={() => onAuthWith(k)}
+              disabled={busy}
+            />
+          ))}
+          <Text style={styles.hint}>
+            iOS/Android 系统无法定向到指定模态，定向按钮会返回 not_directable；请用「强/弱认证」。
           </Text>
-        ) : (
-          <Text style={styles.mono}>探测中…</Text>
-        )}
-        <Text style={styles.mono}>已注册免密: {String(registered)}</Text>
-      </View>
+        </View>
+      )}
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>持久化（@itc/storage）</Text>
-        <Text style={styles.mono}>{storageInfo}</Text>
-        <Text style={styles.mono}>每次启动 +1；杀掉重开数字应递增（原生持久化时）</Text>
-      </View>
+      {tab === 'key' && (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>免密登录（强生物 → 密钥签名）</Text>
+          <Text style={styles.mono}>已注册: {yn(registered)}</Text>
+          <Button label="① 注册（生成密钥）" onPress={onRegister} disabled={busy} />
+          <Button
+            label="② 免密登录（验签）"
+            onPress={onLogin}
+            disabled={busy || !registered}
+          />
+          <Button label="删除密钥" onPress={onDeleteKey} disabled={busy || !registered} />
+          <Text style={styles.hint}>
+            密钥固定 EC P-256（与生物模态无关）；签名前需强生物认证作门。
+          </Text>
+        </View>
+      )}
 
-      <Text style={styles.section}>免密登录（强生物识别 / {bioName}）</Text>
-      <Button label="① 生物识别认证" onPress={onAuthenticate} disabled={busy} />
-      <Button label="② 注册免密登录（生成密钥）" onPress={onRegister} disabled={busy} />
-      <Button
-        label={`③ ${bioName}登录（验签）`}
-        onPress={onLogin}
-        disabled={busy || !registered}
-      />
-
-      <Text style={styles.section}>人脸验证（弱生物识别 · 仅基础认证）</Text>
-      <Button label="④ 人脸 / 弱认证" onPress={onAuthFace} disabled={busy} />
-
-      <Text style={styles.hint}>
-        注：①②③ 用强生物识别（安卓即指纹，iOS 为 Face ID），是完整免密链路。④ 演示弱生物识别（安卓摄像头人脸）——三星会弹「指纹/面容」选面容即可；摄像头人脸属弱、不能用于免密签名，故不参与 ②③。
-      </Text>
+      {tab === 'storage' && (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>持久化（@itc/storage）</Text>
+          <Text style={styles.mono}>{storageInfo}</Text>
+          <Text style={styles.mono}>杀进程重开数字应递增（原生持久化时）。</Text>
+          <Button label="刷新" onPress={refreshStorage} disabled={busy} />
+        </View>
+      )}
 
       {busy && <ActivityIndicator style={styles.spinner} />}
 
@@ -197,6 +251,22 @@ function Button(props: { label: string; onPress: () => void; disabled?: boolean 
   );
 }
 
+function yn(b: boolean): string {
+  return b ? '✓' : '✗';
+}
+
+/** mask → 3 位二进制（虹膜|人脸|指纹），便于肉眼读位。 */
+function maskBits(mask: number): string {
+  const bits = `${(mask & BIOMETRY_BIT.iris) ? 1 : 0}${(mask & BIOMETRY_BIT.face) ? 1 : 0}${(mask & BIOMETRY_BIT.fingerprint) ? 1 : 0}`;
+  return `${mask}(0b${bits})`;
+}
+
+function fmtAuth(label: string, r: AuthResult): string {
+  return r.ok
+    ? `✅ ${label} 成功（usedKind=${r.usedKind}）`
+    : `❌ ${label}: ${r.reason} [${r.code}] ${r.message}`;
+}
+
 function describe(e: unknown): string {
   if (e instanceof ItcError) return `[${e.code}] ${e.message}`;
   return String(e);
@@ -207,14 +277,13 @@ const styles = StyleSheet.create({
   h1: { fontSize: 22, fontWeight: '700', color: '#1f2329' },
   platform: { fontSize: 13, color: '#646a73' },
   hint: { fontSize: 11, color: '#8a9099', lineHeight: 16 },
-  section: { fontSize: 13, fontWeight: '600', color: '#1f2329', marginTop: 6 },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 14,
-    gap: 6,
-  },
-  cardTitle: { fontSize: 15, fontWeight: '600', color: '#1f2329' },
+  tabBar: { flexDirection: 'row', backgroundColor: '#eef1f5', borderRadius: 10, padding: 4 },
+  tab: { flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 8 },
+  tabActive: { backgroundColor: '#fff' },
+  tabText: { fontSize: 14, color: '#646a73' },
+  tabTextActive: { color: '#1456f0', fontWeight: '700' },
+  card: { backgroundColor: '#fff', borderRadius: 12, padding: 14, gap: 8 },
+  cardTitle: { fontSize: 15, fontWeight: '600', color: '#1f2329', marginTop: 2 },
   mono: { fontSize: 12, color: '#444', fontFamily: 'Menlo' },
   button: {
     backgroundColor: '#1456f0',

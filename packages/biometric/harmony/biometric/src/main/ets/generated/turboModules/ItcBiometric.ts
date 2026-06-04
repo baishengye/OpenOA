@@ -8,9 +8,11 @@ export namespace ItcBiometric {
   export const NAME = 'ItcBiometric' as const
 
   export interface Spec {
-    isAvailable(): Promise<{available: boolean, biometryType: string, errorCode: string}>;
+    getCapabilities(): Promise<{mask: number, items: {kind: string, hardware: boolean, enrolled: boolean, available: boolean, strength: string, directable: boolean, reason: string}[]}>;
   
-    authenticate(title: string, subtitle: string, reason: string, cancelLabel: string, allowDeviceCredential: boolean, allowWeak: boolean): Promise<{success: boolean}>;
+    authenticate(title: string, subtitle: string, reason: string, cancelLabel: string, allowDeviceCredential: boolean, strength: string): Promise<{success: boolean, usedKind: string, reason: string}>;
+  
+    authenticateWith(kind: string, title: string, subtitle: string, reason: string, cancelLabel: string, allowDeviceCredential: boolean): Promise<{success: boolean, usedKind: string, reason: string}>;
   
     createKey(alias: string): Promise<{publicKey: string}>;
   
