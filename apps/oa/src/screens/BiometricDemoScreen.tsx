@@ -17,6 +17,7 @@ import {
 } from '@itc/biometric';
 import { installStorage } from '@itc/storage';
 import { asciiToBase64 } from '../utils/base64';
+import { runDbSmoke } from '../db/smoke';
 
 const KEY_ALIAS = 'oa-login';
 const LAUNCH_KEY = 'oa.launchCount';
@@ -26,12 +27,13 @@ const KIND_LABEL: Record<BiometryKind, string> = {
   face: '人脸',
   iris: '虹膜',
 };
-type TabKey = 'caps' | 'auth' | 'key' | 'storage';
+type TabKey = 'caps' | 'auth' | 'key' | 'storage' | 'db';
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'caps', label: '能力' },
   { key: 'auth', label: '认证' },
   { key: 'key', label: '免密' },
   { key: 'storage', label: '存储' },
+  { key: 'db', label: 'DB' },
 ];
 
 /**
@@ -43,6 +45,7 @@ export function BiometricDemoScreen(): React.JSX.Element {
   const [caps, setCaps] = useState<CapabilitiesResult | null>(null);
   const [registered, setRegistered] = useState(false);
   const [storageInfo, setStorageInfo] = useState('—');
+  const [dbLog, setDbLog] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [log, setLog] = useState<string[]>([]);
 
@@ -127,6 +130,14 @@ export function BiometricDemoScreen(): React.JSX.Element {
       await biometric.deleteKey(KEY_ALIAS);
       setRegistered(false);
       append('✅ 已删除密钥');
+    });
+
+  // ---- DB 冒烟 ----
+  const onDbSmoke = () =>
+    run('DB 冒烟', async () => {
+      const r = await runDbSmoke();
+      setDbLog(r.lines);
+      append(r.ok ? '✅ op-sqlite 冒烟通过' : '❌ op-sqlite 冒烟失败');
     });
 
   return (
@@ -214,6 +225,22 @@ export function BiometricDemoScreen(): React.JSX.Element {
           <Text style={styles.mono}>{storageInfo}</Text>
           <Text style={styles.mono}>杀进程重开数字应递增（原生持久化时）。</Text>
           <Button label="刷新" onPress={refreshStorage} disabled={busy} />
+        </View>
+      )}
+
+      {tab === 'db' && (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>op-sqlite 冒烟测试</Text>
+          <Button label="运行（open/建表/读写/close）" onPress={onDbSmoke} disabled={busy} />
+          {dbLog.length === 0 ? (
+            <Text style={styles.mono}>点上面按钮运行。未接入原生的平台会报"未接入"。</Text>
+          ) : (
+            dbLog.map((l, i) => (
+              <Text key={`${i}-${l}`} style={styles.mono}>
+                {l}
+              </Text>
+            ))
+          )}
         </View>
       )}
 
