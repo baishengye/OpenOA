@@ -1,0 +1,102 @@
+# 三端环境 + 命令速查
+
+> 一页纸版。详细从零搭建见 [SCRATCH_*.md](./SCRATCH_HARMONY.md)，运行细节见 [RUN_*.md](./RUN_HARMONY.md)，工具盘符位置见 [ENVIRONMENT.md](./ENVIRONMENT.md)。
+> 本机：node 在 `/usr/local/bin/node`；工程根 `/Volumes/MacExtend/Code/ReactNative/OpenDingDing`，App 在 `apps/oa`。
+
+---
+
+## 1. 环境变量
+
+### 1.1 已写进 `~/.zshrc`（持久，开新终端自动生效）
+```bash
+# Android SDK
+export ANDROID_HOME="/Volumes/MacExtend/Envirment/Android/SDK"
+export PATH="$PATH:$ANDROID_HOME/emulator:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools"
+
+# HarmonyOS / DevEco（hdc、SDK）
+export DEVECO_SDK_HOME="/Applications/DevEco-Studio.app/Contents/sdk"
+export PATH="$PATH:$DEVECO_SDK_HOME/default/openharmony/toolchains"
+```
+→ 提供 `adb`、`hdc`、`emulator`、`DEVECO_SDK_HOME`。改完 `~/.zshrc` 要 `source ~/.zshrc` 或开新终端。
+
+### 1.2 按需（**只在用 CLI 构建时**才需要；平时 GUI 构建不用）
+```bash
+# Android 用 ./gradlew 时需要 JDK 21（用 Android Studio 自带 JBR）
+export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
+
+# iOS 用 CLI 装 Pods（CocoaPods vendored 在工作区，系统 Ruby 太老）。放 ~/.zshrc 或临时贴：
+oapod() {
+  local oa="/Volumes/MacExtend/Code/ReactNative/OpenDingDing/apps/oa"
+  ( cd "$oa/ios" && BUNDLE_PATH="$oa/vendor/bundle" BUNDLE_GEMFILE="$oa/Gemfile" bundle exec pod "$@" )
+}
+```
+> 这两项当前**没**放进 `~/.zshrc`（你走 GUI 构建）。要 CLI 构建时再加/临时 export。
+
+---
+
+## 2. 命令速查（都在 `apps/oa` 下跑）
+
+### 2.1 通用
+```bash
+pnpm typecheck            # 全量类型检查
+pnpm --filter @itc/db build   # 改了某个 @itc/* 包的 src 后重建它的 lib（消费方 tsc 要）
+```
+> **Metro 8081 同一时刻只能开一个**：A/iOS 用标准 Metro，鸿蒙用 harmony Metro，切端先停掉另一个。
+> **改 JS → Metro 热更新（Reload）**；**改原生/配置 → 重新构建**。
+
+### 2.2 Android（GUI 装运行；CLI 可选）
+```bash
+pnpm start                                   # 标准 Metro（A/iOS 共用）
+adb devices                                  # 确认设备
+adb -s <serial> reverse tcp:8081 tcp:8081    # ★真机连 Metro 必须，重插/重启后要重做
+# 装运行二选一：
+#  GUI：Android Studio 打开 apps/oa/android → Run（从终端启动 AS 才有 node，见 RUN_ANDROID §3）
+#  CLI：cd android && ./gradlew :app:installDebug          # 需 JAVA_HOME（见 1.2）
+adb -s <serial> shell am start -n com.opendingding/.MainActivity
+```
+
+### 2.3 iOS（GUI 装运行）
+```bash
+pnpm start                                   # 标准 Metro（同 Android；模拟器不用 reverse）
+oapod install                                # 仅"改原生/新增模块"后重 codegen（见 1.2 的 oapod）
+open ios/OpenDingDing.xcworkspace            # Xcode 选模拟器/真机 Run（注意 .xcworkspace）
+# 模拟器 CLI（可选）：
+#  xcodebuild -workspace ios/OpenDingDing.xcworkspace -scheme OpenDingDing -configuration Debug \
+#    -sdk iphonesimulator -destination "id=<UDID>" -derivedDataPath /tmp/dd build CODE_SIGNING_ALLOWED=NO
+#  xcrun simctl install <UDID> /tmp/dd/Build/Products/Debug-iphonesimulator/OpenDingDing.app
+#  xcrun simctl launch <UDID> org.reactjs.native.example.OpenDingDing
+```
+> 别用 `npx react-native run-ios`（会去 sudo 装 cocoapods 失败）。
+
+### 2.4 鸿蒙（GUI 装运行）
+```bash
+pnpm start:harmony           # 鸿蒙 Metro（脚本已自动先 hdc rport tcp:8081 tcp:8081）
+hdc list targets             # 确认设备/模拟器
+hdc rport tcp:8081 tcp:8081  # ★若中途重连设备/重启模拟器，单独补一次（pnpm start:harmony 启动时已设过一次）
+# DevEco 打开 apps/oa/harmony → Build → Clean → Rebuild → Run
+hdc hilog | grep -iE "RNOH|TurboModule|ItcStorage|ItcBiometric|opsqlite"   # 抓运行日志
+hdc shell uitest uiInput click <x> <y>     # 鸿蒙可注入点击（调试用）
+```
+鸿蒙改了 **JS** → 上面起 Metro + rport + 杀重启 App 即可（**不用重 build**）。
+鸿蒙改了 **原生/spec** → 要 DevEco 重建，且若改了某模块的 codegen spec 还要重跑库级 codegen：
+```bash
+npx react-native codegen-lib-harmony \
+  --npm-package-name @itc/<mod> \
+  --turbo-modules-spec-paths ../../packages/<mod>/src/NativeItc<Mod>.ts \
+  --cpp-output-path ../../packages/<mod>/harmony/<mod>/src/main/cpp \
+  --ets-output-path ../../packages/<mod>/harmony/<mod>/src/main/ets/generated \
+  --no-safety-check
+```
+离线包（不连 Metro 时）：`npx react-native bundle-harmony --config metro.config.harmony.js --dev false`
+
+---
+
+## 3. 高频排错对照
+| 现象 | 多半是 | 解 |
+|---|---|---|
+| 鸿蒙/真机：装了还是旧界面、没 Tab | 没连 Metro，走了离线旧包 | `hdc rport`（鸿蒙）/ `adb reverse`（安卓）后杀重启 App |
+| 白屏 / Unable to load script | 同上，或 Metro 没开 | 起对应 Metro + 端口转发 |
+| `./gradlew` 报 Unable to locate Java | 没设 JAVA_HOME | 见 1.2 |
+| iOS 验签/找不到符号 | 改了原生没重 codegen | `oapod install` + 重 build |
+| 鸿蒙 `Couldn't find Turbo Module ... CPP side` | 缺 codegen C++ 桥 | 重跑 codegen-lib-harmony + DevEco 重建 |
+| Android Studio 同步 `Missing ExternalProject for :` | pnpm symlink / node PATH | 从终端启动 AS；`pnpm run postinstall`（见 RUN_ANDROID §3） |

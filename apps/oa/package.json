@@ -9,6 +9,7 @@
   },
   "scripts": {
     "start": "react-native start",
+    "start:harmony": "hdc rport tcp:8081 tcp:8081 || true; react-native start --config metro.config.harmony.js",
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "typecheck": "tsc --noEmit",
