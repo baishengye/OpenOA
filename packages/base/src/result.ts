@@ -33,6 +33,16 @@ export enum ErrorCode {
   BIOMETRY_AUTH_FAILED = 2003,
   /** 密钥不存在 / 已失效（如重新录入指纹导致失效） */
   BIOMETRY_KEY_INVALIDATED = 2004,
+
+  // 本地数据库 5xxx
+  /** 打开 / 连接数据库失败 */
+  DB_OPEN_FAILED = 5000,
+  /** 迁移执行失败 */
+  DB_MIGRATION_FAILED = 5001,
+  /** 查询 / 写入执行失败 */
+  DB_QUERY_FAILED = 5002,
+  /** 加密 key 错误或库未启用 SQLCipher */
+  DB_ENCRYPTION_INVALID = 5003,
 }
 
 /** 统一异常类型。所有 @itc/* 原生桥接的失败都规整为它。 */

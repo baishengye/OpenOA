@@ -1,0 +1,53 @@
+{
+  "name": "@itc/db",
+  "version": "0.1.0",
+  "description": "可剥离复用的本地 SQLite 基础设施层：三端 op-sqlite 封装 + 版本化迁移 + 事务 + 加密 key 透传。零业务，业务表/仓储由上层定义。",
+  "source": "./src/index.ts",
+  "main": "./lib/module/index.js",
+  "module": "./lib/module/index.js",
+  "types": "./lib/typescript/module/index.d.ts",
+  "react-native": "./src/index.ts",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "react-native": "./src/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/index.d.ts",
+        "default": "./lib/module/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": ["src", "lib"],
+  "scripts": {
+    "build": "bob build",
+    "clean": "rimraf lib",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts,.tsx"
+  },
+  "peerDependencies": {
+    "@itc/base": "workspace:*",
+    "@op-engineering/op-sqlite": ">=14.0.0",
+    "@react-native-ohos/op-sqlite": ">=14.0.0",
+    "drizzle-orm": "*",
+    "react": "*",
+    "react-native": ">=0.77.0"
+  },
+  "peerDependenciesMeta": {
+    "drizzle-orm": { "optional": true },
+    "@react-native-ohos/op-sqlite": { "optional": true }
+  },
+  "devDependencies": {
+    "@itc/base": "workspace:*",
+    "@op-engineering/op-sqlite": "^16.2.0",
+    "react-native": "0.82.1",
+    "react-native-builder-bob": "^0.32.1"
+  },
+  "react-native-builder-bob": {
+    "source": "src",
+    "output": "lib",
+    "targets": [["module", { "esm": true }], ["typescript", { "esm": true }]]
+  },
+  "publishConfig": { "access": "restricted" },
+  "license": "UNLICENSED"
+}

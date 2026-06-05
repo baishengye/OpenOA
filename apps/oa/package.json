@@ -18,6 +18,7 @@
   "dependencies": {
     "@itc/base": "workspace:*",
     "@itc/biometric": "workspace:*",
+    "@itc/db": "workspace:*",
     "@itc/im": "workspace:*",
     "@itc/push": "workspace:*",
     "@itc/storage": "workspace:*",
