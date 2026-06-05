@@ -53,10 +53,6 @@
       ]
     },
     {
-      "name": "storage",
-      "srcPath": "../../../packages/storage/harmony/storage"
-    },
-    {
       "name": "biometric",
       "srcPath": "../../../packages/biometric/harmony/biometric"
     }

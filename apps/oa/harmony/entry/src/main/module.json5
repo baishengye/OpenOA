@@ -13,6 +13,9 @@
     "requestPermissions": [
       {
         "name": "ohos.permission.ACCESS_BIOMETRIC"
+      },
+      {
+        "name": "ohos.permission.STORE_PERSISTENT_DATA"
       }
     ],
     "abilities": [

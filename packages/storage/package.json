@@ -1,7 +1,7 @@
 {
   "name": "@itc/storage",
   "version": "0.1.0",
-  "description": "可剥离复用的 KV 持久化模块：实现 @itc/base 的 KVStorage（同步）。Android/iOS 用 MMKV，鸿蒙用 ArkData preferences（以 .har 方式接入主工程，作可复用样例）。",
+  "description": "可剥离复用的 KV 持久化模块：实现 @itc/base 的 KVStorage（同步）。三端统一用 MMKV（react-native-mmkv-storage；鸿蒙走 @react-native-oh-tpl 移植包，Metro 按 .harmony 选包）。",
   "source": "./src/index.ts",
   "main": "./lib/module/index.js",
   "module": "./lib/module/index.js",
@@ -18,7 +18,7 @@
     },
     "./package.json": "./package.json"
   },
-  "files": ["src", "lib", "android", "ios", "harmony", "*.podspec"],
+  "files": ["src", "lib"],
   "scripts": {
     "build": "bob build",
     "clean": "rimraf lib",
@@ -30,6 +30,10 @@
     "react": "*",
     "react-native": ">=0.77.0"
   },
+  "dependencies": {
+    "react-native-mmkv-storage": "^0.11.2",
+    "@react-native-oh-tpl/react-native-mmkv-storage": "0.10.3-0.0.2"
+  },
   "devDependencies": {
     "@itc/base": "workspace:*",
     "react-native": "0.82.1",
@@ -39,12 +43,6 @@
     "source": "src",
     "output": "lib",
     "targets": [["module", { "esm": true }], ["typescript", { "esm": true }]]
-  },
-  "codegenConfig": {
-    "name": "RNItcStorageSpec",
-    "type": "modules",
-    "jsSrcsDir": "src",
-    "android": { "javaPackageName": "com.itc.storage" }
   },
   "publishConfig": { "access": "restricted" },
   "license": "UNLICENSED"
