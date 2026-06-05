@@ -3,9 +3,9 @@
 对标钉钉的**模块化 OA App**。业务与端能力解耦，端能力模块（生物识别 / 推送 / IM）可从本项目**剥离复用**到其他项目。三端：Android / iOS / 鸿蒙 NEXT。
 
 > 本文件是开发手册，命令可直接复制执行。
-> **⚡ 三端环境 + 命令一页速查**：[docs/CHEATSHEET.md](docs/CHEATSHEET.md)（export 与三端命令都在这）。
-> **从零搭建教程（事无巨细，可据此独立重建）**：[docs/SCRATCH_ANDROID.md](docs/SCRATCH_ANDROID.md) / [docs/SCRATCH_IOS.md](docs/SCRATCH_IOS.md) / [docs/SCRATCH_HARMONY.md](docs/SCRATCH_HARMONY.md)。
-> 三端运行速查见 [docs/RUN_ANDROID.md](docs/RUN_ANDROID.md) / [docs/RUN_IOS.md](docs/RUN_IOS.md) / [docs/RUN_HARMONY.md](docs/RUN_HARMONY.md)，模块作者指南见 [docs/ADDING_A_MODULE.md](docs/ADDING_A_MODULE.md)，踩坑速查见 [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)，环境与磁盘布局（缓存迁外置盘）见 [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md)，App 三端构建细节见 [apps/oa/README.md](apps/oa/README.md)。
+> **⚡ 三端环境 + 命令一页速查**：[docs/速查手册.md](docs/速查手册.md)（export 与三端命令都在这）。
+> **从零搭建教程（事无巨细，可据此独立重建）**：[docs/从零搭建-Android.md](docs/从零搭建-Android.md) / [docs/从零搭建-iOS.md](docs/从零搭建-iOS.md) / [docs/从零搭建-鸿蒙.md](docs/从零搭建-鸿蒙.md)。
+> 三端运行速查见 [docs/运行-Android.md](docs/运行-Android.md) / [docs/运行-iOS.md](docs/运行-iOS.md) / [docs/运行-鸿蒙.md](docs/运行-鸿蒙.md)，模块作者指南见 [docs/模块开发指南.md](docs/模块开发指南.md)，踩坑速查见 [docs/踩坑速查.md](docs/踩坑速查.md)，环境与磁盘布局（缓存迁外置盘）见 [docs/环境与磁盘布局.md](docs/环境与磁盘布局.md)，App 三端构建细节见 [apps/oa/README.md](apps/oa/README.md)。
 
 ---
 
@@ -190,7 +190,7 @@ xcodebuild -exportArchive -archivePath build/OpenDingDing.xcarchive \
 ## 8. 模块复用 / 新增模块
 
 - **复用到其他项目**：对端项目 `pnpm add @itc/base @itc/biometric`（私有源或本地 link），RN autolinking / RNOH 自动接入三端原生。
-- **新增模块**：照搬 `@itc/biometric` 结构 —— TS 统一 API + codegen spec（`NativeXxx.ts`）+ `android/ios/harmony` 三端原生 + 实现 `@itc/base` 的 `ItcModule` 契约。详见 [docs/ADDING_A_MODULE.md](docs/ADDING_A_MODULE.md)。
+- **新增模块**：照搬 `@itc/biometric` 结构 —— TS 统一 API + codegen spec（`NativeXxx.ts`）+ `android/ios/harmony` 三端原生 + 实现 `@itc/base` 的 `ItcModule` 契约。详见 [docs/模块开发指南.md](docs/模块开发指南.md)。
 
 ---
 
@@ -214,4 +214,4 @@ pnpm release              # 构建 + changeset publish 到私有源
 | `@itc/push` | 🚧 占位骨架（统一 API + 契约，原生待实现） |
 | `@itc/im` | 🚧 占位骨架（鸿蒙端需自编译 OpenIM Go core，最大风险项） |
 
-踩坑与排错（pnpm hoisted、Metro 解析、gradle-plugin/codegen 直依赖、Ruby gem 钉版本、NDK/SDK 对齐、公钥格式差异等）见 [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)。
+踩坑与排错（pnpm hoisted、Metro 解析、gradle-plugin/codegen 直依赖、Ruby gem 钉版本、NDK/SDK 对齐、公钥格式差异等）见 [docs/踩坑速查.md](docs/踩坑速查.md)。

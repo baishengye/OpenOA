@@ -5,7 +5,7 @@ import { preferences } from '@kit.ArkData';
  * KV 存储 TurboModule（鸿蒙 NEXT / RNOH）。底层 ArkData preferences（同步）。
  * 方法签名对应 src/NativeItcStorage.ts 的 Spec（全部同步）。
  *
- * ArkTS 严格模式：无内联对象类型 / 无对象 spread（见 docs/HARMONY.md §4）。
+ * ArkTS 严格模式：无内联对象类型 / 无对象 spread（见 docs/鸿蒙接入要点.md §4）。
  */
 export class ItcStorageTurboModule extends UITurboModule {
   static readonly NAME: string = 'ItcStorage';

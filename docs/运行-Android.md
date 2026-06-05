@@ -1,8 +1,8 @@
 # 在 Android 上运行 OpenDingDing（全过程要点）
 
-> 本文是「运行已有工程」的速查。**从零搭建（含 TurboModule 三层桥接）见 [SCRATCH_ANDROID.md](./SCRATCH_ANDROID.md)。**
-> 配套：通用环境见 [ENVIRONMENT.md](./ENVIRONMENT.md)，报错速查见 [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)，
-> 新增原生模块见 [ADDING_A_MODULE.md](./ADDING_A_MODULE.md)。
+> 本文是「运行已有工程」的速查。**从零搭建（含 TurboModule 三层桥接）见 [从零搭建-Android.md](./从零搭建-Android.md)。**
+> 配套：通用环境见 [环境与磁盘布局.md](./环境与磁盘布局.md)，报错速查见 [踩坑速查.md](./踩坑速查.md)，
+> 新增原生模块见 [模块开发指南.md](./模块开发指南.md)。
 
 ## 0. 一次性环境（写进 `~/.zshrc`）
 
@@ -67,4 +67,4 @@ AS 因「symlink ↔ 真实路径」对不上而报错。**已用 `postinstall` 
 - 包名 / Activity：`com.opendingding/.MainActivity`。
 - `newArchEnabled=true`、`hermesEnabled=true`（新架构 + Hermes）。
 - compileSdk 36 / targetSdk 34 / minSdk 24 / NDK 29 / AGP 经 RN react.rootproject 插件托管。
-- storage 走 MMKV、biometric 走 Keystore/BiometricPrompt（人脸=弱生物识别，详见 [biometric 约束](./TROUBLESHOOTING.md)）。
+- storage 走 MMKV、biometric 走 Keystore/BiometricPrompt（人脸=弱生物识别，详见 [biometric 约束](./踩坑速查.md)）。

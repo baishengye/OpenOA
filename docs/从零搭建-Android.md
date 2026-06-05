@@ -2,7 +2,7 @@
 
 > 目标：从空目录建出「RN 0.82 工程 + 一个跑通的 Android 原生 TurboModule（JS spec → codegen → Kotlin 实现）」，照本文一步步即可。
 >
-> 配套：运行/真机/Android Studio 同步坑见 [RUN_ANDROID.md](./RUN_ANDROID.md)，报错速查见 [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)。
+> 配套：运行/真机/Android Studio 同步坑见 [运行-Android.md](./运行-Android.md)，报错速查见 [踩坑速查.md](./踩坑速查.md)。
 
 ---
 
@@ -183,7 +183,7 @@ plugins { id("com.facebook.react.settings") }
 extensions.configure(com.facebook.react.ReactSettingsExtension) { ex -> ex.autolinkLibrariesFromCommand() }
 includeBuild("../node_modules/@react-native/gradle-plugin")
 ```
-> monorepo（pnpm）下 `@react-native/gradle-plugin` 是 symlink，Android Studio 同步会报 `Missing ExternalProject for :`，需 deref + 从终端启动 AS。详见 [RUN_ANDROID.md](./RUN_ANDROID.md) §3。
+> monorepo（pnpm）下 `@react-native/gradle-plugin` 是 symlink，Android Studio 同步会报 `Missing ExternalProject for :`，需 deref + 从终端启动 AS。详见 [运行-Android.md](./运行-Android.md) §3。
 
 ---
 
@@ -208,10 +208,10 @@ adb -s <serial> shell am start -n <pkg>/.MainActivity
 |---|---|
 | 编译报找不到 `NativeItcStorageSpec` | codegen 没跑：模块 `build.gradle` 缺 `apply plugin: "com.facebook.react"`，或没 `codegenConfig`。clean 重建。 |
 | 运行时 `getEnforcing('ItcStorage')` 抛错 | 名字不一致（`NAME` vs spec vs JS），或 Package 没被 autolink（看 `npx react-native config`）。 |
-| `Could not find project.android.packageName` | autolink 配置/路径问题，见 [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)。 |
+| `Could not find project.android.packageName` | autolink 配置/路径问题，见 [踩坑速查.md](./踩坑速查.md)。 |
 | `Unable to locate a Java Runtime` | 没设 `JAVA_HOME`（§1）。 |
 | 白屏 / `Unable to load script` | 没 `adb reverse`，或 Metro 没开。 |
-| Android Studio 同步 `Missing ExternalProject for :` | pnpm symlink + node PATH，见 [RUN_ANDROID.md](./RUN_ANDROID.md) §3。 |
+| Android Studio 同步 `Missing ExternalProject for :` | pnpm symlink + node PATH，见 [运行-Android.md](./运行-Android.md) §3。 |
 
 ## 附录：本仓库样例
 - storage（MMKV，同步）：`packages/storage/android/src/main/java/com/itc/storage/`

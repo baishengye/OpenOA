@@ -2,7 +2,7 @@
 
 > 目标：从空目录建出「RN 0.82 工程 + 一个跑通的 iOS 原生 TurboModule（JS spec → codegen → Obj‑C++ 实现）」，照本文一步步即可，不依赖他人。
 >
-> 配套：运行速查见 [RUN_IOS.md](./RUN_IOS.md)，报错速查见 [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)。
+> 配套：运行速查见 [运行-iOS.md](./运行-iOS.md)，报错速查见 [踩坑速查.md](./踩坑速查.md)。
 
 ---
 
@@ -33,7 +33,7 @@ JS  TurboModuleRegistry.getEnforcing('ItcStorage')
 | Ruby + Bundler + CocoaPods | 装 Pods（**建议 vendored 到工程，不污染系统**，见 §6） |
 | Node ≥ 18 | RN / Metro / codegen |
 
-> 系统 Ruby 2.6 装不了新 CocoaPods，本仓库把它 vendored 到 `apps/oa/vendor/bundle`，用 `oapod` 函数调起（见 [RUN_IOS.md](./RUN_IOS.md)）。
+> 系统 Ruby 2.6 装不了新 CocoaPods，本仓库把它 vendored 到 `apps/oa/vendor/bundle`，用 `oapod` 函数调起（见 [运行-iOS.md](./运行-iOS.md)）。
 
 ---
 
@@ -193,7 +193,7 @@ xcodebuild -workspace ios/MyApp.xcworkspace -scheme MyApp -configuration Debug \
 xcrun simctl install $SIM /tmp/dd/Build/Products/Debug-iphonesimulator/MyApp.app
 xcrun simctl launch $SIM <bundle-id>
 ```
-> 别用 `npx react-native run-ios`（会去 sudo 装 cocoapods）。详见 [RUN_IOS.md](./RUN_IOS.md)。
+> 别用 `npx react-native run-ios`（会去 sudo 装 cocoapods）。详见 [运行-iOS.md](./运行-iOS.md)。
 
 ---
 
@@ -204,7 +204,7 @@ xcrun simctl launch $SIM <bundle-id>
 | 编译报找不到 `RNItcStorageSpec.h` / `NativeItcStorageSpec` | codegen 没跑：podspec 缺 `install_modules_dependencies(s)`，或没重跑 `pod install`。 |
 | 运行时 `getEnforcing('ItcStorage')` 抛错 | 模块名不一致（`RCT_EXPORT_MODULE` vs spec vs JS），或 pod 没装进 app。 |
 | storage 退回内存兜底 | 模块加得晚于上次 pod install，重跑 `pod install` 把它纳入 Podfile.lock。 |
-| `bundle install` 报 ffi/ruby 版本 | 用 vendored bundle，别用系统 Ruby；见 [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)。 |
+| `bundle install` 报 ffi/ruby 版本 | 用 vendored bundle，别用系统 Ruby；见 [踩坑速查.md](./踩坑速查.md)。 |
 | 真机要签名 | 配置 Team/证书；本仓库当前只验证模拟器。 |
 
 ## 附录：本仓库样例

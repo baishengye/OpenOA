@@ -1,8 +1,8 @@
 # 在 iOS 上运行 OpenDingDing（全过程要点）
 
-> 本文是「运行已有工程」的速查。**从零搭建（含 TurboModule 三层桥接）见 [SCRATCH_IOS.md](./SCRATCH_IOS.md)。**
-> 配套：通用环境见 [ENVIRONMENT.md](./ENVIRONMENT.md)，报错速查见 [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)，
-> 新增原生模块见 [ADDING_A_MODULE.md](./ADDING_A_MODULE.md)。
+> 本文是「运行已有工程」的速查。**从零搭建（含 TurboModule 三层桥接）见 [从零搭建-iOS.md](./从零搭建-iOS.md)。**
+> 配套：通用环境见 [环境与磁盘布局.md](./环境与磁盘布局.md)，报错速查见 [踩坑速查.md](./踩坑速查.md)，
+> 新增原生模块见 [模块开发指南.md](./模块开发指南.md)。
 
 ## 0. CocoaPods 装在工作区（不污染系统）
 
@@ -56,7 +56,7 @@ xcrun simctl launch $SIM org.reactjs.native.example.OpenDingDing
 ```
 
 - **别用 `npx react-native run-ios`**：它找不到 vendored `pod`，会去 `sudo gem install cocoapods` 然后失败。
-- 真机 `.ipa` 需要签名证书，本项目当前只验证模拟器（见 [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) §17）。
+- 真机 `.ipa` 需要签名证书，本项目当前只验证模拟器（见 [踩坑速查.md](./踩坑速查.md) §17）。
 
 ## 3. 开发循环
 

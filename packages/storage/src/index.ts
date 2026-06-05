@@ -2,7 +2,7 @@
  * @itc/storage —— KV 持久化模块。实现 @itc/base 的 {@link KVStorage} 接口，
  * 由宿主在启动时 `setStorage(storage)` 注入，业务层只依赖 @itc/base 的 storage 代理。
  *
- * Android/iOS：MMKV；鸿蒙：ArkData preferences（以 .har 接入，见 docs/HARMONY.md §8）。
+ * Android/iOS：MMKV；鸿蒙：ArkData preferences（以 .har 接入，见 docs/鸿蒙接入要点.md §8）。
  */
 import { setStorage, type KVStorage } from '@itc/base';
 import NativeItcStorage from './NativeItcStorage';
