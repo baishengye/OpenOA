@@ -5,4 +5,10 @@ module.exports = {
     ios: { sourceDir: './ios' },
     android: { sourceDir: './android' },
   },
+  dependencies: {
+    // RNOH 专用移植包，无 podspec / gradle 插件，仅鸿蒙使用，排除 iOS/Android autolink。
+    '@react-native-oh-tpl/react-native-mmkv-storage': {
+      platforms: { ios: null, android: null },
+    },
+  },
 };
