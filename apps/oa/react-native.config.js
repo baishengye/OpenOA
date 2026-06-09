@@ -10,5 +10,16 @@ module.exports = {
     '@react-native-oh-tpl/react-native-mmkv-storage': {
       platforms: { ios: null, android: null },
     },
+    // CodePush RNOH 移植包，无 podspec / gradle 插件，仅鸿蒙原生层使用，排除 iOS/Android autolink。
+    '@react-native-oh-tpl/react-native-code-push': {
+      platforms: { ios: null, android: null },
+    },
+    // CodePush 主包的 Android library 在 android/app（android/ 本身是根工程级 build.gradle，无 variant）。
+    // 不指 sourceDir 会报 "Could not resolve project :react-native-code-push / No variants exist"。
+    'react-native-code-push': {
+      platforms: {
+        android: { sourceDir: '../node_modules/react-native-code-push/android/app' },
+      },
+    },
   },
 };

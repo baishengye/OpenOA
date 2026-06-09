@@ -1,0 +1,22 @@
+diff --git a/android/app/src/main/java/com/microsoft/codepush/react/CodePushNativeModule.java b/android/app/src/main/java/com/microsoft/codepush/react/CodePushNativeModule.java
+index e996486d6979f414d63c10e48558d79fc0a3cb0e..cc67641f50e3979c78175e1e31ed5e8312a69092 100644
+--- a/android/app/src/main/java/com/microsoft/codepush/react/CodePushNativeModule.java
++++ b/android/app/src/main/java/com/microsoft/codepush/react/CodePushNativeModule.java
+@@ -20,7 +20,7 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
+ import com.facebook.react.bridge.ReactMethod;
+ import com.facebook.react.bridge.ReadableMap;
+ import com.facebook.react.bridge.WritableMap;
+-import com.facebook.react.modules.core.ChoreographerCompat;
++import android.view.Choreographer;
+ import com.facebook.react.modules.core.DeviceEventManagerModule;
+ import com.facebook.react.modules.core.ReactChoreographer;
+ 
+@@ -320,7 +320,7 @@ public class CodePushNativeModule extends ReactContextBaseJavaModule {
+                             getReactApplicationContext().runOnUiQueueThread(new Runnable() {
+                                 @Override
+                                 public void run() {
+-                                    ReactChoreographer.getInstance().postFrameCallback(ReactChoreographer.CallbackType.TIMERS_EVENTS, new ChoreographerCompat.FrameCallback() {
++                                    ReactChoreographer.getInstance().postFrameCallback(ReactChoreographer.CallbackType.TIMERS_EVENTS, new Choreographer.FrameCallback() {
+                                         @Override
+                                         public void doFrame(long frameTimeNanos) {
+                                             if (!latestDownloadProgress.isCompleted()) {

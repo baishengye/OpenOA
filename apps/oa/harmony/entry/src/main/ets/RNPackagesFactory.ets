@@ -5,11 +5,14 @@ import { ItcBiometricPackage } from '@itc/biometric';
 import { RNOpSqlitePackage } from '@react-native-ohos/op-sqlite/ts';
 // storage 改用 MMKV（RNOH 移植包），原 @itc/storage 自包含 TurboModule 已废弃。
 import { RNMMKVStoragePackage } from '@react-native-oh-tpl/react-native-mmkv-storage';
+// 热修复 OTA（CodePush 鸿蒙移植包）。
+import { CodePushPackage } from '@react-native-oh-tpl/react-native-code-push/ts';
 
 export function createRNPackages(ctx: RNPackageContext): RNPackage[] {
   return [
     new ItcBiometricPackage(ctx),
     new RNMMKVStoragePackage(ctx),
     new RNOpSqlitePackage(ctx),
+    new CodePushPackage(ctx),
   ];
 }

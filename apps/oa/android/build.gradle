@@ -21,3 +21,18 @@ buildscript {
 }
 
 apply plugin: "com.facebook.react.rootproject"
+
+// react-native-code-push 8.3.1 的 android/app/build.gradle 用旧式 AndroidManifest package，
+// 没声明 namespace；AGP 8 强制要 namespace，否则 "Namespace not specified"。
+// 用 plugins.withId 在插件应用时注入（不能用 afterEvaluate——该子项目可能已被 RN 插件提前求值）。
+subprojects { subproject ->
+    if (subproject.name == "react-native-code-push") {
+        subproject.plugins.withId("com.android.library") {
+            subproject.android {
+                if (namespace == null) {
+                    namespace "com.microsoft.codepush.react"
+                }
+            }
+        }
+    }
+}

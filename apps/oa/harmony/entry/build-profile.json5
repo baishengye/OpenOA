@@ -13,7 +13,18 @@
       "abiFilters": [
         "arm64-v8a"
       ]
-    }
+    },
+    // CodePush 部署 key：在 code-push-server 后台创建应用后填入。
+    // Staging/Production 对应不同 deployment；ServerUrl 指向自建 code-push-server；
+    // PublicKey 用于 bundle 签名验证，无签名时留空。
+    "arkOptions": {
+      "buildProfileFields": {
+        "Staging": "",
+        "Production": "",
+        "ServerUrl": "",
+        "PublicKey": ""
+      }
+    },
   },
   "buildOptionSet": [
     {

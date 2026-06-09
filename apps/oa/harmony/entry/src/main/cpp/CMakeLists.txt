@@ -23,18 +23,21 @@ add_subdirectory("${OH_MODULE_DIR}/@react-native-oh-tpl/react-native-mmkv-storag
 file(GLOB GENERATED_CPP_FILES "${CMAKE_CURRENT_SOURCE_DIR}/generated/*.cpp")
 
 # @itc/biometric 库自带的 C++（codegen-lib-harmony 产物：BaseXxxPackage + Xxx 桥）。
-# 把库的 cpp 目录作为 include 根并参与编译，模块的 C++ 完全由依赖模块提供，app 不再生成。
-# 路径：从本 cpp 目录上溯 7 级到仓库根，再进 packages/biometric/...。纯 TurboModule，
-# 只编 turbo_modules 桥（react/renderer/components 脚手架是空壳，不编以免无谓风险）。
 set(BIOMETRIC_LIB_CPP "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../../packages/biometric/harmony/biometric/src/main/cpp")
 file(GLOB BIOMETRIC_LIB_CPP_FILES "${BIOMETRIC_LIB_CPP}/RNOH/generated/turbo_modules/*.cpp")
+
+# @itc/hotfix 库自带的 C++（RTNCodePush codegen 产物，自包含在 packages/hotfix/harmony）。
+# 运行 pnpm codegen:hotfix 可更新这批文件。
+set(HOTFIX_LIB_CPP "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../../packages/hotfix/harmony/hotfix/src/main/cpp")
+file(GLOB HOTFIX_LIB_CPP_FILES "${HOTFIX_LIB_CPP}/RNOH/generated/turbo_modules/*.cpp")
 
 add_library(rnoh_app SHARED
     ${GENERATED_CPP_FILES}
     ${BIOMETRIC_LIB_CPP_FILES}
+    ${HOTFIX_LIB_CPP_FILES}
     "./PackageProvider.cpp"
     "${RNOH_CPP_DIR}/RNOHAppNapiBridge.cpp"
 )
 
-target_include_directories(rnoh_app PUBLIC "${BIOMETRIC_LIB_CPP}")
+target_include_directories(rnoh_app PUBLIC "${BIOMETRIC_LIB_CPP}" "${HOTFIX_LIB_CPP}")
 target_link_libraries(rnoh_app PUBLIC rnoh rnoh_rn_op_sqlite rnoh_mmkv_storage)

@@ -10,6 +10,8 @@ import {
   TraceJSBundleProviderDecorator,
   RNOHCoreContext,
 } from '@rnoh/react-native-openharmony';
+import common from '@ohos.app.ability.common';
+import { comparingVersion } from '@react-native-oh-tpl/react-native-code-push';
 import { createRNPackages } from '../RNPackagesFactory';
 
 // 自定义 Fabric 组件构建器（本演示无自定义原生组件，留空）
@@ -27,6 +29,9 @@ struct Index {
   private logBoxDialogController: CustomDialogController | undefined = undefined;
 
   aboutToAppear() {
+    // 比对沙箱中已下载的 CodePush bundle 版本，覆盖安装时清除历史资源。
+    const ctx = getContext(this) as common.UIAbilityContext;
+    comparingVersion(ctx);
     this.shouldShow = true;
   }
 
@@ -53,8 +58,13 @@ struct Index {
           onSetUp: (_rnInstance) => {},
           jsBundleProvider: new TraceJSBundleProviderDecorator(
             new AnyJSBundleProvider([
-              // 优先连 Metro（开发态），失败则用打进 rawfile 的离线 bundle
+              // 1. 开发态：直连 Metro
               new MetroJSBundleProvider(),
+              // 2. CodePush OTA：已下载的热更新 bundle（沙箱路径）
+              new FileJSBundleProvider(
+                (getContext(this) as common.UIAbilityContext).filesDir + '/Bundles/bundle.harmony.js',
+              ),
+              // 3. 离线兜底：打进 rawfile 的 bundle
               new ResourceJSBundleProvider(
                 this.rnohCoreContext.uiAbilityContext.resourceManager,
                 'bundle.harmony.js',

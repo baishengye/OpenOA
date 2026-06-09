@@ -1,0 +1,50 @@
+{
+  "name": "@itc/hotfix",
+  "version": "0.1.0",
+  "description": "热修复（OTA JS 更新）模块。内置 CodePush 三端实现（鸿蒙走 @react-native-oh-tpl 移植包），对外暴露 HotfixProvider 接口与 hotfix 代理，支持通过 installHotfix() 替换后端。",
+  "source": "./src/index.ts",
+  "main": "./lib/module/index.js",
+  "module": "./lib/module/index.js",
+  "types": "./lib/typescript/module/index.d.ts",
+  "react-native": "./src/index.ts",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "react-native": "./src/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/index.d.ts",
+        "default": "./lib/module/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": ["src", "lib"],
+  "scripts": {
+    "build": "bob build",
+    "clean": "rimraf lib",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@react-native-oh-tpl/react-native-code-push": "8.2.2-0.0.10",
+    "react-native-code-push": "^8.2.2"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-native": ">=0.77.0"
+  },
+  "devDependencies": {
+    "react-native": "0.82.1",
+    "react-native-builder-bob": "^0.32.1"
+  },
+  "react-native-builder-bob": {
+    "source": "src",
+    "output": "lib",
+    "targets": [
+      ["module", { "esm": true }],
+      ["typescript", { "esm": true }]
+    ]
+  },
+  "publishConfig": { "access": "restricted" },
+  "sideEffects": true,
+  "license": "UNLICENSED"
+}

@@ -1,3 +1,5 @@
 packages:
   - 'packages/*'
   - 'apps/*'
+patchedDependencies:
+  react-native-code-push@8.3.1: patches/react-native-code-push@8.3.1.patch
