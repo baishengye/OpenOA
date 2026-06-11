@@ -2,6 +2,7 @@ import UIKit
 import React
 import React_RCTAppDelegate
 import ReactAppDependencyProvider
+// CodePush 通过 bridging header 暴露（use_frameworks static 下无 Swift module，不能 import CodePush）
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -41,7 +42,9 @@ class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
 #if DEBUG
     RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index")
 #else
-    Bundle.main.url(forResource: "main", withExtension: "jsbundle")
+    // CodePush：优先返回热更新沙箱里已安装的 bundle，没有才 fallback 到内置 main.jsbundle。
+    // 不接这个，release 包永远用内置 bundle，热更新拉下来也不生效。
+    CodePush.bundleURL()
 #endif
   }
 }

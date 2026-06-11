@@ -4,5 +4,6 @@
          空字符串占位是【必需】的——CodePush 主包的 react-native.config.js 用
          R.string.CodePushDeploymentKey，autolink 生成的 PackageList 会引用它，缺它直接编译失败。
          自建 server：再加 <string name="CodePushServerUrl">https://你的-server</string>。 -->
-    <string name="CodePushDeploymentKey"></string>
+    <string name="CodePushDeploymentKey">VnivBEJDVZ0mxHJ5qKoCwHoH4vp04ksvOXqog</string>
+    <string name="CodePushServerUrl">http://172.16.80.101:3000</string>
 </resources>

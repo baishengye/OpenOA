@@ -19,9 +19,9 @@
     // PublicKey 用于 bundle 签名验证，无签名时留空。
     "arkOptions": {
       "buildProfileFields": {
-        "Staging": "",
-        "Production": "",
-        "ServerUrl": "",
+        "Staging": "yN8RRIc5TJuezxBmoNCGbvVoC6Wf4ksvOXqog",
+        "Production": "yzBXvMzCxkajfzy9eW3QnaJvt4i14ksvOXqog",
+        "ServerUrl": "http://172.16.80.101:3000",
         "PublicKey": ""
       }
     },
