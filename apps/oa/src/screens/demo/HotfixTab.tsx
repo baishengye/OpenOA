@@ -5,7 +5,7 @@ import { Button, TabProps, shared } from './shared';
 
 const STATUS_LABEL: Record<SyncStatus, string> = {
   UP_TO_DATE:       '✅ 已是最新版本',
-  UPDATE_INSTALLED: '🎉 更新已安装，切后台后生效',
+  UPDATE_INSTALLED: '🎉 更新已安装，彻底重启 app（冷启动）后生效',
   UPDATE_IGNORED:   '⏭ 用户跳过此次更新',
   ERROR:            '❌ 更新失败',
   IN_PROGRESS:      '⏳ 更新中…',
@@ -42,7 +42,9 @@ export function HotfixTab({ run, append, busy }: Props) {
         const result = await hotfix.sync({ installMode: 'ON_NEXT_RESTART' });
         setStatus(result);
         if (result === 'UPDATE_INSTALLED') {
-          setVersion(await hotfix.getCurrentVersion());
+          // 不在此刷新 version：此刻是 pending 包，鸿蒙的 metadata 还不完整
+          // （label/appVersion 为 undefined，会渲染成 "undefined（App undefined）"）。
+          // 冷启动后包真正运行，下方 useEffect 会重新取到正确版本。
           append('🎉 更新已安装，彻底重启 app（冷启动）后生效');
         } else {
           append(`sync 结果: ${result}`);
@@ -55,7 +57,7 @@ export function HotfixTab({ run, append, busy }: Props) {
     <View style={shared.card}>
       <Text style={shared.cardTitle}>Bundle 版本</Text>
       <Text style={shared.mono}>
-        {version ? `${version.label}（App ${version.appVersion}）` : '初始包（无 OTA）'}
+        {version?.label ? `${version.label}（App ${version.appVersion}）` : '初始包（无 OTA）'}
       </Text>
 
       {status && <Text style={shared.mono}>{STATUS_LABEL[status]}</Text>}
