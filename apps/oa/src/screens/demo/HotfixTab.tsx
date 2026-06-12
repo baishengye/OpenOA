@@ -39,11 +39,11 @@ export function HotfixTab({ run, append, busy }: Props) {
   const onSync = useCallback(
     () =>
       run('同步更新', async () => {
-        const result = await hotfix.sync({ installMode: 'ON_NEXT_RESUME' });
+        const result = await hotfix.sync({ installMode: 'ON_NEXT_RESTART' });
         setStatus(result);
         if (result === 'UPDATE_INSTALLED') {
           setVersion(await hotfix.getCurrentVersion());
-          append('🎉 更新已安装，切后台后生效');
+          append('🎉 更新已安装，彻底重启 app（冷启动）后生效');
         } else {
           append(`sync 结果: ${result}`);
         }
@@ -64,8 +64,8 @@ export function HotfixTab({ run, append, busy }: Props) {
       <Button label="检查更新（仅查询）" onPress={onCheck} disabled={busy} />
       <Button label="同步更新（下载 + 安装）" onPress={onSync} disabled={busy} />
       <Text style={shared.hint}>
-        同步使用 ON_NEXT_RESUME 模式：安装后切换到后台再切回即生效。
-        强制更新由热修复服务端标记，会立即重启。
+        同步使用 ON_NEXT_RESTART 模式：安装后彻底重启 app（冷启动）生效。
+        （RN 0.82 新架构下 ON_NEXT_RESUME 切后台不可靠，故三端统一用冷启动。）
       </Text>
     </View>
   );
