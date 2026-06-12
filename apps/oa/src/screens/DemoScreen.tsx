@@ -54,7 +54,7 @@ export function DemoScreen(): React.JSX.Element {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.h1}>OA Demo</Text>
+      <Text style={styles.h1}>OA Demo v2 @172.16.80.101</Text>
       <Text style={styles.platform}>当前平台：{currentPlatform}</Text>
 
       <View style={styles.tabBar}>
