@@ -54,6 +54,11 @@ react {
     autolinkLibrariesWithApp()
 }
 
+// react-native-code-push：生成 CODE_PUSH_APK_BUILD_TIME 资源 + hook bundle 任务。
+// 不 apply 这个，运行时 getBinaryResourcesModifiedTime 读不到该资源会抛
+// CodePushUnknownException("Error in getting binary resources modified time")。
+apply from: "../../node_modules/react-native-code-push/android/codepush.gradle"
+
 /**
  * Set this to true to Run Proguard on Release builds to minify the Java bytecode.
  */

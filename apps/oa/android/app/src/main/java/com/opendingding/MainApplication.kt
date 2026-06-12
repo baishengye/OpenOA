@@ -11,6 +11,7 @@ import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
+import com.microsoft.codepush.react.CodePush
 
 class MainApplication : Application(), ReactApplication {
 
@@ -23,6 +24,10 @@ class MainApplication : Application(), ReactApplication {
             }
 
         override fun getJSMainModuleName(): String = "index"
+
+        // CodePush：release 时返回热更新沙箱里的 bundle（没有则 fallback 内置 assets）。
+        // 不接这个，release 包永远用内置 bundle，热更新拉了也不生效（同 iOS 的 AppDelegate.bundleURL）。
+        override fun getJSBundleFile(): String = CodePush.getJSBundleFile()
 
         override fun getUseDeveloperSupport(): Boolean = BuildConfig.DEBUG
 
