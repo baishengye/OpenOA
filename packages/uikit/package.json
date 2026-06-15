@@ -1,0 +1,54 @@
+{
+  "name": "@itc/uikit",
+  "version": "0.1.0",
+  "description": "基础 UI 控件库。以 tamagui 为样式基座封装 Button/Text/Input/表单/列表/主题等，对外只暴露 @itc/uikit 组件与接口，不暴露 tamagui，便于日后替换底层。",
+  "source": "./src/index.ts",
+  "main": "./lib/module/index.js",
+  "module": "./lib/module/index.js",
+  "types": "./lib/typescript/module/index.d.ts",
+  "react-native": "./src/index.ts",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "react-native": "./src/index.ts",
+      "import": {
+        "types": "./lib/typescript/module/index.d.ts",
+        "default": "./lib/module/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": ["src", "lib"],
+  "scripts": {
+    "build": "bob build",
+    "clean": "rimraf lib",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tamagui/animations-react-native": "^2.2.0",
+    "@tamagui/config": "^2.2.0",
+    "tamagui": "^2.2.0"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-native": ">=0.77.0",
+    "react-native-safe-area-context": ">=4"
+  },
+  "devDependencies": {
+    "react": "19.1.1",
+    "react-native": "0.82.1",
+    "react-native-builder-bob": "^0.32.1",
+    "react-native-safe-area-context": "^5.8.0"
+  },
+  "react-native-builder-bob": {
+    "source": "src",
+    "output": "lib",
+    "targets": [
+      ["module", { "esm": true }],
+      ["typescript", { "esm": true }]
+    ]
+  },
+  "publishConfig": { "access": "restricted" },
+  "sideEffects": true,
+  "license": "UNLICENSED"
+}

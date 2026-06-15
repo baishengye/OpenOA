@@ -21,6 +21,14 @@ const HARMONY_STUBS = {
     projectRoot,
     'src/stubs/ReactDevToolsSettingsManager.js',
   ),
+  // react-native-safe-area-context 鸿蒙降级：其移植包 generated C++ 用了 RN 0.76 已移除的
+  // butter::map，与本项目 RN 0.82 + RNOH 不兼容、无法编译。仅 harmony 重定向到纯 RN stub。
+  // stub 自包含在 @itc/uikit（降级逻辑归属库）；app 这里只保留重定向规则——metro 是宿主
+  // 打包器配置，库无法自声明平台级依赖替换，这一行免不了。iOS/Android 不走此 config、用真 native 包。
+  'react-native-safe-area-context': path.resolve(
+    workspaceRoot,
+    'packages/uikit/src/harmony/safe-area-context-stub.tsx',
+  ),
 };
 
 // createHarmonyMetroConfig 自身在 resolver.resolveRequest 里把 `react-native` 等重定向到
