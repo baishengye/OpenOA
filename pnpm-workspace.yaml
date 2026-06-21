@@ -3,3 +3,6 @@ packages:
   - 'apps/*'
 patchedDependencies:
   react-native-code-push@8.3.1: patches/react-native-code-push@8.3.1.patch
+  # 删掉库 buildscript 里硬编码的 com.android.tools.build:gradle:7.3.1 —— 被 app 引用时
+  # AGP 由工程根 buildscript 继承，这行多余，且会让 Android Studio sync 解析 7.3.1 失败。
+  react-native-safe-area-context@5.8.0: patches/react-native-safe-area-context@5.8.0.patch

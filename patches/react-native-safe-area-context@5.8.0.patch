@@ -1,0 +1,12 @@
+diff --git a/android/build.gradle b/android/build.gradle
+index f324b9a..07042ef 100644
+--- a/android/build.gradle
++++ b/android/build.gradle
+@@ -8,7 +8,6 @@ buildscript {
+ 
+     dependencies {
+         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
+-        classpath("com.android.tools.build:gradle:7.3.1")
+         classpath("com.diffplug.spotless:spotless-plugin-gradle:6.11.0")
+     }
+ }
