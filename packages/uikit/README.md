@@ -116,6 +116,10 @@ import { List } from '@itc/uikit';
    - iOS/Android 不走此 config、仍用真 native 包，**完全不受影响**。
    - 代价：鸿蒙 safe-area insets 是固定值、不动态适配刘海/折叠态，但 tamagui 组件能正常渲染。
    - 验证：`bundle.harmony.js` 里 `RNCSafeArea`/`SafeAreaProviderNativeComponent` 引用数应为 **0**。
+7. ⚠️ **Dialog 不能用 tamagui 的 `Dialog.Portal`（鸿蒙触摸 + 返回键坑）** —— tamagui 的 `Dialog modal` 在 native 不是真原生弹窗，而是「同 React 树内的绝对定位浮层（`@tamagui/portal`）」。在鸿蒙（RNOH）上有两个问题：① 浮层触摸事件无法命中对话框按钮（点了没反应）；② 不接管硬件返回键，返回键直接冒泡到导航器 → **退出整个页面**而非收起对话框。
+   - 修复：[src/components/Dialog.tsx](src/components/Dialog.tsx) 改用 **RN 原生 `Modal`**（三端都有原生实现，鸿蒙 RNOH 有 `ModalHostViewComponentInstance`），内容仍用 tamagui 的 `YStack/Text/Button` 保持样式、不暴露 tamagui。
+   - `onRequestClose={() => onOpenChange(false)}` 接管硬件返回键 → 返回键收起对话框。原生 Modal 是独立窗口，触摸正确路由到按钮。
+   - 遮罩点击关闭：外层 `Pressable` 半透明遮罩 onPress 关闭，内容区包一层 `Pressable` 成为触摸响应者、阻止冒泡误关。
 
 ## 目录结构
 ```
