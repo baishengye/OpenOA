@@ -122,6 +122,30 @@ import { List } from '@itc/uikit';
    - `onRequestClose={() => onOpenChange(false)}` 接管硬件返回键 → 返回键收起对话框。原生 Modal 是独立窗口，触摸正确路由到按钮。
    - 遮罩点击关闭：外层 `Pressable` 半透明遮罩 onPress 关闭，内容区包一层 `Pressable` 成为触摸响应者、阻止冒泡误关。
 
+## 依赖补丁
+
+本模块依赖的 `react-native-safe-area-context@5.8.0` 的 `android/build.gradle` buildscript **硬编码** `classpath("com.android.tools.build:gradle:7.3.1")`（库独立构建的 legacy fallback）。被 app 引用时 AGP 由工程根 buildscript 继承、这行多余，但 **Android Studio sync 会按字面解析子项目 buildscript classpath**，在其上下文里完不成 7.3.1 解析 → sync 报 `Could not resolve com.android.tools.build:gradle:7.3.1`（`react-native run-android` CLI 不受影响）。补丁删掉该行。
+
+> 注意：这与「集成坑 §6」鸿蒙 safe-area 降级 stub 是**两码事**——§6 是鸿蒙移植包 C++ 编译问题，本补丁是 iOS/Android 用的真包的 Android Studio sync 问题。
+
+- **补丁文件**：[patches/react-native-safe-area-context@5.8.0.patch](patches/react-native-safe-area-context@5.8.0.patch)（随模块就近存放）。
+- **如何生效（零手动）**：补丁在仓库根 [pnpm-workspace.yaml](../../pnpm-workspace.yaml) 的 `patchedDependencies` 注册，**`pnpm install` 自动应用**。
+  > ⚠️ pnpm 只读**根** `pnpm-workspace.yaml` 的 `patchedDependencies`（子包配置不生效），故注册项必须在根、但路径指向本模块的 `patches/`。
+- **验证已打**：
+  ```bash
+  pnpm --filter @itc/uikit patch:verify
+  # 或直接看 gradle 配置阶段（offline 也能过 = 不再拉 7.3.1）：
+  # cd apps/oa/android && ./gradlew :react-native-safe-area-context:help --offline -q
+  ```
+- **重建补丁**（仅改补丁内容时）：
+  ```bash
+  pnpm patch react-native-safe-area-context@5.8.0   # 解出可编辑临时目录
+  pnpm patch-commit <临时目录>                       # 重新生成 .patch + 更新 pnpm-workspace.yaml
+  #   ⚠️ patch-commit 默认把 .patch 写到根 patches/；重建后移回 packages/uikit/patches/
+  #      并把 pnpm-workspace.yaml 路径改回本模块，再 pnpm install 确认无 "Could not apply patch"
+  ```
+- **通用模式**：任何 RN 第三方库 buildscript 硬编码老 AGP 致 AS sync 失败，同法 patch 掉那行。
+
 ## 目录结构
 ```
 src/

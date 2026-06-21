@@ -18,11 +18,12 @@
     },
     "./package.json": "./package.json"
   },
-  "files": ["src", "lib"],
+  "files": ["src", "lib", "patches"],
   "scripts": {
     "build": "bob build",
     "clean": "rimraf lib",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "patch:verify": "node scripts/verify-patch.mjs"
   },
   "dependencies": {
     "@tamagui/animations-react-native": "^2.2.0",
