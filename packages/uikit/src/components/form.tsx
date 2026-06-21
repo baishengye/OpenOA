@@ -15,13 +15,17 @@ export interface SwitchProps {
 }
 /** 开关 */
 export function Switch({ checked, onChange, disabled }: SwitchProps) {
+  // tamagui 的 native Switch 在 checked 态会把轨道背景强制设成 $backgroundActive
+  // （在内联 props 之后 spread，会盖掉条件式 backgroundColor）。正确做法：未选态用
+  // backgroundColor、选中态用 activeStyle（tamagui 专门用它接 checked 样式）。
   return (
     <TSwitch
       size="$3"
       checked={checked}
       onCheckedChange={onChange}
       disabled={disabled}
-      backgroundColor={checked ? '$blue9' : '$gray6'}
+      backgroundColor="$gray6"
+      activeStyle={{ backgroundColor: '$blue9' }}
       borderWidth={0}
       opacity={disabled ? 0.5 : 1}
     >

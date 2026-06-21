@@ -108,6 +108,7 @@ import { List } from '@itc/uikit';
 1. **tamagui 的 peer：`react-native-safe-area-context`（native）** —— 宿主 app 必须装，否则 metro 报 `Unable to resolve module react-native-safe-area-context`（tamagui 内部 import）。
 2. **v4 默认 config 不含 animations** —— `<Switch.Thumb animation="quick">` 之类的 `animation` prop 会 **TS 报错**（类型里没有）。首版去掉 animation（状态切换仍生效、只是无过渡）；要动画再单独配 `@tamagui/animations-react-native`。
 3. **`theme="accent"` 让组件全黑** —— v4 的 accent 主题偏深色，Switch/Checkbox/Radio 套上去整片黑。改用**明确配色**（选中 `$blue9`、未选 `$gray6/8`，Switch.Thumb `white`），别用 accent theme。
+   - ⚠️ **Switch 选中态轨道颜色必须用 `activeStyle`，不能用条件式 `backgroundColor`** —— tamagui 的 native Switch（`createSwitch.native.js`）在 checked 态会在内联 props **之后** spread `backgroundColor: "$backgroundActive"`，把 `backgroundColor={checked ? A : B}` 盖掉，导致**开启后只有圆点移动、轨道不变色**。正解：未选态 `backgroundColor="$gray6"` + 选中态 `activeStyle={{ backgroundColor: '$blue9' }}`（tamagui 用 `activeStyle` 接 checked 样式，会优先生效）。见 [src/components/form.tsx](src/components/form.tsx) 的 Switch。
 4. **List(FlatList) 不能嵌 ScrollView** —— 报 `VirtualizedLists should never be nested inside plain ScrollViews`。做法：页面/tab 以 `List` 为根、其它内容塞 `header` prop（见 List 的 `header`），不要用 ScrollView 包 List。
 5. **`createTamagui` 的返回类型要显式注解 `TamaguiInternalConfig`** —— 否则 pnpm 隔离下 tsc 报 TS2742（类型引用 @tamagui/web 的不可移植路径）。见 [src/tamagui/config.ts](src/tamagui/config.ts)。
 6. ⚠️ **鸿蒙 safe-area 降级（核心坑）** —— `react-native-safe-area-context` 的鸿蒙移植包 generated C++ 用了 RN 0.76 移除的 `butter::map`，在 RN 0.82+RNOH **无法编译**（`use of undeclared identifier 'butter'`）。降级方案（**不破坏库 / 不降 RN / 不 patch 移植包**）：
