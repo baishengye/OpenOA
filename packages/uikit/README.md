@@ -111,12 +111,16 @@ import { List } from '@itc/uikit';
    - ⚠️ **Switch 选中态轨道颜色必须用 `activeStyle`，不能用条件式 `backgroundColor`** —— tamagui 的 native Switch（`createSwitch.native.js`）在 checked 态会在内联 props **之后** spread `backgroundColor: "$backgroundActive"`，把 `backgroundColor={checked ? A : B}` 盖掉，导致**开启后只有圆点移动、轨道不变色**。正解：未选态 `backgroundColor="$gray6"` + 选中态 `activeStyle={{ backgroundColor: '$blue9' }}`（tamagui 用 `activeStyle` 接 checked 样式，会优先生效）。见 [src/components/form.tsx](src/components/form.tsx) 的 Switch。
 4. **List(FlatList) 不能嵌 ScrollView** —— 报 `VirtualizedLists should never be nested inside plain ScrollViews`。做法：页面/tab 以 `List` 为根、其它内容塞 `header` prop（见 List 的 `header`），不要用 ScrollView 包 List。
 5. **`createTamagui` 的返回类型要显式注解 `TamaguiInternalConfig`** —— 否则 pnpm 隔离下 tsc 报 TS2742（类型引用 @tamagui/web 的不可移植路径）。见 [src/tamagui/config.ts](src/tamagui/config.ts)。
-6. ⚠️ **鸿蒙 safe-area 降级（核心坑）** —— `react-native-safe-area-context` 的鸿蒙移植包 generated C++ 用了 RN 0.76 移除的 `butter::map`，在 RN 0.82+RNOH **无法编译**（`use of undeclared identifier 'butter'`）。降级方案（**不破坏库 / 不降 RN / 不 patch 移植包**）：
-   - uikit 内自带纯 RN stub：[src/harmony/safe-area-context-stub.tsx](src/harmony/safe-area-context-stub.tsx)（`SafeAreaProvider` 直渲染、`useSafeAreaInsets` 返回状态栏高度固定值）。
-   - 宿主 [apps/oa/metro.config.harmony.js](../../apps/oa/metro.config.harmony.js) 的 `HARMONY_STUBS` 仅 harmony 把 `react-native-safe-area-context` 重定向到该 stub。**这一行必须在 app**——metro 是宿主打包器配置、库无法自声明平台级依赖替换。
-   - iOS/Android 不走此 config、仍用真 native 包，**完全不受影响**。
-   - 代价：鸿蒙 safe-area insets 是固定值、不动态适配刘海/折叠态，但 tamagui 组件能正常渲染。
-   - 验证：`bundle.harmony.js` 里 `RNCSafeArea`/`SafeAreaProviderNativeComponent` 引用数应为 **0**。
+6. ⚠️ **鸿蒙 safe-area：用维护中的 `@react-native-ohos` 移植包（已替换早期 stub 降级）** ——
+   - **历史**：早期用的 `@react-native-oh-tpl/react-native-safe-area-context`（4.7.4-0.2.1，@deprecated）generated C++ 用了 RN 0.76 移除的 `butter::map`，在 RN 0.82+RNOH **编不过**，曾降级成纯 RN stub（固定 insets、不适配刘海/折叠）。
+   - **现在**：换成维护中的新一代 **`@react-native-ohos/react-native-safe-area-context@5.6.3`**（上游 5.6.2，支持 **RNOH 0.82**，autolink=No 故手动接线）。鸿蒙也有真正的动态 safe-area。
+   - **接线**（app 侧，照 op-sqlite/mmkv 同模式）：
+     - [metro.config.harmony.js](../../apps/oa/metro.config.harmony.js)：把 `react-native-safe-area-context` 重定向到该移植包（替换原 stub 重定向）。
+     - `harmony/entry/oh-package.json5`：加 `safe_area.har`；`CMakeLists.txt`：`add_subdirectory(... ./safe_area)` + 链接 `rnoh_safe_area`；`PackageProvider.cpp`：注册 `SafeAreaViewPackage`；`RNPackagesFactory.ets`：注册 ArkTS `SafeAreaViewPackage`。
+     - 改 oh-package.json5 后先 `ohpm install`（或 DevEco Sync）再 build。
+   - iOS/Android 不走此 config、仍用真包 `react-native-safe-area-context@5.8.0`，**不受影响**。
+   - stub 文件 [src/harmony/safe-area-context-stub.tsx](src/harmony/safe-area-context-stub.tsx) 暂留作回退（移植包 DevEco 验证通过后可删）。
+   - > 教训：鸿蒙第三方移植看**命名空间**——`@react-native-oh-tpl` 多为早期/已弃用，**`@react-native-ohos`** 才是跟到 0.77/0.82 的维护线（op-sqlite 也是它）。版本对应见各库 atomgit/gitcode Releases。
 7. ⚠️ **Dialog 不能用 tamagui 的 `Dialog.Portal`（鸿蒙触摸 + 返回键坑）** —— tamagui 的 `Dialog modal` 在 native 不是真原生弹窗，而是「同 React 树内的绝对定位浮层（`@tamagui/portal`）」。在鸿蒙（RNOH）上有两个问题：① 浮层触摸事件无法命中对话框按钮（点了没反应）；② 不接管硬件返回键，返回键直接冒泡到导航器 → **退出整个页面**而非收起对话框。
    - 修复：[src/components/Dialog.tsx](src/components/Dialog.tsx) 改用 **RN 原生 `Modal`**（三端都有原生实现，鸿蒙 RNOH 有 `ModalHostViewComponentInstance`），内容仍用 tamagui 的 `YStack/Text/Button` 保持样式、不暴露 tamagui。
    - `onRequestClose={() => onOpenChange(false)}` 接管硬件返回键 → 返回键收起对话框。原生 Modal 是独立窗口，触摸正确路由到按钮。

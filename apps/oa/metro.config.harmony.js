@@ -21,15 +21,17 @@ const HARMONY_STUBS = {
     projectRoot,
     'src/stubs/ReactDevToolsSettingsManager.js',
   ),
-  // react-native-safe-area-context 鸿蒙降级：其移植包 generated C++ 用了 RN 0.76 已移除的
-  // butter::map，与本项目 RN 0.82 + RNOH 不兼容、无法编译。仅 harmony 重定向到纯 RN stub。
-  // stub 自包含在 @itc/uikit（降级逻辑归属库）；app 这里只保留重定向规则——metro 是宿主
-  // 打包器配置，库无法自声明平台级依赖替换，这一行免不了。iOS/Android 不走此 config、用真 native 包。
-  'react-native-safe-area-context': path.resolve(
-    workspaceRoot,
-    'packages/uikit/src/harmony/safe-area-context-stub.tsx',
-  ),
 };
+
+// react-native-safe-area-context 鸿蒙：用维护中的新一代移植包
+// @react-native-ohos/react-native-safe-area-context（5.6.3 / 上游 5.6.2，支持 RNOH 0.82），
+// 取代旧的纯 RN stub 降级（stub 文件暂留作回退）。
+// ⚠️ 不要在这里手动重定向：该移植包 package.json 带 `harmony: { alias: 'react-native-safe-area-context' }`，
+// RNOH 的 createHarmonyMetroConfig 会据此自动把 `react-native-safe-area-context` 重定向到移植包；
+// 且移植包内部是 `export * from 'react-native-safe-area-context/src/...'`（re-export 它自带的 5.6.2 依赖）。
+// 手动重定向会把这些内部 re-export 也劫持 → `Unable to resolve react-native-safe-area-context/src/SafeAreaContext`
+// → 白屏。native 侧接线（oh-package.json5 / CMakeLists / PackageProvider / RNPackagesFactory）仍需手动（autolink=No）。
+// iOS/Android 不走此 config、仍用真包 react-native-safe-area-context@5.8.0。
 
 // createHarmonyMetroConfig 自身在 resolver.resolveRequest 里把 `react-native` 等重定向到
 // @react-native-oh/react-native-harmony（提供 Platform/AppState 等 harmony 实现）。
@@ -63,6 +65,7 @@ const monorepoConfig = {
         if (stubKey) {
           return { type: 'sourceFile', filePath: HARMONY_STUBS[stubKey] };
         }
+        // safe-area-context 的重定向由 RNOH 按移植包的 harmony.alias 自动完成，此处不插手（见上方注释）。
       }
       // 其余一律委托回 RNOH 原始 resolveRequest，保留其全部 harmony 重定向。
       return delegateResolve(context, moduleName, platform);

@@ -19,6 +19,10 @@ add_subdirectory("${OH_MODULE_DIR}/@react-native-ohos/op-sqlite/src/main/cpp" ./
 # 自带 CMake 子工程，产出 rnoh_mmkv_storage 供链接。
 add_subdirectory("${OH_MODULE_DIR}/@react-native-oh-tpl/react-native-mmkv-storage/src/main/cpp" ./mmkv_storage)
 
+# 第三方库 react-native-safe-area-context（@react-native-ohos 移植包 5.6.3/上游 5.6.2，RNOH 0.82）。
+# 自带 CMake 子工程，产出 rnoh_safe_area 供链接。取代旧的纯 RN stub 降级。
+add_subdirectory("${OH_MODULE_DIR}/@react-native-ohos/react-native-safe-area-context/src/main/cpp" ./safe_area)
+
 # codegen-harmony v1 产物（app 级）：biometric 的 C++ 已迁到其库里，此处现为空壳。
 file(GLOB GENERATED_CPP_FILES "${CMAKE_CURRENT_SOURCE_DIR}/generated/*.cpp")
 
@@ -40,4 +44,4 @@ add_library(rnoh_app SHARED
 )
 
 target_include_directories(rnoh_app PUBLIC "${BIOMETRIC_LIB_CPP}" "${HOTFIX_LIB_CPP}")
-target_link_libraries(rnoh_app PUBLIC rnoh rnoh_rn_op_sqlite rnoh_mmkv_storage)
+target_link_libraries(rnoh_app PUBLIC rnoh rnoh_rn_op_sqlite rnoh_mmkv_storage rnoh_safe_area)
