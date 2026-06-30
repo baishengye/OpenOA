@@ -3,6 +3,7 @@
   "compilerOptions": {
     "noEmit": true,
     "jsx": "react-jsx",
+    "lib": ["ESNext", "DOM"],
     "baseUrl": ".",
     "paths": {
       "@itc/base": [
@@ -19,6 +20,12 @@
       ],
       "@itc/storage": [
         "../../packages/storage/src/index.ts"
+      ],
+      "@itc/hotfix": [
+        "../../packages/hotfix/src/index.ts"
+      ],
+      "@itc/uikit": [
+        "../../packages/uikit/src/index.ts"
       ]
     }
   },

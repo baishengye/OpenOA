@@ -14,10 +14,11 @@ import { KeyTab } from './demo/KeyTab';
 import { StorageTab } from './demo/StorageTab';
 import { DbTab } from './demo/DbTab';
 import { HotfixTab } from './demo/HotfixTab';
+import { UikitTab } from './demo/UikitTab';
 import { describe, shared } from './demo/shared';
 import type { RunFn } from './demo/shared';
 
-type TabKey = 'caps' | 'auth' | 'key' | 'storage' | 'db' | 'hotfix';
+type TabKey = 'caps' | 'auth' | 'key' | 'storage' | 'db' | 'hotfix' | 'uikit';
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'caps',    label: '能力'   },
   { key: 'auth',    label: '认证'   },
@@ -25,10 +26,11 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: 'storage', label: '存储'   },
   { key: 'db',      label: 'DB'     },
   { key: 'hotfix',  label: '热更新' },
+  { key: 'uikit',   label: 'UI'     },
 ];
 
 export function DemoScreen(): React.JSX.Element {
-  const [tab, setTab] = useState<TabKey>('caps');
+  const [tab, setTab] = useState<TabKey>('uikit');
   const [busy, setBusy] = useState(false);
   const [log, setLog] = useState<string[]>([]);
 
@@ -52,49 +54,67 @@ export function DemoScreen(): React.JSX.Element {
 
   const tabProps = { run, append, busy };
 
+  const tabBar = (
+    <View style={styles.tabBar}>
+      {TABS.map((t) => (
+        <Pressable
+          key={t.key}
+          onPress={() => setTab(t.key)}
+          style={[styles.tab, tab === t.key && styles.tabActive]}
+        >
+          <Text style={[styles.tabText, tab === t.key && styles.tabTextActive]}>
+            {t.label}
+          </Text>
+        </Pressable>
+      ))}
+    </View>
+  );
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.h1}>OA Demo v2 @172.16.80.101</Text>
-      <Text style={styles.platform}>当前平台：{currentPlatform}</Text>
-
-      <View style={styles.tabBar}>
-        {TABS.map((t) => (
-          <Pressable
-            key={t.key}
-            onPress={() => setTab(t.key)}
-            style={[styles.tab, tab === t.key && styles.tabActive]}
-          >
-            <Text style={[styles.tabText, tab === t.key && styles.tabTextActive]}>
-              {t.label}
-            </Text>
-          </Pressable>
-        ))}
+    <View style={styles.root}>
+      {/* 固定头部（标题 + tab 栏），不随内容滚动 */}
+      <View style={styles.header}>
+        <Text style={styles.h1}>OA Demo v2 @172.16.80.101</Text>
+        <Text style={styles.platform}>当前平台：{currentPlatform}</Text>
+        {tabBar}
       </View>
 
-      {tab === 'caps'    && <CapsTab    {...tabProps} />}
-      {tab === 'auth'    && <AuthTab    {...tabProps} />}
-      {tab === 'key'     && <KeyTab     {...tabProps} />}
-      {tab === 'storage' && <StorageTab busy={busy}  />}
-      {tab === 'db'      && <DbTab      {...tabProps} />}
-      {tab === 'hotfix'  && <HotfixTab  {...tabProps} />}
+      {/* uikit tab 自身是 List 根、全屏滚动（不能再嵌 ScrollView）；其它 tab 用 ScrollView */}
+      {tab === 'uikit' ? (
+        <View style={styles.uikitArea}>
+          <UikitTab />
+        </View>
+      ) : (
+        <ScrollView contentContainerStyle={styles.container}>
+          {tab === 'caps'    && <CapsTab    {...tabProps} />}
+          {tab === 'auth'    && <AuthTab    {...tabProps} />}
+          {tab === 'key'     && <KeyTab     {...tabProps} />}
+          {tab === 'storage' && <StorageTab busy={busy}  />}
+          {tab === 'db'      && <DbTab      {...tabProps} />}
+          {tab === 'hotfix'  && <HotfixTab  {...tabProps} />}
 
-      {busy && <ActivityIndicator style={styles.spinner} />}
+          {busy && <ActivityIndicator style={styles.spinner} />}
 
-      <View style={shared.card}>
-        <Text style={shared.cardTitle}>日志</Text>
-        {log.length === 0 ? (
-          <Text style={shared.mono}>—</Text>
-        ) : (
-          log.map((l, i) => (
-            <Text key={`${i}-${l}`} style={shared.mono}>{l}</Text>
-          ))
-        )}
-      </View>
-    </ScrollView>
+          <View style={shared.card}>
+            <Text style={shared.cardTitle}>日志</Text>
+            {log.length === 0 ? (
+              <Text style={shared.mono}>—</Text>
+            ) : (
+              log.map((l, i) => (
+                <Text key={`${i}-${l}`} style={shared.mono}>{l}</Text>
+              ))
+            )}
+          </View>
+        </ScrollView>
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  root:          { flex: 1 },
+  header:        { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 8, gap: 12 },
+  uikitArea:     { flex: 1 },
   container:     { padding: 20, gap: 12 },
   h1:            { fontSize: 22, fontWeight: '700', color: '#1f2329' },
   platform:      { fontSize: 13, color: '#646a73' },

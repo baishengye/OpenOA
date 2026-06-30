@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/typescript",
+    "noEmit": false,
+    "jsx": "react-jsx",
+    "lib": ["ESNext", "DOM"]
+  },
+  "include": ["src"]
+}

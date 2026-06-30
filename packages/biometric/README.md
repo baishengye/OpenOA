@@ -4,6 +4,29 @@
 
 > 本模块是 OpenDingDing 的**首个样板模块**：push / im 沿用完全相同的结构（TS 统一 API + codegen spec + 三端原生 + 实现 `@itc/base` 的 `ItcModule` 契约）。
 
+## 在其他 app 中引入
+
+**1. 加依赖**
+```jsonc
+// app/package.json
+{
+  "dependencies": {
+    "@itc/base": "workspace:*",        // 错误模型 / ItcModule 契约依赖
+    "@itc/biometric": "workspace:*"    // monorepo 外发布后用版本号
+  }
+}
+```
+```bash
+pnpm install
+```
+
+**2. 原生接入**（本模块含 android/ios/harmony 原生 + codegen spec）
+- **Android**：RN autolinking 自动发现，无需手动。
+- **iOS**：`cd ios && pod install`；`Info.plist` 加 `NSFaceIDUsageDescription`（Face ID 用途说明，缺了会崩）。
+- **鸿蒙**：宿主 harmony 工程在 `oh-package.json5` 依赖本模块的 `harmony/biometric`，并在 RNOH `RNPackagesFactory` 注册 `ItcBiometricPackage`；改 `oh-package.json5` 后先 `ohpm install`（或 DevEco Sync）再 build。
+
+**3. 用法**：见下方 [API](#api)。失败统一 `try/catch` 兜 `@itc/base` 的 `ItcError`。
+
 ## API
 
 ```ts
@@ -43,11 +66,6 @@ await biometric.deleteKey('login');
 | Android | AndroidX BiometricPrompt | Android Keystore EC P-256（`setUserAuthenticationRequired`） | [android/](android/) |
 | iOS | LocalAuthentication (LAContext) | Secure Enclave EC P-256（`biometryCurrentSet`） | [ios/](ios/) |
 | 鸿蒙 NEXT | UserAuthenticationKit (userAuth) | HUKS EC P-256（生物绑定，challenge→authToken→finish） | [harmony/](harmony/) |
-
-## 接入
-
-- **Android / iOS**：RN autolinking 自动发现（依赖 `codegenConfig` + `android`/`ios` 目录）。iOS 需 `pod install`；`Info.plist` 加 `NSFaceIDUsageDescription`。
-- **鸿蒙**：宿主 harmony 工程在 `oh-package.json5` 依赖本模块的 `harmony/biometric`，并在 RNOH `RNPackagesFactory` 注册 `ItcBiometricPackage`。
 
 ## 注意
 - **公钥格式不一致**：Android 导出 DER(SPKI)，iOS / 鸿蒙导出 X9.63 原始格式（`04||X||Y`）。后端验签需按平台标识归一化。

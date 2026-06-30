@@ -1,5 +1,12 @@
 packages:
   - 'packages/*'
   - 'apps/*'
+# 补丁文件随「拥有该依赖的模块」就近存放（packages/<模块>/patches/），但 pnpm 只读
+# 根这里的 patchedDependencies 注册（子包的 pnpm 配置不生效），路径相对仓库根。各补丁
+# 的用途/验证/重建见对应模块 README。
 patchedDependencies:
-  react-native-code-push@8.3.1: patches/react-native-code-push@8.3.1.patch
+  # @itc/hotfix 的依赖：删掉 RN 0.74+ 已移除的 ChoreographerCompat，使其在 RN 0.82 编过
+  react-native-code-push@8.3.1: packages/hotfix/patches/react-native-code-push@8.3.1.patch
+  # @itc/uikit 的依赖：删掉库 buildscript 硬编码的 AGP 7.3.1（被 app 引用时 AGP 由工程根
+  # 继承、这行多余），修 Android Studio sync 报 Could not resolve gradle:7.3.1
+  react-native-safe-area-context@5.8.0: packages/uikit/patches/react-native-safe-area-context@5.8.0.patch

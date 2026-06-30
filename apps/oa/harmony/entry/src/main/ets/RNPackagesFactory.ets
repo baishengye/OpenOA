@@ -7,6 +7,8 @@ import { RNOpSqlitePackage } from '@react-native-ohos/op-sqlite/ts';
 import { RNMMKVStoragePackage } from '@react-native-oh-tpl/react-native-mmkv-storage';
 // 热修复 OTA（CodePush 鸿蒙移植包）。
 import { CodePushPackage } from '@react-native-oh-tpl/react-native-code-push/ts';
+// safe-area-context 鸿蒙移植包（@react-native-ohos 5.6.3，RNOH 0.82）；取代旧 stub 降级。
+import { SafeAreaViewPackage } from '@react-native-ohos/react-native-safe-area-context/ts';
 
 export function createRNPackages(ctx: RNPackageContext): RNPackage[] {
   return [
@@ -14,5 +16,6 @@ export function createRNPackages(ctx: RNPackageContext): RNPackage[] {
     new RNMMKVStoragePackage(ctx),
     new RNOpSqlitePackage(ctx),
     new CodePushPackage(ctx),
+    new SafeAreaViewPackage(ctx),
   ];
 }

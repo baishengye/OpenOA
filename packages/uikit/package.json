@@ -1,7 +1,7 @@
 {
-  "name": "@itc/hotfix",
+  "name": "@itc/uikit",
   "version": "0.1.0",
-  "description": "热修复（OTA JS 更新）模块。内置 CodePush 三端实现（鸿蒙走 @react-native-oh-tpl 移植包），对外暴露 HotfixProvider 接口与 hotfix 代理，支持通过 installHotfix() 替换后端。",
+  "description": "基础 UI 控件库。以 tamagui 为样式基座封装 Button/Text/Input/表单/列表/主题等，对外只暴露 @itc/uikit 组件与接口，不暴露 tamagui，便于日后替换底层。",
   "source": "./src/index.ts",
   "main": "./lib/module/index.js",
   "module": "./lib/module/index.js",
@@ -26,16 +26,20 @@
     "patch:verify": "node scripts/verify-patch.mjs"
   },
   "dependencies": {
-    "@react-native-oh-tpl/react-native-code-push": "8.2.2-0.0.10",
-    "react-native-code-push": "^8.2.2"
+    "@tamagui/animations-react-native": "^2.2.0",
+    "@tamagui/config": "^2.2.0",
+    "tamagui": "^2.2.0"
   },
   "peerDependencies": {
     "react": "*",
-    "react-native": ">=0.77.0"
+    "react-native": ">=0.77.0",
+    "react-native-safe-area-context": ">=4"
   },
   "devDependencies": {
+    "react": "19.1.1",
     "react-native": "0.82.1",
-    "react-native-builder-bob": "^0.32.1"
+    "react-native-builder-bob": "^0.32.1",
+    "react-native-safe-area-context": "^5.8.0"
   },
   "react-native-builder-bob": {
     "source": "src",
