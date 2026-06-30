@@ -1,7 +1,7 @@
 {
   "name": "@itc/push",
   "version": "0.0.0",
-  "description": "可剥离复用的推送模块（占位骨架）：统一推送抽象，底层走第三方聚合（友盟/极光）+ iOS APNs + 鸿蒙 Push Kit。",
+  "description": "可剥离复用的推送模块：统一 PushProvider 抽象 + 极光内部实现。通过 installPush() 可切换推送后端，业务层零改动。三端 Android / iOS / 鸿蒙 NEXT。",
   "source": "./src/index.ts",
   "main": "./lib/module/index.js",
   "module": "./lib/module/index.js",
@@ -24,6 +24,10 @@
     "clean": "rimraf lib",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts,.tsx"
+  },
+  "dependencies": {
+    "jcore-react-native": "^1.9.0",
+    "jpush-react-native": "^3.1.0"
   },
   "peerDependencies": {
     "@itc/base": "workspace:*",

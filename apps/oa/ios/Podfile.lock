@@ -47,7 +47,7 @@ PODS:
   - MMKV (1.3.16):
     - MMKVCore (~> 1.3.16)
   - MMKVCore (1.3.16)
-  - op-sqlite (16.2.0):
+  - op-sqlite (16.2.2):
     - boost
     - DoubleConversion
     - fast_float
@@ -2772,7 +2772,7 @@ SPEC CHECKSUMS:
   JWT: ef71dfb03e1f842081e64dc42eef0e164f35d251
   MMKV: 43cd10be0f925bf3fd5c2bd8bea501a328037b64
   MMKVCore: 13be45a0394861b74836875ac9ec7ee939e86b78
-  op-sqlite: 5a097450afd95a41b47dbcb675d62c1226cd9976
+  op-sqlite: 48c51fd7f690cd87228654d7912f0af2703b8f43
   RCT-Folly: 59ec0ac1f2f39672a0c6e6cecdd39383b764646f
   RCTDeprecation: f17e2ebc07876ca9ab8eb6e4b0a4e4647497ae3a
   RCTRequired: e2c574c1b45231f7efb0834936bd609d75072b63
@@ -2838,7 +2838,7 @@ SPEC CHECKSUMS:
   React-utils: a9abebe9dc25642955b5d2cec8c16bbf55a1bc52
   React-webperformancenativemodule: 85dce57a9e73457a3686aee0d8e929518713fc05
   ReactAppDependencyProvider: cc2795efe30a023c3a505676b9c748b664b9c0a1
-  ReactCodegen: dfe886bcd95a3d1a21cd6893a86cefad76f43a0e
+  ReactCodegen: 10b94ca0462965fe390a674293d87d00d241a4c3
   ReactCommon: c5803af00bd3737dc1631749b1f1da5beba5b049
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   SSZipArchive: 62d4947b08730e4cda640473b0066d209ff033c9

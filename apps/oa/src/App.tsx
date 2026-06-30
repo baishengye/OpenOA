@@ -3,6 +3,7 @@ import { StatusBar, StyleSheet, Text, View } from 'react-native';
 import { currentPlatform, logger } from '@itc/base';
 import { UIProvider } from '@itc/uikit';
 import { DemoScreen } from './screens/DemoScreen';
+import { usePush } from './utils/usePush';
 
 logger.info('app', `OpenDingDing 启动，平台=${currentPlatform}`);
 
@@ -10,6 +11,8 @@ logger.info('app', `OpenDingDing 启动，平台=${currentPlatform}`);
 const BUILD_MARK = 'MARK #1';
 
 export default function App(): React.JSX.Element {
+  usePush(); // 初始化推送（首次渲染时自动执行）
+
   return (
     <UIProvider defaultMode="light">
       <View style={styles.root}>
