@@ -5,7 +5,7 @@
 > 本文件是开发手册，命令可直接复制执行。
 > **⚡ 三端环境 + 命令一页速查**：[docs/速查手册.md](docs/速查手册.md)（export 与三端命令都在这）。
 > **从零搭建教程（事无巨细，可据此独立重建）**：[docs/从零搭建-Android.md](docs/从零搭建-Android.md) / [docs/从零搭建-iOS.md](docs/从零搭建-iOS.md) / [docs/从零搭建-鸿蒙.md](docs/从零搭建-鸿蒙.md)。
-> 三端运行速查见 [docs/运行-Android.md](docs/运行-Android.md) / [docs/运行-iOS.md](docs/运行-iOS.md) / [docs/运行-鸿蒙.md](docs/运行-鸿蒙.md)，模块作者指南见 [docs/模块开发指南.md](docs/模块开发指南.md)，踩坑速查见 [docs/踩坑速查.md](docs/踩坑速查.md)，环境与磁盘布局（缓存迁外置盘）见 [docs/环境与磁盘布局.md](docs/环境与磁盘布局.md)，App 三端构建细节见 [apps/oa/README.md](apps/oa/README.md)。
+> 三端运行速查见 [docs/运行-Android.md](docs/运行-Android.md) / [docs/运行-iOS.md](docs/运行-iOS.md) / [docs/运行-鸿蒙.md](docs/运行-鸿蒙.md)，模块作者指南见 [docs/模块开发指南.md](docs/模块开发指南.md)，踩坑速查见 [docs/踩坑速查.md](docs/踩坑速查.md)，热修复服务端部署见 [docs/热修复服务端部署.md](docs/热修复服务端部署.md)，打包/OTA 发版脚本见 [docs/脚本速查.md](docs/脚本速查.md)，环境与磁盘布局（缓存迁外置盘）见 [docs/环境与磁盘布局.md](docs/环境与磁盘布局.md)，App 三端构建细节见 [apps/oa/README.md](apps/oa/README.md)。
 
 ---
 
@@ -13,11 +13,15 @@
 
 | 维度 | 选型 | 说明 |
 |---|---|---|
-| 跨端框架 | React Native **0.77.0** | 公共基线，三端共用 |
-| 鸿蒙 | RNOH（`@react-native-oh/react-native-harmony` 0.72.101-5） | HarmonyOS NEXT 纯血鸿蒙，ArkTS 原生 |
+| 跨端框架 | React Native **0.82.1** | 公共基线，三端共用 |
+| 鸿蒙 | RNOH（`@react-native-oh/react-native-harmony` 0.82.30） | HarmonyOS NEXT 纯血鸿蒙，ArkTS 原生 |
 | RN 架构 | **New Architecture**（TurboModules + Fabric + Codegen） | 原生模块用 codegen 生成类型安全接口 |
 | 包管理 | **pnpm** workspaces（`node-linker=hoisted`） | monorepo + 私有 npm 源（`@itc` scope） |
 | 语言 | TypeScript 5.x / Kotlin / Swift+ObjC++ / ArkTS | — |
+| 本地数据库 | **op-sqlite** + Drizzle ORM（可选） | SQLite 三端封装 + 版本化迁移 |
+| KV 存储 | **MMKV**（react-native-mmkv-storage） | 微信开源高性能 KV，鸿蒙走移植包 |
+| 热修复 | **CodePush**（自建 server） | OTA JS Bundle 更新，三端统一 |
+| UI 方案 | **Tamagui** v2（封装在 @itc/uikit 内部） | 对外不暴露，便于日后替换底层 |
 
 ---
 
@@ -31,8 +35,12 @@ OpenOA/
 ├── .changeset/                  # 模块独立发版
 │
 ├── packages/                    # 可剥离复用的端能力模块
-│   ├── base/        @itc/base        公共基座（契约/Result/平台/事件总线/日志/存储）
+│   ├── base/        @itc/base        公共基座（契约/Result/平台/事件总线/日志/存储接口）
 │   ├── biometric/   @itc/biometric   生物识别（指纹/人脸 + 生物绑定密钥签名）★样板模块
+│   ├── db/          @itc/db          本地 SQLite 基础设施（三端 op-sqlite 封装 + 版本化迁移）
+│   ├── storage/     @itc/storage     KV 持久化（MMKV 封装，实现 @itc/base 的 KVStorage 接口）
+│   ├── hotfix/      @itc/hotfix      热修复（CodePush 三端封装，OTA JS Bundle 更新）
+│   ├── uikit/       @itc/uikit       基础 UI 控件库（Tamagui 封装：Button/Text/Input/表单/主题）
 │   ├── push/        @itc/push        推送（友盟/极光聚合）——占位骨架
 │   └── im/          @itc/im          即时 IM（OpenIM）——占位骨架
 │
@@ -41,7 +49,7 @@ OpenOA/
 │       ├── src/                      JS 层（App + 演示页 + utils）
 │       ├── android/                  Android 宿主工程（Gradle）
 │       ├── ios/                      iOS 宿主工程（Xcode + CocoaPods）
-│       ├── harmony/                  鸿蒙宿主工程（DevEco，待生成）
+│       ├── harmony/                  鸿蒙宿主工程（DevEco Studio，已接入 RNOH）
 │       └── vendor/bundle/            项目本地 CocoaPods（bundler 安装）
 │
 └── docs/                        # 开发文档
@@ -62,7 +70,7 @@ OpenOA/
 | Android SDK | `/Volumes/MacExtend/Envirment/Android/SDK`（platform 34/36、build-tools 35、NDK 26.1） | Android |
 | Xcode | 26.5 + 已下载 **iOS 26.5 平台/模拟器运行时** | iOS |
 | CocoaPods | 1.15.2（bundler 装在 `apps/oa/vendor/bundle`，系统 Ruby 2.6.10） | iOS pods |
-| DevEco Studio + 鸿蒙 SDK | **待安装**（SDK 已有 `/Volumes/MacExtend/Envirment/Harmony/OpenHarmony/Sdk`，缺 hvigor/ohpm/DevEco） | 鸿蒙 |
+| DevEco Studio + 鸿蒙 SDK | **已安装**（SDK `/Volumes/MacExtend/Envirment/Harmony/OpenHarmony/Sdk`，DevEco `/Applications/DevEco-Studio.app`） | 鸿蒙 |
 
 **常用环境变量（Android/iOS 命令前需 export）：**
 ```bash
@@ -83,7 +91,7 @@ pnpm install
 pnpm build
 #   等价：pnpm -r --filter "./packages/*" build
 
-# 3. 全量类型检查（base/biometric/push/im/app 共 5 个工程）
+# 3. 全量类型检查（base/biometric/db/storage/hotfix/uikit/push/im/app 共 9 个工程）
 pnpm typecheck
 
 # 4. 单独构建/检查某个包
@@ -181,9 +189,24 @@ xcodebuild -exportArchive -archivePath build/OpenOA.xcarchive \
 
 ---
 
-## 7. 鸿蒙 NEXT —— 待环境就绪
+## 7. 鸿蒙 NEXT —— ✅ 已接入，可构建运行
 
-当前缺 **DevEco Studio + hvigor/ohpm**（SDK 已存在 `/Volumes/MacExtend/Envirment/Harmony/OpenHarmony/Sdk`）。装好 DevEco 后按 [apps/oa/README.md](apps/oa/README.md#鸿蒙) 步骤：用 DevEco 创建 RNOH 宿主工程到 `apps/oa/harmony` → 注册 `ItcBiometricPackage` → `hvigorw assembleHap` 出 `.hap`。生物识别 ArkTS 实现已就绪：[packages/biometric/harmony/](packages/biometric/harmony/)。
+DevEco Studio 已安装，RNOH 宿主工程在 `apps/oa/harmony`（DevEco 打开该目录）。鸿蒙使用独立的 Metro 配置（`metro.config.harmony.js`）和 bundle 命令（`bundle-harmony`），**不能**用标准 Metro。
+
+```bash
+cd apps/oa
+
+# 鸿蒙 Metro（开发热更新用）
+pnpm start:harmony
+
+# 鸿蒙离线 bundle（打进 rawfile）
+npx react-native bundle-harmony --dev false --config metro.config.harmony.js
+
+# DevEco 构建：打开 apps/oa/harmony → Build → Run
+# 真机需先做端口转发：hdc rport tcp:8081 tcp:8081
+```
+
+> 详细运行流程与 TurboModule 注册链见 [docs/运行-鸿蒙.md](docs/运行-鸿蒙.md)，架构与版本矩阵见 [docs/鸿蒙接入要点.md](docs/鸿蒙接入要点.md)。生物识别 ArkTS 实现已就绪：[packages/biometric/harmony/](packages/biometric/harmony/)。
 
 ---
 
@@ -210,8 +233,12 @@ pnpm release              # 构建 + changeset publish 到私有源
 | 包 | 端到端状态 |
 |---|---|
 | `@itc/base` | ✅ 完成（JS 纯逻辑，三端通用） |
-| `@itc/biometric` | ✅ Android 真机真跑验证；✅ iOS 模拟器真跑验证（原生 `isAvailable` 返回真实能力）；ArkTS 实现就绪待鸿蒙环境 |
+| `@itc/biometric` | ✅ Android 真机验证；✅ iOS 模拟器验证（原生 `isAvailable` 返回真实能力）；ArkTS 实现就绪待鸿蒙验证 |
+| `@itc/db` | ✅ 完成（op-sqlite 三端封装 + 版本化迁移 + 事务 + Drizzle ORM 适配） |
+| `@itc/storage` | ✅ 完成（MMKV 三端封装，实现 KVStorage 接口，鸿蒙走移植包） |
+| `@itc/hotfix` | ✅ 完成（CodePush 三端封装 + 自建 server 验证，OTA 更新可用） |
+| `@itc/uikit` | ✅ 完成（Tamagui v2 封装，Button/Text/Input/表单/主题等基础控件） |
 | `@itc/push` | 🚧 占位骨架（统一 API + 契约，原生待实现） |
 | `@itc/im` | 🚧 占位骨架（鸿蒙端需自编译 OpenIM Go core，最大风险项） |
 
-踩坑与排错（pnpm hoisted、Metro 解析、gradle-plugin/codegen 直依赖、Ruby gem 钉版本、NDK/SDK 对齐、公钥格式差异等）见 [docs/踩坑速查.md](docs/踩坑速查.md)。
+踩坑与排错（pnpm hoisted、Metro 解析、gradle-plugin/codegen 直依赖、Ruby gem 钉版本、NDK/SDK 对齐、公钥格式差异、CodePush 三端接入、Tamagui 补丁等）见 [docs/踩坑速查.md](docs/踩坑速查.md)。
