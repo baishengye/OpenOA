@@ -1,4 +1,4 @@
-# 在 iOS 上运行 OpenDingDing（全过程要点）
+# 在 iOS 上运行 OpenOA（全过程要点）
 
 > 本文是「运行已有工程」的速查。**从零搭建（含 TurboModule 三层桥接）见 [从零搭建-iOS.md](./从零搭建-iOS.md)。**
 > 配套：通用环境见 [环境与磁盘布局.md](./环境与磁盘布局.md)，报错速查见 [踩坑速查.md](./踩坑速查.md)，
@@ -12,7 +12,7 @@
 ```bash
 # ~/.zshrc
 oapod() {
-  local oa="/Volumes/MacExtend/Code/ReactNative/OpenDingDing/apps/oa"
+  local oa="/Volumes/MacExtend/Code/ReactNative/OpenOA/apps/oa"
   ( cd "$oa/ios" && BUNDLE_PATH="$oa/vendor/bundle" BUNDLE_GEMFILE="$oa/Gemfile" bundle exec pod "$@" )
 }
 ```
@@ -39,7 +39,7 @@ iOS 模拟器**不需要 `adb reverse`**，直接连 `localhost:8081`。
 
 **方式 1：Xcode（最省心）**
 ```bash
-open apps/oa/ios/OpenDingDing.xcworkspace   # 注意是 .xcworkspace 不是 .xcodeproj
+open apps/oa/ios/OpenOA.xcworkspace   # 注意是 .xcworkspace 不是 .xcodeproj
 ```
 选模拟器，按 ▶。
 
@@ -48,11 +48,11 @@ open apps/oa/ios/OpenDingDing.xcworkspace   # 注意是 .xcworkspace 不是 .xco
 SIM=<simulator-udid>          # 如 iPhone 17：xcrun simctl list devices 查
 cd apps/oa/ios
 xcrun simctl boot $SIM; open -a Simulator
-xcodebuild -workspace OpenDingDing.xcworkspace -scheme OpenDingDing \
+xcodebuild -workspace OpenOA.xcworkspace -scheme OpenOA \
   -configuration Debug -sdk iphonesimulator -destination "id=$SIM" \
   -derivedDataPath /tmp/odd-dd build CODE_SIGNING_ALLOWED=NO
-xcrun simctl install $SIM /tmp/odd-dd/Build/Products/Debug-iphonesimulator/OpenDingDing.app
-xcrun simctl launch $SIM org.reactjs.native.example.OpenDingDing
+xcrun simctl install $SIM /tmp/odd-dd/Build/Products/Debug-iphonesimulator/OpenOA.app
+xcrun simctl launch $SIM org.reactjs.native.example.OpenOA
 ```
 
 - **别用 `npx react-native run-ios`**：它找不到 vendored `pod`，会去 `sudo gem install cocoapods` 然后失败。
@@ -65,6 +65,6 @@ xcrun simctl launch $SIM org.reactjs.native.example.OpenDingDing
 
 ## 4. 关键事实
 
-- Bundle ID：`org.reactjs.native.example.OpenDingDing`。
+- Bundle ID：`org.reactjs.native.example.OpenOA`。
 - 新架构（codegen 在 pod install 时跑）；storage=MMKV(pod)，biometric=LocalAuthentication/Secure Enclave。
 - 生物绑定密钥公钥格式：iOS/鸿蒙=X9.63(04||X||Y)，Android=DER(SPKI)，后端验签需按平台归一化。

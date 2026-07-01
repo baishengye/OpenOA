@@ -5,7 +5,7 @@ import { UIProvider } from '@itc/uikit';
 import { DemoScreen } from './screens/DemoScreen';
 import { usePush } from './utils/usePush';
 
-logger.info('app', `OpenDingDing 启动，平台=${currentPlatform}`);
+logger.info('app', `OpenOA 启动，平台=${currentPlatform}`);
 
 // 改这里的数字/文字再保存，机上横幅应立即变 —— 用来确认 Metro 已连接、在跑最新 bundle。
 const BUILD_MARK = 'MARK #1';

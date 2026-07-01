@@ -1,4 +1,4 @@
-# OpenDingDing
+# OpenOA
 
 对标钉钉的**模块化 OA App**。业务与端能力解耦，端能力模块（生物识别 / 推送 / IM）可从本项目**剥离复用**到其他项目。三端：Android / iOS / 鸿蒙 NEXT。
 
@@ -24,7 +24,7 @@
 ## 2. 目录结构
 
 ```
-OpenDingDing/
+OpenOA/
 ├── pnpm-workspace.yaml          # workspace 定义（packages/* + apps/*）
 ├── .npmrc                       # hoisted 布局 + @itc 私有源占位
 ├── tsconfig.base.json           # 共享 TS 配置
@@ -146,14 +146,14 @@ cd ios
 export BUNDLE_GEMFILE="$(cd .. && pwd)/Gemfile"
 export BUNDLE_PATH="$(cd .. && pwd)/vendor/bundle"
 RCT_NEW_ARCH_ENABLED=1 bundle exec pod install
-#   产物：OpenDingDing.xcworkspace（之后一律用 .xcworkspace，不要用 .xcodeproj）
+#   产物：OpenOA.xcworkspace（之后一律用 .xcworkspace，不要用 .xcodeproj）
 
 # 3a. 编译 + 跑模拟器（Release 内嵌 JS，独立运行）
-xcodebuild -workspace OpenDingDing.xcworkspace -scheme OpenDingDing \
+xcodebuild -workspace OpenOA.xcworkspace -scheme OpenOA \
   -configuration Release -sdk iphonesimulator -derivedDataPath build \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
   CODE_SIGNING_ALLOWED=NO build
-#   产物：build/Build/Products/Release-iphonesimulator/OpenDingDing.app
+#   产物：build/Build/Products/Release-iphonesimulator/OpenOA.app
 
 # 3b. 真机 .ipa：必须用你的 Apple 开发者账号签名（见下）
 ```
@@ -161,19 +161,19 @@ xcodebuild -workspace OpenDingDing.xcworkspace -scheme OpenDingDing \
 **模拟器安装 / 运行 / 截图：**
 ```bash
 xcrun simctl boot "iPhone 17 Pro" 2>/dev/null; open -a Simulator
-xcrun simctl install booted build/Build/Products/Release-iphonesimulator/OpenDingDing.app
-xcrun simctl launch booted org.reactjs.native.example.OpenDingDing   # bundle id 见 ios 工程
+xcrun simctl install booted build/Build/Products/Release-iphonesimulator/OpenOA.app
+xcrun simctl launch booted org.reactjs.native.example.OpenOA   # bundle id 见 ios 工程
 xcrun simctl io booted screenshot /tmp/ios-screen.png
 ```
 
-**真机可安装 .ipa（需你的签名）：** 用 Xcode 打开 `apps/oa/ios/OpenDingDing.xcworkspace` → 选中 target → Signing & Capabilities 选你的 Team → Product > Archive → Distribute App。
+**真机可安装 .ipa（需你的签名）：** 用 Xcode 打开 `apps/oa/ios/OpenOA.xcworkspace` → 选中 target → Signing & Capabilities 选你的 Team → Product > Archive → Distribute App。
 命令行等价（替换 TEAMID / 你的签名）：
 ```bash
-xcodebuild -workspace OpenDingDing.xcworkspace -scheme OpenDingDing \
+xcodebuild -workspace OpenOA.xcworkspace -scheme OpenOA \
   -configuration Release -destination 'generic/platform=iOS' \
-  -archivePath build/OpenDingDing.xcarchive archive \
+  -archivePath build/OpenOA.xcarchive archive \
   DEVELOPMENT_TEAM=YOURTEAMID CODE_SIGN_STYLE=Automatic
-xcodebuild -exportArchive -archivePath build/OpenDingDing.xcarchive \
+xcodebuild -exportArchive -archivePath build/OpenOA.xcarchive \
   -exportPath build/ipa -exportOptionsPlist ExportOptions.plist
 ```
 

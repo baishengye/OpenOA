@@ -7,11 +7,11 @@
         "material": {
           "certpath": "/Users/baishengye/.ohos/config/default_harmony_H5O_laxgI9yj-9Okf8-ZMrgMh2gTig7HQfWUzWg0LGc=.cer",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001BD9C9ADB8E16D6AD9214B12CFDD087B082808BEB27D32451560FFD3209735C55F8990D754CF6856",
+          "keyPassword": "0000001BE8C94509230D22E7B2CDDD306DAA6C258BE72E8608925743E9DDB3C83605A386516C3D9DAF9960",
           "profile": "/Users/baishengye/.ohos/config/default_harmony_H5O_laxgI9yj-9Okf8-ZMrgMh2gTig7HQfWUzWg0LGc=.p7b",
           "signAlg": "SHA256withECDSA",
           "storeFile": "/Users/baishengye/.ohos/config/default_harmony_H5O_laxgI9yj-9Okf8-ZMrgMh2gTig7HQfWUzWg0LGc=.p12",
-          "storePassword": "0000001B850C8ED4735A2DD5912BB4460AF787E07A221A192E5AEB4718479C45F4DFBBD287C4AC754582F3"
+          "storePassword": "0000001BCC849816DEE7AEA0A4C2E5A7265D9D27046C4B0DDF7F16018113FE7573D3CED3D3C9E448020194"
         }
       }
     ],

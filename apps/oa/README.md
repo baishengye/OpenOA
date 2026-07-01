@@ -34,7 +34,7 @@ adb shell am start -n com.opendingding/.MainActivity
 adb exec-out screencap -p > /tmp/oa-android.png
 ```
 
-应用包名 `com.opendingding`，AppRegistry 名 `OpenDingDing`（见 [app.json](app.json)）。
+应用包名 `com.opendingding`，AppRegistry 名 `OpenOA`（见 [app.json](app.json)）。
 
 ### Android 接入要点（已配置）
 - `android/gradle.properties`：`newArchEnabled=true`、`hermesEnabled=true`
@@ -58,26 +58,26 @@ cd ios
 export BUNDLE_GEMFILE="$(cd .. && pwd)/Gemfile"
 export BUNDLE_PATH="$(cd .. && pwd)/vendor/bundle"
 RCT_NEW_ARCH_ENABLED=1 bundle exec pod install
-#   → 生成 OpenDingDing.xcworkspace（之后一律用它，别用 .xcodeproj）
+#   → 生成 OpenOA.xcworkspace（之后一律用它，别用 .xcodeproj）
 
 # 3) 编译到模拟器（Apple Silicon：ONLY_ACTIVE_ARCH=YES 只编 arm64，避开 x86_64 fmt 编译失败）
-xcodebuild -workspace OpenDingDing.xcworkspace -scheme OpenDingDing \
+xcodebuild -workspace OpenOA.xcworkspace -scheme OpenOA \
   -configuration Release -sdk iphonesimulator -derivedDataPath build \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
   ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO build
-#   → build/Build/Products/Release-iphonesimulator/OpenDingDing.app
+#   → build/Build/Products/Release-iphonesimulator/OpenOA.app
 ```
 
 **模拟器运行 / 截图：**
 ```bash
 xcrun simctl boot "iPhone 17 Pro"; open -a Simulator
-xcrun simctl install booted build/Build/Products/Release-iphonesimulator/OpenDingDing.app
-xcrun simctl launch booted org.reactjs.native.example.OpenDingDing
+xcrun simctl install booted build/Build/Products/Release-iphonesimulator/OpenOA.app
+xcrun simctl launch booted org.reactjs.native.example.OpenOA
 xcrun simctl io booted screenshot /tmp/oa-ios.png
 # Face ID 模拟：模拟器菜单 Features > Face ID > Enrolled / Matching Face
 ```
 
-**真机 .ipa（需你的 Apple 账号签名）：** Xcode 打开 `ios/OpenDingDing.xcworkspace` → target 的 Signing & Capabilities 选 Team → Product > Archive > Distribute。
+**真机 .ipa（需你的 Apple 账号签名）：** Xcode 打开 `ios/OpenOA.xcworkspace` → target 的 Signing & Capabilities 选 Team → Product > Archive > Distribute。
 - `Info.plist` 已含 `NSFaceIDUsageDescription`。
 - 命令行 archive 见根 [README.md](../../README.md#6-ios--构建--运行全部实测可用)。
 

@@ -1,8 +1,8 @@
 {
-  "name": "opendingding-monorepo",
+  "name": "openoa-monorepo",
   "version": "0.0.0",
   "private": true,
-  "description": "对标钉钉的模块化 OA App —— @itc/base 基座 + 可剥离复用的端能力模块（生物识别/推送/IM），三端适配 Android / iOS / 鸿蒙 NEXT",
+  "description": "对标钉钉的模块化 OA App ",
   "packageManager": "pnpm@11.2.2",
   "engines": {
     "node": ">=20"

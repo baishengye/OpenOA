@@ -1,6 +1,6 @@
 {
   "modelVersion": "6.1.1",
-  "description": "OpenDingDing OA 鸿蒙宿主（RNOH）",
+  "description": "OpenOA OA 鸿蒙宿主（RNOH）",
   "dependencies": {
   },
   "devDependencies": {

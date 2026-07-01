@@ -2,7 +2,7 @@
   "name": "@itc-oa/app",
   "version": "0.1.0",
   "private": true,
-  "description": "OpenDingDing OA App 宿主（对标钉钉），消费 @itc/* 模块。",
+  "description": "OpenOA OA App 宿主（对标钉钉），消费 @itc/* 模块。",
   "op-sqlite": {
     "sqlcipher": false,
     "libsql": false
@@ -30,8 +30,6 @@
     "@react-native-oh-tpl/react-native-mmkv-storage": "0.10.3-0.0.2",
     "@react-native-ohos/op-sqlite": "^14.0.1",
     "@react-native-ohos/react-native-safe-area-context": "5.6.3",
-    "jcore-react-native": "^1.9.9",
-    "jpush-react-native": "^3.2.7",
     "react": "19.1.1",
     "react-native": "0.82.1",
     "react-native-code-push": "^8.3.1",

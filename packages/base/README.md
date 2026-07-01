@@ -1,6 +1,6 @@
 # @itc/base
 
-OpenDingDing 的**公共基座**——所有可剥离复用的 `@itc/*` 端能力模块共享、与业务无关的基础设施。**纯 TS、零原生依赖**（peer 仅 `react` / `react-native`）。
+OpenOA 的**公共基座**——所有可剥离复用的 `@itc/*` 端能力模块共享、与业务无关的基础设施。**纯 TS、零原生依赖**（peer 仅 `react` / `react-native`）。
 
 > 依赖方向铁律：feature 模块（biometric/push/im/storage/db/hotfix/uikit）依赖 base，**base 绝不反向依赖任何 feature**。
 

@@ -1,5 +1,5 @@
 /**
- * @itc/base —— OpenDingDing 公共基座。
+ * @itc/base —— OpenOA 公共基座。
  *
  * 提供所有端能力模块共享、与业务无关的基础设施。依赖方向铁律：
  * feature 模块依赖 base，base 绝不反向依赖任何 feature。

@@ -1,7 +1,7 @@
 {
   "name": "@itc/hotfix",
   "version": "0.1.0",
-  "description": "OpenDingDing 热修复 RNOH 接入（鸿蒙 NEXT，ArkTS）。对外只暴露 initHotfix/HotfixConfig，封装底层 OTA 后端细节。",
+  "description": "OpenOA 热修复 RNOH 接入（鸿蒙 NEXT，ArkTS）。对外只暴露 initHotfix/HotfixConfig，封装底层 OTA 后端细节。",
   "main": "Index.ets",
   "author": "ITC",
   "license": "UNLICENSED",

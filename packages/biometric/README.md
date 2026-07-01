@@ -2,7 +2,7 @@
 
 可剥离复用的**生物识别模块**——指纹 / 人脸认证 + 生物特征绑定密钥签名（钉钉式免密登录）。三端：Android / iOS / 鸿蒙 NEXT。
 
-> 本模块是 OpenDingDing 的**首个样板模块**：push / im 沿用完全相同的结构（TS 统一 API + codegen spec + 三端原生 + 实现 `@itc/base` 的 `ItcModule` 契约）。
+> 本模块是 OpenOA 的**首个样板模块**：push / im 沿用完全相同的结构（TS 统一 API + codegen spec + 三端原生 + 实现 `@itc/base` 的 `ItcModule` 契约）。
 
 ## 在其他 app 中引入
 

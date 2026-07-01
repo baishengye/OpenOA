@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Hello App Display Name</string>
+    <string name="app_name">OpenOA</string>
     <!-- 热修复（CodePush）部署 key：下午部署 code-push-server 后填入对应 deployment 的 key。
          空字符串占位是【必需】的——CodePush 主包的 react-native.config.js 用
          R.string.CodePushDeploymentKey，autolink 生成的 PackageList 会引用它，缺它直接编译失败。

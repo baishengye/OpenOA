@@ -1,7 +1,7 @@
 {
   "name": "@itc/base",
   "version": "0.1.0",
-  "description": "OpenDingDing 公共基座：模块契约 / Result / 平台抽象 / 事件总线 / 日志 / 存储接口。无业务、无 feature 依赖。",
+  "description": "OpenOA 公共基座：模块契约 / Result / 平台抽象 / 事件总线 / 日志 / 存储接口。无业务、无 feature 依赖。",
   "source": "./src/index.ts",
   "main": "./lib/module/index.js",
   "module": "./lib/module/index.js",

@@ -52,8 +52,8 @@ struct Index {
             enableCAPIArchitecture: true,
             arkTsComponentNames: [],
           },
-          // 必须与 JS 端 AppRegistry.registerComponent 的名字一致（app.json: OpenDingDing）
-          appKey: 'OpenDingDing',
+          // 必须与 JS 端 AppRegistry.registerComponent 的名字一致（app.json: OpenOA）
+          appKey: 'OpenOA',
           wrappedCustomRNComponentBuilder: wrappedCustomRNComponentBuilder,
           onSetUp: (_rnInstance) => {},
           jsBundleProvider: new TraceJSBundleProviderDecorator(

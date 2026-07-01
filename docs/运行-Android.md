@@ -1,4 +1,4 @@
-# 在 Android 上运行 OpenDingDing（全过程要点）
+# 在 Android 上运行 OpenOA（全过程要点）
 
 > 本文是「运行已有工程」的速查。**从零搭建（含 TurboModule 三层桥接）见 [从零搭建-Android.md](./从零搭建-Android.md)。**
 > 配套：通用环境见 [环境与磁盘布局.md](./环境与磁盘布局.md)，报错速查见 [踩坑速查.md](./踩坑速查.md)，
