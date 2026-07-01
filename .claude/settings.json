@@ -28,5 +28,6 @@
       "Bash(grep -iE \"\\\\.har$|oh_modules|/build/|\\\\.hap$|node_modules\")",
       "Bash(node node_modules/react-native/cli.js bundle-harmony --config metro.config.harmony.js --dev false)"
     ]
-  }
+  },
+  "includeCoAuthoredBy": false
 }
