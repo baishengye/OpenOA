@@ -1,5 +1,5 @@
 {
-  "name": "@itc/im",
+  "name": "@openim/rn-client-sdk-plus",
   "version": "0.0.0",
   "description": "可剥离复用的即时 IM 模块（占位骨架）：封装 OpenIM。A/iOS 用官方 open-im-sdk-rn；鸿蒙 NEXT 自编译 Go core 为 .so + ArkTS NAPI 绑定。",
   "source": "./src/index.ts",

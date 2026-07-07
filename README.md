@@ -42,7 +42,7 @@ OpenOA/
 │   ├── hotfix/      @itc/hotfix      热修复（CodePush 三端封装，OTA JS Bundle 更新）
 │   ├── uikit/       @itc/uikit       基础 UI 控件库（Tamagui 封装：Button/Text/Input/表单/主题）
 │   ├── push/        @itc/push        推送（友盟/极光聚合）——占位骨架
-│   └── im/          @itc/im          即时 IM（OpenIM）——占位骨架
+│   └── im/          @openim/rn-client-sdk-plus  即时 IM（OpenIM）——占位骨架
 │
 ├── apps/
 │   └── oa/          @itc-oa/app      钉钉克隆宿主 App
@@ -239,6 +239,6 @@ pnpm release              # 构建 + changeset publish 到私有源
 | `@itc/hotfix` | ✅ 完成（CodePush 三端封装 + 自建 server 验证，OTA 更新可用） |
 | `@itc/uikit` | ✅ 完成（Tamagui v2 封装，Button/Text/Input/表单/主题等基础控件） |
 | `@itc/push` | 🚧 占位骨架（统一 API + 契约，原生待实现） |
-| `@itc/im` | 🚧 占位骨架（鸿蒙端需自编译 OpenIM Go core，最大风险项） |
+| `@openim/rn-client-sdk-plus` | 🚧 占位骨架（鸿蒙端需自编译 OpenIM Go core，最大风险项） |
 
 踩坑与排错（pnpm hoisted、Metro 解析、gradle-plugin/codegen 直依赖、Ruby gem 钉版本、NDK/SDK 对齐、公钥格式差异、CodePush 三端接入、Tamagui 补丁等）见 [docs/踩坑速查.md](docs/踩坑速查.md)。

@@ -1,5 +1,5 @@
 /**
- * @itc/im —— 即时 IM 模块（占位骨架），封装 OpenIM。
+ * @openim/rn-client-sdk-plus —— 即时 IM 模块（占位骨架），封装 OpenIM。
  *
  * 跨端策略：
  *  - Android / iOS：官方 open-im-sdk-rn（gomobile 编译的 openim-sdk-core）
@@ -51,7 +51,7 @@ class IMModule extends BaseModule<IMInitOptions> {
   }
 
   protected async onInit(_options: IMInitOptions): Promise<void> {
-    logger.warn(TAG, '@itc/im 原生尚未实现（占位骨架）');
+    logger.warn(TAG, '@openim/rn-client-sdk-plus 原生尚未实现（占位骨架）');
     throw new ItcError(ErrorCode.NATIVE_MODULE_UNAVAILABLE, 'im 模块原生未实现', {
       module: MODULE_NAME,
     });

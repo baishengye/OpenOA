@@ -14,7 +14,7 @@ if linkage != nil
   use_frameworks! :linkage => linkage.to_sym
 end
 
-target 'OpenDingDing' do
+target 'OpenOA' do
   config = use_native_modules!
 
   use_react_native!(
@@ -43,7 +43,7 @@ target 'OpenDingDing' do
           "// OPENDINGDING_FMT_PATCH\n#undef FMT_USE_CONSTEVAL\n#define FMT_USE_CONSTEVAL 0\n#if FMT_USE_CONSTEVAL\n#  define FMT_CONSTEVAL consteval"
         )
         File.write(fmt_base, text)
-        Pod::UI.puts '[OpenDingDing] patched fmt/base.h: FMT_USE_CONSTEVAL=0'
+        Pod::UI.puts '[OpenOA] patched fmt/base.h: FMT_USE_CONSTEVAL=0'
       end
     end
   end

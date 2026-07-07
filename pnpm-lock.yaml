@@ -39,9 +39,6 @@ importers:
       '@itc/hotfix':
         specifier: workspace:*
         version: link:../../packages/hotfix
-      '@itc/im':
-        specifier: workspace:*
-        version: link:../../packages/im
       '@itc/push':
         specifier: workspace:*
         version: link:../../packages/push
@@ -54,6 +51,9 @@ importers:
       '@op-engineering/op-sqlite':
         specifier: ^16.2.0
         version: 16.2.2(react-native@0.82.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.82.1(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.1.1))(react@19.1.1)
+      '@openim/rn-client-sdk-plus':
+        specifier: workspace:*
+        version: link:../../packages/im
       '@react-native-oh-tpl/react-native-code-push':
         specifier: 8.2.2-0.0.10
         version: 8.2.2-0.0.10(@types/node@26.0.1)

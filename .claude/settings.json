@@ -14,7 +14,7 @@
       "Bash(pkill -9 -f \"GradleDaemon\")",
       "Bash(sleep 1)",
       "Bash(./gradlew :app:assembleDebug --no-daemon --console=plain)",
-      "Bash(cd /Volumes/MacExtend/Code/ReactNative/OpenDingDing/apps/oa/ios *)",
+      "Bash(cd /Volumes/MacExtend/Code/ReactNative/OpenOA/apps/oa/ios *)",
       "Read(//Users/baishengye/Library/Caches/CocoaPods/**)",
       "Bash(tar -tzf Pods/hermes-engine-artifacts/hermes-ios-0.82.1-release.tar.gz)",
       "Bash(grep -E \"hermesvm.xcframework/[^/]+/$|hermesvm.xcframework/[^/]+$\")",

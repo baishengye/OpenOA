@@ -1,4 +1,4 @@
-# @itc/im
+# @openim/rn-client-sdk-plus
 
 即时 **IM 模块**（封装 OpenIM）。沿用 [@itc/biometric](../biometric) 的结构：统一 TS API + `ItcModule` 契约 + 三端原生 + 事件经 [@itc/base](../base) 的 `eventBus` 下发。
 
@@ -8,11 +8,11 @@
 
 ```jsonc
 // app/package.json
-{ "dependencies": { "@itc/base": "workspace:*", "@itc/im": "workspace:*" } }
+{ "dependencies": { "@itc/base": "workspace:*", "@openim/rn-client-sdk-plus": "workspace:*" } }
 ```
 
 ```ts
-import { im } from '@itc/im';
+import { im } from '@openim/rn-client-sdk-plus';
 import { eventBus } from '@itc/base';
 
 if (await im.isSupported()) {                       // 降级入口：false 则隐藏 IM 入口
