@@ -10,7 +10,7 @@
  *  - iOS:     ItcOpenIMSDK (Obj-C++)
  *  - 鸿蒙:    待实现
  */
-import type { TurboModule } from 'react-native';
+import type { TurboModule, NativeModule } from 'react-native';
 import { TurboModuleRegistry, NativeModules } from 'react-native';
 
 // 懒加载模式，避免模块顶层立即调用 TurboModuleRegistry.getEnforcing
@@ -36,8 +36,9 @@ const ItcOpenIMSDK: Spec = new Proxy({} as Spec, {
   },
 });
 
-// 导出原生模块引用供 NativeEventEmitter 使用（防御性检查）
-export const NativeItcOpenIM: object | null = NativeModules.ItcOpenIM ?? null;
+// 导出原生模块引用供 NativeEventEmitter 使用（防御性类型转换）
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const NativeItcOpenIM: NativeModule | null = (NativeModules as any).ItcOpenIM ?? null;
 
 export default ItcOpenIMSDK;
 
