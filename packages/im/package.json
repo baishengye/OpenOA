@@ -1,7 +1,7 @@
 {
-  "name": "@openim/rn-client-sdk-plus",
+  "name": "@itc/rn-client-sdk-plus",
   "version": "0.0.0",
-  "description": "可剥离复用的即时 IM 模块（占位骨架）：封装 OpenIM。A/iOS 用官方 open-im-sdk-rn；鸿蒙 NEXT 自编译 Go core 为 .so + ArkTS NAPI 绑定。",
+  "description": "可剥离复用的即时 IM 模块（占位骨架）：封装 OpenIM。",
   "source": "./src/index.ts",
   "main": "./lib/module/index.js",
   "module": "./lib/module/index.js",
@@ -39,6 +39,14 @@
     "source": "src",
     "output": "lib",
     "targets": [["module", { "esm": true }], ["typescript", { "esm": true }]]
+  },
+  "codegenConfig": {
+    "name": "ItcOpenIMSDKSpec",
+    "type": "modules",
+    "jsSrcsDir": "src",
+    "android": {
+      "javaPackageName": "com.itc.openim"
+    }
   },
   "publishConfig": { "access": "restricted" },
   "license": "UNLICENSED"

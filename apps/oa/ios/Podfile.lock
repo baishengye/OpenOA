@@ -42,8 +42,38 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
+  - ItcOpenIM (0.0.0):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - fmt
+    - glog
+    - hermes-engine
+    - OpenIMSDK
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - SocketRocket
+    - Yoga
   - JWT (3.0.0-beta.14):
     - Base64 (~> 1.1.2)
+  - MJExtension (3.4.2)
   - MMKV (1.3.16):
     - MMKVCore (~> 1.3.16)
   - MMKVCore (1.3.16)
@@ -75,6 +105,37 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
+  - "OpenIMSDK (3.8.3+hotfix.3.1)":
+    - MJExtension
+    - "OpenIMSDK/Callbacker (= 3.8.3+hotfix.3.1)"
+    - "OpenIMSDK/CallbackProxy (= 3.8.3+hotfix.3.1)"
+    - "OpenIMSDK/Interface (= 3.8.3+hotfix.3.1)"
+    - "OpenIMSDK/Model (= 3.8.3+hotfix.3.1)"
+    - "OpenIMSDK/Utils (= 3.8.3+hotfix.3.1)"
+    - "OpenIMSDKCore (= 3.8.3+3)"
+  - "OpenIMSDK/Callbacker (3.8.3+hotfix.3.1)":
+    - MJExtension
+    - OpenIMSDK/Model
+    - OpenIMSDK/Utils
+    - "OpenIMSDKCore (= 3.8.3+3)"
+  - "OpenIMSDK/CallbackProxy (3.8.3+hotfix.3.1)":
+    - MJExtension
+    - OpenIMSDK/Utils
+    - "OpenIMSDKCore (= 3.8.3+3)"
+  - "OpenIMSDK/Interface (3.8.3+hotfix.3.1)":
+    - MJExtension
+    - OpenIMSDK/Callbacker
+    - OpenIMSDK/CallbackProxy
+    - OpenIMSDK/Model
+    - "OpenIMSDKCore (= 3.8.3+3)"
+  - "OpenIMSDK/Model (3.8.3+hotfix.3.1)":
+    - MJExtension
+    - OpenIMSDK/Utils
+    - "OpenIMSDKCore (= 3.8.3+3)"
+  - "OpenIMSDK/Utils (3.8.3+hotfix.3.1)":
+    - MJExtension
+    - "OpenIMSDKCore (= 3.8.3+3)"
+  - "OpenIMSDKCore (3.8.3+3)"
   - RCT-Folly (2024.11.18.00):
     - boost
     - DoubleConversion
@@ -2518,6 +2579,7 @@ DEPENDENCIES:
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - "ItcBiometric (from `../node_modules/@itc/biometric`)"
+  - ItcOpenIM (from `../../../packages/im/ios`)
   - "op-sqlite (from `../node_modules/@op-engineering/op-sqlite`)"
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTDeprecation (from `../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation`)
@@ -2594,8 +2656,11 @@ SPEC REPOS:
   trunk:
     - Base64
     - JWT
+    - MJExtension
     - MMKV
     - MMKVCore
+    - OpenIMSDK
+    - OpenIMSDKCore
     - SocketRocket
     - SSZipArchive
 
@@ -2619,6 +2684,8 @@ EXTERNAL SOURCES:
     :tag: hermes-2025-09-01-RNv0.82.0-265ef62ff3eb7289d17e366664ac0da82303e101
   ItcBiometric:
     :path: "../node_modules/@itc/biometric"
+  ItcOpenIM:
+    :path: "../../../packages/im/ios"
   op-sqlite:
     :path: "../node_modules/@op-engineering/op-sqlite"
   RCT-Folly:
@@ -2769,10 +2836,14 @@ SPEC CHECKSUMS:
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
   hermes-engine: 273e30e7fb618279934b0b95ffab60ecedb7acf5
   ItcBiometric: 828a6b3fc90cfd2eceb25e4e40df69fbc8a56074
+  ItcOpenIM: c7cd4edc186dec53508d6dd3d58c3c97e352951a
   JWT: ef71dfb03e1f842081e64dc42eef0e164f35d251
+  MJExtension: e97d164cb411aa9795cf576093a1fa208b4a8dd8
   MMKV: 43cd10be0f925bf3fd5c2bd8bea501a328037b64
   MMKVCore: 13be45a0394861b74836875ac9ec7ee939e86b78
   op-sqlite: 48c51fd7f690cd87228654d7912f0af2703b8f43
+  OpenIMSDK: c1880296ead605bcac2a289ad0aef9170fe6e6df
+  OpenIMSDKCore: 75caba22be8ee484011f367711178312bd64a17d
   RCT-Folly: 59ec0ac1f2f39672a0c6e6cecdd39383b764646f
   RCTDeprecation: f17e2ebc07876ca9ab8eb6e4b0a4e4647497ae3a
   RCTRequired: e2c574c1b45231f7efb0834936bd609d75072b63
@@ -2844,6 +2915,6 @@ SPEC CHECKSUMS:
   SSZipArchive: 62d4947b08730e4cda640473b0066d209ff033c9
   Yoga: 8e01cef9947ca77f0477a098f0b32848a8e448c6
 
-PODFILE CHECKSUM: 65e1c5fd42161c1d6105d49ae7c86bf816950215
+PODFILE CHECKSUM: 42756db8ff1c8ce9edaa56e998c009e1d2bc3f34
 
 COCOAPODS: 1.15.2

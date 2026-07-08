@@ -21,5 +21,11 @@ module.exports = {
         android: { sourceDir: '../node_modules/react-native-code-push/android/app' },
       },
     },
+    // IM SDK 模块
+    '@itc/rn-client-sdk-plus': {
+      platforms: {
+        android: { sourceDir: '../../packages/im/android' },
+      },
+    },
   },
 };

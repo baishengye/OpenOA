@@ -4,3 +4,7 @@ extensions.configure(com.facebook.react.ReactSettingsExtension){ ex -> ex.autoli
 rootProject.name = 'OpenOA'
 include ':app'
 includeBuild('../node_modules/@react-native/gradle-plugin')
+
+// IM SDK 模块（手动包含，autolinking 无法从 monorepo workspace 解析）
+include ':itc_rn-client-sdk-plus'
+project(':itc_rn-client-sdk-plus').projectDir = new File(rootProject.projectDir, '../../../packages/im/android')

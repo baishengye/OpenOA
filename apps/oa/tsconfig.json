@@ -15,7 +15,7 @@
       "@itc/push": [
         "../../packages/push/src/index.ts"
       ],
-      "@openim/rn-client-sdk-plus": [
+      "@itc/rn-client-sdk-plus": [
         "../../packages/im/src/index.ts"
       ],
       "@itc/storage": [
