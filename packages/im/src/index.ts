@@ -10,10 +10,30 @@
  * 经 @itc/base 的 eventBus 下发。
  */
 import { BaseModule, eventBus, ErrorCode, ItcError, logger } from '@itc/base';
-import ItcOpenIMSDK from './ItcOpenIMSDK';
+import ItcOpenIMSDK, { NativeItcOpenIM } from './ItcOpenIMSDK';
+import { NativeEventEmitter } from 'react-native';
 import type { IMMessage, ConnectionState, IMInitOptions } from './types';
 
 const TAG = 'im';
+
+// NativeEventEmitter 用于订阅原生事件
+let nativeEmitter: NativeEventEmitter | null = null;
+
+function getNativeEmitter(): NativeEventEmitter {
+  if (!nativeEmitter) {
+    if (!NativeItcOpenIM) {
+      logger.warn(TAG, 'NativeEventEmitter 不可用，跳过事件监听');
+      // 返回一个 noop emitter
+      return {
+        addListener: () => ({ remove: () => {} }),
+        removeAllListeners: () => {},
+        listenerCount: () => 0,
+      } as unknown as NativeEventEmitter;
+    }
+    nativeEmitter = new NativeEventEmitter(NativeItcOpenIM);
+  }
+  return nativeEmitter;
+}
 
 // ============ 事件类型声明 ============
 declare module '@itc/base' {
@@ -52,10 +72,10 @@ class IMModule extends BaseModule<IMInitOptions> {
     const platformId = 2; // 默认 Android，后续根据平台动态设置
 
     try {
-      const config = JSON.stringify({
+      const config = {
         ..._options,
         platformID: platformId,
-      });
+      };
 
       await ItcOpenIMSDK.initSDK(config, generateOperationID());
       this._setupListeners();
@@ -80,56 +100,58 @@ class IMModule extends BaseModule<IMInitOptions> {
     if (this._listenersSet) return;
     this._listenersSet = true;
 
+    const emitter = getNativeEmitter();
+
     // 连接状态事件
-    ItcOpenIMSDK.addListener('onConnectSuccess', () => {
+    emitter.addListener('onConnectSuccess', () => {
       eventBus.emit('im:connectionChanged', 'connected');
     });
 
-    ItcOpenIMSDK.addListener('onConnecting', () => {
+    emitter.addListener('onConnecting', () => {
       eventBus.emit('im:connectionChanged', 'connecting');
     });
 
-    ItcOpenIMSDK.addListener('onConnectFailed', (code: number, msg: string) => {
-      logger.error(TAG, `连接失败: ${code} ${msg}`);
+    emitter.addListener('onConnectFailed', ((event: { code: number; msg: string }) => {
+      logger.error(TAG, `连接失败: ${event.code} ${event.msg}`);
       eventBus.emit('im:connectionChanged', 'disconnected');
-    });
+    }) as (event: any) => void);
 
-    ItcOpenIMSDK.addListener('onKickedOffline', () => {
-      eventBus.emit('im:kickedOffline');
+    emitter.addListener('onKickedOffline', () => {
+      eventBus.emit('im:kickedOffline', undefined);
       eventBus.emit('im:connectionChanged', 'kickedOffline');
     });
 
-    ItcOpenIMSDK.addListener('onUserTokenExpired', () => {
-      eventBus.emit('im:tokenExpired');
+    emitter.addListener('onUserTokenExpired', () => {
+      eventBus.emit('im:tokenExpired', undefined);
     });
 
     // 消息事件
-    ItcOpenIMSDK.addListener('onRecvNewMessages', (msgList: string) => {
+    emitter.addListener('onRecvNewMessages', ((msgList: string) => {
       try {
         const messages = JSON.parse(msgList) as IMMessage[];
         messages.forEach(msg => eventBus.emit('im:newMessage', msg));
       } catch (e) {
         logger.error(TAG, '解析消息失败', e);
       }
-    });
+    }) as (event: any) => void);
 
     // 会话事件
-    ItcOpenIMSDK.addListener('onConversationChanged', (conversationList: string) => {
+    emitter.addListener('onConversationChanged', ((conversationList: string) => {
       eventBus.emit('im:conversationChanged', conversationList);
-    });
+    }) as (event: any) => void);
 
-    ItcOpenIMSDK.addListener('onInputStatusChanged', (userId: string, status: boolean) => {
-      eventBus.emit('im:typingStatus', { userId, status });
-    });
+    emitter.addListener('onInputStatusChanged', ((event: { userId: string; status: boolean }) => {
+      eventBus.emit('im:typingStatus', { userId: event.userId, status: event.status });
+    }) as (event: any) => void);
 
-    ItcOpenIMSDK.addListener('onTotalUnreadMessageCountChanged', (count: number) => {
+    emitter.addListener('onTotalUnreadMessageCountChanged', ((count: number) => {
       eventBus.emit('im:totalUnreadChanged', count);
-    });
+    }) as (event: any) => void);
 
     // 消息撤回
-    ItcOpenIMSDK.addListener('onNewRecvMessageRevoked', (msgId: string) => {
+    emitter.addListener('onNewRecvMessageRevoked', ((msgId: string) => {
       eventBus.emit('im:messageRevoked', msgId);
-    });
+    }) as (event: any) => void);
   }
 
   /** 移除事件监听 */

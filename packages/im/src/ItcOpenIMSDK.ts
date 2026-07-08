@@ -24,13 +24,6 @@ function getIMModule(): Spec {
     _module = TurboModuleRegistry.getEnforcing<Spec>('ItcOpenIM');
     return _module;
   } catch {
-    // Fallback: Bridge Module（iOS 当前使用 RCT_EXPORT_MODULE）
-    const bridgeModule = (NativeModules as unknown as Record<string, unknown>)['ItcOpenIM'] as Spec | undefined;
-    if (bridgeModule) {
-      console.warn('[ItcOpenIM] Using Bridge Module fallback (TurboModule not available)');
-      _module = bridgeModule;
-      return _module;
-    }
     // 最终兜底：抛出原始错误
     throw new Error('ItcOpenIM native module not found');
   }
@@ -42,6 +35,9 @@ const ItcOpenIMSDK: Spec = new Proxy({} as Spec, {
     return (getIMModule() as unknown as Record<string, unknown>)[prop as string];
   },
 });
+
+// 导出原生模块引用供 NativeEventEmitter 使用（防御性检查）
+export const NativeItcOpenIM: object | null = NativeModules.ItcOpenIM ?? null;
 
 export default ItcOpenIMSDK;
 
@@ -116,7 +112,7 @@ export interface Spec extends TurboModule {
   // ============ 登录相关 ============
 
   /** 初始化 SDK */
-  initSDK(config: string, operationID: string): Promise<boolean>;
+  initSDK(config: object, operationID: string): Promise<string>;
 
   /** 登录 */
   login(userID: string, token: string, operationID: string): Promise<void>;
