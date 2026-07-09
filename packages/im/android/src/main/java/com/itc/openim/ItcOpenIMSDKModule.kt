@@ -203,7 +203,7 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
         val result = Open_im_sdk.getConversationIDBySessionType(
             operationID,
             jsonParams.getString("sourceID"),
-            jsonParams.getIntValue("sessionType")
+            jsonParams.getLongValue("sessionType")
         )
         promise.resolve(result)
     }
@@ -526,7 +526,7 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
     @ReactMethod
     fun createFaceMessage(params: String, operationID: String, promise: Promise) {
         val jsonParams = JSON.parseObject(params)
-        val index = jsonParams.getIntValue("index")
+        val index = jsonParams.getLongValue("index")
         val data = jsonParams.getString("data")
         val message = Open_im_sdk.createFaceMessage(operationID, index, data)
         try {
@@ -717,7 +717,7 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
             operationID,
             jsonParams.getIntValue("offset"),
             jsonParams.getIntValue("count"),
-            jsonParams.getBooleanValue("filterBlack", false)
+            jsonParams.getBooleanValue("filterBlack")
         )
     }
 
@@ -1032,7 +1032,7 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
 
     @ReactMethod
     fun updateFcmToken(fcmToken: String, expireTime: Double, operationID: String, promise: Promise) {
-        Open_im_sdk.updateFcmToken(BaseImpl(promise), operationID, fcmToken, expireTime.toInt())
+        Open_im_sdk.updateFcmToken(BaseImpl(promise), operationID, fcmToken, expireTime.toLong())
     }
 
     @ReactMethod

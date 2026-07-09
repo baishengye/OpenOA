@@ -1,21 +1,33 @@
 package com.itc.openim.utils;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class SendMsgCallBack extends Emitter implements open_im_sdk_callback.SendMsgCallBack {
   final ReactApplicationContext ctx;
   final private Promise promise;
   final private ReadableMap message;
 
-  public SendMsgCallBack(ReactApplicationContext ctx, Promise promise, ReadableMap message) {
+  public SendMsgCallBack(ReactApplicationContext ctx, Promise promise, JSONObject jsonMessage) {
     this.ctx = ctx;
     this.promise = promise;
-    this.message = message;
+    this.message = convertJSONObjectToReadableMap(jsonMessage);
+  }
+
+  private static ReadableMap convertJSONObjectToReadableMap(JSONObject jsonObject) {
+    if (jsonObject == null) {
+      return Arguments.createMap();
+    }
+    Map<String, Object> map = new HashMap<>(jsonObject);
+    return Arguments.makeNativeMap(map);
   }
 
   @Override
