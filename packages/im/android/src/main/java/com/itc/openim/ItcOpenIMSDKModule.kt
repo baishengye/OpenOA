@@ -44,15 +44,14 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
     // ========== Initialization & Login ==========
 
     @ReactMethod
-    fun initSDK(options: ReadableMap, operationID: String, promise: Promise) {
-        val config = Arguments.createMap()
-        config.merge(options)
-        config.putInt("platformID", 2)
+    fun initSDK(config: String, operationID: String, promise: Promise) {
+        val jsonConfig = JSON.parseObject(config)
+        jsonConfig["platformID"] = 2
 
         val initialized = Open_im_sdk.initSDK(
             InitSDKListener(reactContext),
             operationID,
-            config.toString()
+            jsonConfig.toString()
         )
         setUserListener()
         setConversationListener()
@@ -69,12 +68,12 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
     }
 
     @ReactMethod
-    fun login(options: ReadableMap, operationID: String, promise: Promise) {
+    fun login(userID: String, token: String, operationID: String, promise: Promise) {
         Open_im_sdk.login(
             BaseImpl(promise),
             operationID,
-            options.getString("userID"),
-            options.getString("token")
+            userID,
+            token
         )
     }
 
@@ -95,6 +94,11 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
         promise.resolve(userID)
     }
 
+    @ReactMethod
+    fun uploadFile(reqData: String, operationID: String, promise: Promise) {
+        Open_im_sdk.uploadFile(BaseImpl(promise), operationID, reqData, UploadFileCallbackListener(reactContext, operationID))
+    }
+
     // ========== User ==========
 
     @ReactMethod
@@ -103,8 +107,8 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
     }
 
     @ReactMethod
-    fun getUsersInfo(userIDList: ReadableArray, operationID: String, promise: Promise) {
-        Open_im_sdk.getUsersInfo(BaseImpl(promise), operationID, userIDList.toString())
+    fun getUsersInfo(userIDList: String, operationID: String, promise: Promise) {
+        Open_im_sdk.getUsersInfo(BaseImpl(promise), operationID, userIDList)
     }
 
     @ReactMethod
@@ -113,8 +117,45 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
     }
 
     @ReactMethod
-    fun setSelfInfo(userInfo: ReadableMap, operationID: String, promise: Promise) {
-        Open_im_sdk.setSelfInfo(BaseImpl(promise), operationID, map2string(userInfo))
+    fun setSelfInfo(userInfo: String, operationID: String, promise: Promise) {
+        Open_im_sdk.setSelfInfo(BaseImpl(promise), operationID, userInfo)
+    }
+
+    @ReactMethod
+    fun getUserStatus(userIDList: String, operationID: String, promise: Promise) {
+        Open_im_sdk.getUserStatus(BaseImpl(promise), operationID, userIDList)
+    }
+
+    @ReactMethod
+    fun subscribeUsersStatus(userIDList: String, operationID: String, promise: Promise) {
+        Open_im_sdk.subscribeUsersStatus(BaseImpl(promise), operationID, userIDList)
+    }
+
+    @ReactMethod
+    fun unsubscribeUsersStatus(userIDList: String, operationID: String, promise: Promise) {
+        Open_im_sdk.unsubscribeUsersStatus(BaseImpl(promise), operationID, userIDList)
+    }
+
+    @ReactMethod
+    fun getSubscribeUsersStatus(operationID: String, promise: Promise) {
+        Open_im_sdk.getSubscribeUsersStatus(BaseImpl(promise), operationID)
+    }
+
+    @ReactMethod
+    fun setAppBackgroundStatus(isBackground: Boolean, operationID: String, promise: Promise) {
+        Open_im_sdk.setAppBackgroundStatus(BaseImpl(promise), operationID, isBackground)
+    }
+
+    @ReactMethod
+    fun networkStatusChanged(operationID: String, promise: Promise) {
+        Open_im_sdk.networkStatusChanged(BaseImpl(promise), operationID)
+    }
+
+    @ReactMethod
+    fun setGlobalRecvMessageOpt(recvOpt: Double, operationID: String, promise: Promise) {
+        val params = JSONObject()
+        params["globalRecvMsgOpt"] = recvOpt.toInt()
+        Open_im_sdk.setSelfInfo(BaseImpl(promise), operationID, params.toString())
     }
 
     // ========== Conversation ==========
@@ -130,48 +171,46 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
     }
 
     @ReactMethod
-    fun getConversationListSplit(options: ReadableMap, operationID: String, promise: Promise) {
+    fun getConversationListSplit(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
         Open_im_sdk.getConversationListSplit(
             BaseImpl(promise),
             operationID,
-            options.getInt("offset").toLong(),
-            options.getInt("count").toLong()
+            jsonParams.getLongValue("offset"),
+            jsonParams.getLongValue("count")
         )
     }
 
     @ReactMethod
-    fun getOneConversation(options: ReadableMap, operationID: String, promise: Promise) {
+    fun getOneConversation(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
         Open_im_sdk.getOneConversation(
             BaseImpl(promise),
             operationID,
-            options.getInt("sessionType"),
-            options.getString("sourceID")
+            jsonParams.getIntValue("sessionType"),
+            jsonParams.getString("sourceID")
         )
     }
 
     @ReactMethod
-    fun getMultipleConversation(conversationIDList: ReadableArray, operationID: String, promise: Promise) {
-        Open_im_sdk.getMultipleConversation(BaseImpl(promise), operationID, conversationIDList.toString())
+    fun getMultipleConversation(conversationIDList: String, operationID: String, promise: Promise) {
+        Open_im_sdk.getMultipleConversation(BaseImpl(promise), operationID, conversationIDList)
     }
 
     @ReactMethod
-    fun hideConversation(conversationID: String, operationID: String, promise: Promise) {
-        Open_im_sdk.hideConversation(BaseImpl(promise), operationID, conversationID)
+    fun getConversationIDBySessionType(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val result = Open_im_sdk.getConversationIDBySessionType(
+            operationID,
+            jsonParams.getString("sourceID"),
+            jsonParams.getIntValue("sessionType")
+        )
+        promise.resolve(result)
     }
 
     @ReactMethod
-    fun setConversation(options: ReadableMap, operationID: String, promise: Promise) {
-        val conversationID = options.getString("conversationID")
-        val conversation = map2string(options)
-        Open_im_sdk.setConversation(BaseImpl(promise), operationID, conversationID, conversation)
-    }
-
-    @ReactMethod
-    fun pinConversation(options: ReadableMap, operationID: String, promise: Promise) {
-        val conversationID = options.getString("conversationID")
-        val params = JSONObject()
-        params["isPinned"] = options.getBoolean("isPinned")
-        Open_im_sdk.setConversation(BaseImpl(promise), operationID, conversationID, params.toString())
+    fun getTotalUnreadMsgCount(operationID: String, promise: Promise) {
+        Open_im_sdk.getTotalUnreadMsgCount(BaseImpl(promise, Number::class.java), operationID)
     }
 
     @ReactMethod
@@ -180,8 +219,81 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
     }
 
     @ReactMethod
-    fun getTotalUnreadMsgCount(operationID: String, promise: Promise) {
-        Open_im_sdk.getTotalUnreadMsgCount(BaseImpl(promise, Number::class.java), operationID)
+    fun setConversation(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val conversationID = jsonParams.getString("conversationID")
+        Open_im_sdk.setConversation(BaseImpl(promise), operationID, conversationID, params)
+    }
+
+    @ReactMethod
+    fun setConversationDraft(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val conversationID = jsonParams.getString("conversationID")
+        val draftText = if (jsonParams.containsKey("draftText")) jsonParams.getString("draftText") else ""
+        Open_im_sdk.setConversationDraft(BaseImpl(promise), operationID, conversationID, draftText)
+    }
+
+    @ReactMethod
+    fun pinConversation(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val conversationID = jsonParams.getString("conversationID")
+        val updateParams = JSONObject()
+        updateParams["isPinned"] = jsonParams.getBoolean("isPinned")
+        Open_im_sdk.setConversation(BaseImpl(promise), operationID, conversationID, updateParams.toString())
+    }
+
+    @ReactMethod
+    fun setConversationRecvMessageOpt(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val conversationID = jsonParams.getString("conversationID")
+        val updateParams = JSONObject()
+        updateParams["recvMsgOpt"] = jsonParams.getIntValue("opt")
+        Open_im_sdk.setConversation(BaseImpl(promise), operationID, conversationID, updateParams.toString())
+    }
+
+    @ReactMethod
+    fun setConversationPrivateChat(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val conversationID = jsonParams.getString("conversationID")
+        val updateParams = JSONObject()
+        updateParams["isPrivateChat"] = jsonParams.getBoolean("isPrivate")
+        Open_im_sdk.setConversation(BaseImpl(promise), operationID, conversationID, updateParams.toString())
+    }
+
+    @ReactMethod
+    fun setConversationBurnDuration(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val conversationID = jsonParams.getString("conversationID")
+        val updateParams = JSONObject()
+        updateParams["burnDuration"] = jsonParams.getIntValue("burnDuration")
+        Open_im_sdk.setConversation(BaseImpl(promise), operationID, conversationID, updateParams.toString())
+    }
+
+    @ReactMethod
+    fun resetConversationGroupAtType(conversationID: String, operationID: String, promise: Promise) {
+        val params = JSONObject()
+        params["groupAtType"] = 0
+        Open_im_sdk.setConversation(BaseImpl(promise), operationID, conversationID, params.toString())
+    }
+
+    @ReactMethod
+    fun hideConversation(conversationID: String, operationID: String, promise: Promise) {
+        Open_im_sdk.hideConversation(BaseImpl(promise), operationID, conversationID)
+    }
+
+    @ReactMethod
+    fun hideAllConversations(operationID: String, promise: Promise) {
+        Open_im_sdk.hideAllConversations(BaseImpl(promise), operationID)
+    }
+
+    @ReactMethod
+    fun clearConversationAndDeleteAllMsg(conversationID: String, operationID: String, promise: Promise) {
+        Open_im_sdk.clearConversationAndDeleteAllMsg(BaseImpl(promise), operationID, conversationID)
+    }
+
+    @ReactMethod
+    fun deleteConversationAndDeleteAllMsg(conversationID: String, operationID: String, promise: Promise) {
+        Open_im_sdk.deleteConversationAndDeleteAllMsg(BaseImpl(promise), operationID, conversationID)
     }
 
     // ========== Message ==========
@@ -197,8 +309,8 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
     }
 
     @ReactMethod
-    fun createTextMessage(textMsg: String, operationID: String, promise: Promise) {
-        val message = Open_im_sdk.createTextMessage(operationID, textMsg)
+    fun createTextMessage(text: String, operationID: String, promise: Promise) {
+        val message = Open_im_sdk.createTextMessage(operationID, text)
         try {
             val obj = JSON.parseObject(message)
             promise.resolve(emitter.convertJsonToMap(obj))
@@ -208,10 +320,14 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
     }
 
     @ReactMethod
-    fun createTextAtMessage(options: ReadableMap, operationID: String, promise: Promise) {
-        val text = options.getString("text")
-        val atUserIDList = Objects.requireNonNull(options.getArray("atUserIDList")).toString()
-        val message = Open_im_sdk.createTextAtMessage(operationID, text, atUserIDList, null, null)
+    fun createTextAtMessage(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val text = jsonParams.getString("text")
+        val atUserIDList = jsonParams.getJSONArray("atUserIDList")?.toString() ?: "[]"
+        val atUsersInfo = if (jsonParams.containsKey("atUsersInfo")) jsonParams.getJSONArray("atUsersInfo")?.toString() else null
+        val quoteMessage = if (jsonParams.containsKey("message")) jsonParams.getJSONObject("message").toString() else null
+
+        val message = Open_im_sdk.createTextAtMessage(operationID, text, atUserIDList, atUsersInfo, quoteMessage)
         try {
             val obj = JSON.parseObject(message)
             promise.resolve(emitter.convertJsonToMap(obj))
@@ -221,8 +337,12 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
     }
 
     @ReactMethod
-    fun createImageMessage(imagePath: String, operationID: String, promise: Promise) {
-        val message = Open_im_sdk.createImageMessage(operationID, imagePath)
+    fun createQuoteMessage(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val text = jsonParams.getString("text")
+        val quoteMessage = jsonParams.getJSONObject("message").toString()
+
+        val message = Open_im_sdk.createQuoteMessage(operationID, text, quoteMessage)
         try {
             val obj = JSON.parseObject(message)
             promise.resolve(emitter.convertJsonToMap(obj))
@@ -232,10 +352,8 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
     }
 
     @ReactMethod
-    fun createSoundMessage(options: ReadableMap, operationID: String, promise: Promise) {
-        val soundPath = options.getString("soundPath") ?: ""
-        val duration = options.getInt("duration").toLong()
-        val message = Open_im_sdk.createSoundMessage(operationID, soundPath, duration)
+    fun createCardMessage(params: String, operationID: String, promise: Promise) {
+        val message = Open_im_sdk.createCardMessage(operationID, params)
         try {
             val obj = JSON.parseObject(message)
             promise.resolve(emitter.convertJsonToMap(obj))
@@ -245,12 +363,8 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
     }
 
     @ReactMethod
-    fun createVideoMessage(options: ReadableMap, operationID: String, promise: Promise) {
-        val videoPath = options.getString("videoPath") ?: ""
-        val videoType = options.getString("videoType") ?: ""
-        val duration = options.getInt("duration").toLong()
-        val snapshotPath = options.getString("snapshotPath") ?: ""
-        val message = Open_im_sdk.createVideoMessage(operationID, videoPath, videoType, duration, snapshotPath)
+    fun createImageMessageFromFullPath(imagePath: String, operationID: String, promise: Promise) {
+        val message = Open_im_sdk.createImageMessageFromFullPath(operationID, imagePath)
         try {
             val obj = JSON.parseObject(message)
             promise.resolve(emitter.convertJsonToMap(obj))
@@ -260,10 +374,14 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
     }
 
     @ReactMethod
-    fun createFileMessage(options: ReadableMap, operationID: String, promise: Promise) {
-        val filePath = options.getString("filePath")
-        val fileName = options.getString("fileName")
-        val message = Open_im_sdk.createFileMessage(operationID, filePath, fileName)
+    fun createImageMessageByURL(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val sourcePicture = jsonParams.getJSONObject("sourcePicture").toString()
+        val bigPicture = jsonParams.getJSONObject("bigPicture").toString()
+        val snapshotPicture = jsonParams.getJSONObject("snapshotPicture").toString()
+        val sourcePath = jsonParams.getString("sourcePath")
+
+        val message = Open_im_sdk.createImageMessageByURL(operationID, sourcePath, sourcePicture, bigPicture, snapshotPicture)
         try {
             val obj = JSON.parseObject(message)
             promise.resolve(emitter.convertJsonToMap(obj))
@@ -273,10 +391,114 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
     }
 
     @ReactMethod
-    fun createLocationMessage(options: ReadableMap, operationID: String, promise: Promise) {
-        val description = options.getString("description")
-        val longitude = options.getDouble("longitude")
-        val latitude = options.getDouble("latitude")
+    fun createSoundMessageFromFullPath(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val soundPath = jsonParams.getString("soundPath") ?: ""
+        val duration = jsonParams.getLongValue("duration")
+        val message = Open_im_sdk.createSoundMessageFromFullPath(operationID, soundPath, duration)
+        try {
+            val obj = JSON.parseObject(message)
+            promise.resolve(emitter.convertJsonToMap(obj))
+        } catch (e: Exception) {
+            promise.resolve(message)
+        }
+    }
+
+    @ReactMethod
+    fun createSoundMessageByURL(params: String, operationID: String, promise: Promise) {
+        val message = Open_im_sdk.createSoundMessageByURL(operationID, params)
+        try {
+            val obj = JSON.parseObject(message)
+            promise.resolve(emitter.convertJsonToMap(obj))
+        } catch (e: Exception) {
+            promise.resolve(message)
+        }
+    }
+
+    @ReactMethod
+    fun createVideoMessageFromFullPath(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val videoPath = jsonParams.getString("videoPath") ?: ""
+        val videoType = jsonParams.getString("videoType") ?: ""
+        val duration = jsonParams.getLongValue("duration")
+        val snapshotPath = jsonParams.getString("snapshotPath") ?: ""
+        val message = Open_im_sdk.createVideoMessageFromFullPath(operationID, videoPath, videoType, duration, snapshotPath)
+        try {
+            val obj = JSON.parseObject(message)
+            promise.resolve(emitter.convertJsonToMap(obj))
+        } catch (e: Exception) {
+            promise.resolve(message)
+        }
+    }
+
+    @ReactMethod
+    fun createVideoMessageByURL(params: String, operationID: String, promise: Promise) {
+        val message = Open_im_sdk.createVideoMessageByURL(operationID, params)
+        try {
+            val obj = JSON.parseObject(message)
+            promise.resolve(emitter.convertJsonToMap(obj))
+        } catch (e: Exception) {
+            promise.resolve(message)
+        }
+    }
+
+    @ReactMethod
+    fun createFileMessageFromFullPath(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val filePath = jsonParams.getString("filePath")
+        val fileName = jsonParams.getString("fileName")
+        val message = Open_im_sdk.createFileMessageFromFullPath(operationID, filePath, fileName)
+        try {
+            val obj = JSON.parseObject(message)
+            promise.resolve(emitter.convertJsonToMap(obj))
+        } catch (e: Exception) {
+            promise.resolve(message)
+        }
+    }
+
+    @ReactMethod
+    fun createFileMessageByURL(params: String, operationID: String, promise: Promise) {
+        val message = Open_im_sdk.createFileMessageByURL(operationID, params)
+        try {
+            val obj = JSON.parseObject(message)
+            promise.resolve(emitter.convertJsonToMap(obj))
+        } catch (e: Exception) {
+            promise.resolve(message)
+        }
+    }
+
+    @ReactMethod
+    fun createMergerMessage(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val messageList = jsonParams.getJSONArray("messageList").toString()
+        val title = jsonParams.getString("title")
+        val summaryList = jsonParams.getJSONArray("summaryList").toString()
+        val message = Open_im_sdk.createMergerMessage(operationID, messageList, title, summaryList)
+        try {
+            val obj = JSON.parseObject(message)
+            promise.resolve(emitter.convertJsonToMap(obj))
+        } catch (e: Exception) {
+            promise.resolve(message)
+        }
+    }
+
+    @ReactMethod
+    fun createForwardMessage(params: String, operationID: String, promise: Promise) {
+        val message = Open_im_sdk.createForwardMessage(operationID, params)
+        try {
+            val obj = JSON.parseObject(message)
+            promise.resolve(emitter.convertJsonToMap(obj))
+        } catch (e: Exception) {
+            promise.resolve(message)
+        }
+    }
+
+    @ReactMethod
+    fun createLocationMessage(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val description = jsonParams.getString("description")
+        val longitude = jsonParams.getDouble("longitude")
+        val latitude = jsonParams.getDouble("latitude")
         val message = Open_im_sdk.createLocationMessage(operationID, description, longitude, latitude)
         try {
             val obj = JSON.parseObject(message)
@@ -287,10 +509,11 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
     }
 
     @ReactMethod
-    fun createCustomMessage(options: ReadableMap, operationID: String, promise: Promise) {
-        val data = options.getString("data")
-        val extension = options.getString("extension")
-        val description = options.getString("description")
+    fun createCustomMessage(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val data = jsonParams.getString("data")
+        val extension = jsonParams.getString("extension")
+        val description = jsonParams.getString("description")
         val message = Open_im_sdk.createCustomMessage(operationID, data, extension, description)
         try {
             val obj = JSON.parseObject(message)
@@ -301,16 +524,30 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
     }
 
     @ReactMethod
-    fun sendMessage(options: ReadableMap, operationID: String, promise: Promise) {
-        val message: ReadableMap = options.getMap("message")!!
-        val messageStr = map2string(message)
-        val conversationID = options.getString("conversationID") ?: ""
-        val offlinePushInfo = if (options.hasKey("offlinePushInfo")) options.getString("offlinePushInfo") ?: "" else ""
-        val chatExp = if (options.hasKey("expireTime")) options.getInt("expireTime") else 0
+    fun createFaceMessage(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val index = jsonParams.getIntValue("index")
+        val data = jsonParams.getString("data")
+        val message = Open_im_sdk.createFaceMessage(operationID, index, data)
+        try {
+            val obj = JSON.parseObject(message)
+            promise.resolve(emitter.convertJsonToMap(obj))
+        } catch (e: Exception) {
+            promise.resolve(message)
+        }
+    }
+
+    @ReactMethod
+    fun sendMessage(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val message = jsonParams.getJSONObject("message").toString()
+        val conversationID = jsonParams.getString("conversationID") ?: ""
+        val offlinePushInfo = if (jsonParams.containsKey("offlinePushInfo")) jsonParams.getString("offlinePushInfo") ?: "" else ""
+        val chatExp = if (jsonParams.containsKey("expireTime")) jsonParams.getIntValue("expireTime") else 0
         Open_im_sdk.sendMessage(
-            SendMsgCallBack(reactContext, promise, message),
+            SendMsgCallBack(reactContext, promise, jsonParams.getJSONObject("message")),
             operationID,
-            messageStr,
+            message,
             conversationID,
             offlinePushInfo,
             chatExp.toString(),
@@ -319,28 +556,84 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
     }
 
     @ReactMethod
-    fun getHistoryMessageList(options: ReadableMap, operationID: String, promise: Promise) {
-        Open_im_sdk.getAdvancedHistoryMessageList(BaseImpl(promise), operationID, map2string(options))
+    fun sendMessageNotOss(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val message = jsonParams.getJSONObject("message").toString()
+        val receiver = jsonParams.getString("recvID") ?: ""
+        val groupID = jsonParams.getString("groupID") ?: ""
+        val offlinePushInfo = if (jsonParams.containsKey("offlinePushInfo")) jsonParams.getString("offlinePushInfo") ?: "" else ""
+        val isOnlineOnly = if (jsonParams.containsKey("isOnlineOnly")) jsonParams.getBoolean("isOnlineOnly") else false
+        Open_im_sdk.sendMessageNotOss(
+            SendMsgCallBack(reactContext, promise, jsonParams.getJSONObject("message")),
+            operationID,
+            message,
+            receiver,
+            groupID,
+            offlinePushInfo,
+            isOnlineOnly
+        )
     }
 
     @ReactMethod
-    fun revokeMessage(options: ReadableMap, operationID: String, promise: Promise) {
+    fun typingStatusUpdate(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        Open_im_sdk.typingStatusUpdate(
+            BaseImpl(promise),
+            operationID,
+            jsonParams.getString("recvID"),
+            jsonParams.getString("msgTip")
+        )
+    }
+
+    @ReactMethod
+    fun changeInputStates(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val conversationID = jsonParams.getString("conversationID")
+        val focus = jsonParams.getBoolean("focus")
+        Open_im_sdk.changeInputStates(BaseImpl(promise), operationID, conversationID, focus)
+    }
+
+    @ReactMethod
+    fun getInputStates(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val conversationID = jsonParams.getString("conversationID")
+        val userID = jsonParams.getString("userID")
+        Open_im_sdk.getInputStates(BaseImpl(promise), operationID, conversationID, userID)
+    }
+
+    @ReactMethod
+    fun revokeMessage(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
         Open_im_sdk.revokeMessage(
             BaseImpl(promise),
             operationID,
-            options.getString("conversationID"),
-            options.getString("clientMsgID")
+            jsonParams.getString("conversationID"),
+            jsonParams.getString("clientMsgID")
         )
     }
 
     @ReactMethod
-    fun deleteMessage(options: ReadableMap, operationID: String, promise: Promise) {
+    fun deleteMessage(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
         Open_im_sdk.deleteMessage(
             BaseImpl(promise),
             operationID,
-            options.getString("conversationID"),
-            options.getString("clientMsgID")
+            jsonParams.getString("conversationID"),
+            jsonParams.getString("clientMsgID")
         )
+    }
+
+    @ReactMethod
+    fun deleteMessageFromLocalStorage(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val conversationID = jsonParams.getString("conversationID")
+        val clientMsgID = jsonParams.getString("clientMsgID")
+        Open_im_sdk.deleteMessageFromLocalStorage(BaseImpl(promise), operationID, conversationID, clientMsgID)
+    }
+
+    @ReactMethod
+    fun deleteAllMsgFromLocal(operationID: String, promise: Promise) {
+        Open_im_sdk.deleteAllMsgFromLocal(BaseImpl(promise), operationID)
     }
 
     @ReactMethod
@@ -349,8 +642,59 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
     }
 
     @ReactMethod
-    fun searchLocalMessages(searchParam: ReadableMap, operationID: String, promise: Promise) {
-        Open_im_sdk.searchLocalMessages(BaseImpl(promise), operationID, map2string(searchParam))
+    fun searchLocalMessages(params: String, operationID: String, promise: Promise) {
+        Open_im_sdk.searchLocalMessages(BaseImpl(promise), operationID, params)
+    }
+
+    @ReactMethod
+    fun getAdvancedHistoryMessageList(params: String, operationID: String, promise: Promise) {
+        Open_im_sdk.getAdvancedHistoryMessageList(BaseImpl(promise), operationID, params)
+    }
+
+    @ReactMethod
+    fun getAdvancedHistoryMessageListReverse(params: String, operationID: String, promise: Promise) {
+        Open_im_sdk.getAdvancedHistoryMessageListReverse(BaseImpl(promise), operationID, params)
+    }
+
+    @ReactMethod
+    fun findMessageList(params: String, operationID: String, promise: Promise) {
+        Open_im_sdk.findMessageList(BaseImpl(promise), operationID, params)
+    }
+
+    @ReactMethod
+    fun insertSingleMessageToLocalStorage(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        Open_im_sdk.insertSingleMessageToLocalStorage(
+            BaseImpl(promise),
+            operationID,
+            jsonParams.getJSONObject("message").toString(),
+            jsonParams.getString("recvID"),
+            jsonParams.getString("sendID")
+        )
+    }
+
+    @ReactMethod
+    fun insertGroupMessageToLocalStorage(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        Open_im_sdk.insertGroupMessageToLocalStorage(
+            BaseImpl(promise),
+            operationID,
+            jsonParams.getJSONObject("message").toString(),
+            jsonParams.getString("groupID"),
+            jsonParams.getString("sendID")
+        )
+    }
+
+    @ReactMethod
+    fun setMessageLocalEx(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        Open_im_sdk.setMessageLocalEx(
+            BaseImpl(promise),
+            operationID,
+            jsonParams.getString("conversationID"),
+            jsonParams.getString("clientMsgID"),
+            jsonParams.getString("localEx")
+        )
     }
 
     // ========== Friend ==========
@@ -361,34 +705,50 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
     }
 
     @ReactMethod
-    fun getFriendList(operationID: String, promise: Promise) {
-        Open_im_sdk.getFriendList(BaseImpl(promise), operationID, false)
+    fun getFriendList(filterBlack: Boolean, operationID: String, promise: Promise) {
+        Open_im_sdk.getFriendList(BaseImpl(promise), operationID, filterBlack)
     }
 
     @ReactMethod
-    fun getFriendListPage(options: ReadableMap, operationID: String, promise: Promise) {
+    fun getFriendListPage(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
         Open_im_sdk.getFriendListPage(
             BaseImpl(promise),
             operationID,
-            options.getInt("offset"),
-            options.getInt("count"),
-            false
+            jsonParams.getIntValue("offset"),
+            jsonParams.getIntValue("count"),
+            jsonParams.getBooleanValue("filterBlack", false)
         )
     }
 
     @ReactMethod
-    fun getSpecifiedFriendsInfo(userIDList: ReadableArray, operationID: String, promise: Promise) {
-        Open_im_sdk.getSpecifiedFriendsInfo(BaseImpl(promise), operationID, userIDList.toString(), false)
+    fun getSpecifiedFriendsInfo(params: String, operationID: String, promise: Promise) {
+        Open_im_sdk.getSpecifiedFriendsInfo(BaseImpl(promise), operationID, params, false)
     }
 
     @ReactMethod
-    fun searchFriends(options: ReadableMap, operationID: String, promise: Promise) {
-        Open_im_sdk.searchFriends(BaseImpl(promise), operationID, map2string(options))
+    fun searchFriends(params: String, operationID: String, promise: Promise) {
+        Open_im_sdk.searchFriends(BaseImpl(promise), operationID, params)
     }
 
     @ReactMethod
-    fun addFriend(params: ReadableMap, operationID: String, promise: Promise) {
-        Open_im_sdk.addFriend(BaseImpl(promise), operationID, map2string(params) ?: "[]")
+    fun addFriend(params: String, operationID: String, promise: Promise) {
+        Open_im_sdk.addFriend(BaseImpl(promise), operationID, params)
+    }
+
+    @ReactMethod
+    fun checkFriend(params: String, operationID: String, promise: Promise) {
+        Open_im_sdk.checkFriend(BaseImpl(promise), operationID, params)
+    }
+
+    @ReactMethod
+    fun updateFriends(params: String, operationID: String, promise: Promise) {
+        Open_im_sdk.updateFriends(BaseImpl(promise), operationID, params)
+    }
+
+    @ReactMethod
+    fun getFriendApplicationUnhandledCount(params: String, operationID: String, promise: Promise) {
+        Open_im_sdk.getFriendApplicationUnhandledCount(BaseImpl(promise, Number::class.java), operationID, params)
     }
 
     @ReactMethod
@@ -397,39 +757,41 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
     }
 
     @ReactMethod
-    fun setFriendRemark(options: ReadableMap, operationID: String, promise: Promise) {
+    fun setFriendRemark(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
         val toUserIDList = java.util.ArrayList<String>()
-        toUserIDList.add(options.getString("toUserID") ?: "")
-        val params = JSONObject()
-        params["friendUserIDs"] = toUserIDList
-        params["remark"] = options.getString("remark") ?: ""
-        Open_im_sdk.updateFriends(BaseImpl(promise), operationID, params.toString())
+        toUserIDList.add(jsonParams.getString("toUserID") ?: "")
+        val updateParams = JSONObject()
+        updateParams["friendUserIDs"] = toUserIDList
+        updateParams["remark"] = jsonParams.getString("remark") ?: ""
+        Open_im_sdk.updateFriends(BaseImpl(promise), operationID, updateParams.toString())
     }
 
     @ReactMethod
-    fun getFriendApplicationListAsApplicant(operationID: String, promise: Promise) {
-        Open_im_sdk.getFriendApplicationListAsApplicant(BaseImpl(promise), operationID, "{}")
+    fun getFriendApplicationListAsApplicant(params: String, operationID: String, promise: Promise) {
+        Open_im_sdk.getFriendApplicationListAsApplicant(BaseImpl(promise), operationID, params)
     }
 
     @ReactMethod
-    fun getFriendApplicationListAsRecipient(operationID: String, promise: Promise) {
-        Open_im_sdk.getFriendApplicationListAsRecipient(BaseImpl(promise), operationID, "{}")
+    fun getFriendApplicationListAsRecipient(params: String, operationID: String, promise: Promise) {
+        Open_im_sdk.getFriendApplicationListAsRecipient(BaseImpl(promise), operationID, params)
     }
 
     @ReactMethod
-    fun acceptFriendApplication(options: ReadableMap, operationID: String, promise: Promise) {
-        Open_im_sdk.acceptFriendApplication(BaseImpl(promise), operationID, map2string(options))
+    fun acceptFriendApplication(params: String, operationID: String, promise: Promise) {
+        Open_im_sdk.acceptFriendApplication(BaseImpl(promise), operationID, params)
     }
 
     @ReactMethod
-    fun refuseFriendApplication(options: ReadableMap, operationID: String, promise: Promise) {
-        Open_im_sdk.refuseFriendApplication(BaseImpl(promise), operationID, map2string(options))
+    fun refuseFriendApplication(params: String, operationID: String, promise: Promise) {
+        Open_im_sdk.refuseFriendApplication(BaseImpl(promise), operationID, params)
     }
 
     @ReactMethod
-    fun addBlack(options: ReadableMap, operationID: String, promise: Promise) {
-        val ex = if (options.hasKey("ex")) options.getString("ex") else ""
-        Open_im_sdk.addBlack(BaseImpl(promise), operationID, options.getString("toUserID"), ex)
+    fun addBlack(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val ex = if (jsonParams.containsKey("ex")) jsonParams.getString("ex") else ""
+        Open_im_sdk.addBlack(BaseImpl(promise), operationID, jsonParams.getString("toUserID"), ex)
     }
 
     @ReactMethod
@@ -438,8 +800,8 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
     }
 
     @ReactMethod
-    fun removeBlack(removeUserID: String, operationID: String, promise: Promise) {
-        Open_im_sdk.removeBlack(BaseImpl(promise), operationID, removeUserID)
+    fun removeBlack(userID: String, operationID: String, promise: Promise) {
+        Open_im_sdk.removeBlack(BaseImpl(promise), operationID, userID)
     }
 
     // ========== Group ==========
@@ -450,19 +812,20 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
     }
 
     @ReactMethod
-    fun createGroup(gInfo: ReadableMap, operationID: String, promise: Promise) {
-        Open_im_sdk.createGroup(BaseImpl(promise), operationID, map2string(gInfo))
+    fun createGroup(params: String, operationID: String, promise: Promise) {
+        Open_im_sdk.createGroup(BaseImpl(promise), operationID, params)
     }
 
     @ReactMethod
-    fun joinGroup(options: ReadableMap, operationID: String, promise: Promise) {
-        val reqMsg = if (options.hasKey("reqMsg")) options.getString("reqMsg") else ""
-        val joinSource = if (options.hasKey("joinSource")) options.getInt("joinSource") else 0
-        val ex = if (options.hasKey("ex")) options.getString("ex") else ""
+    fun joinGroup(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val reqMsg = if (jsonParams.containsKey("reqMsg")) jsonParams.getString("reqMsg") else ""
+        val joinSource = if (jsonParams.containsKey("joinSource")) jsonParams.getIntValue("joinSource") else 0
+        val ex = if (jsonParams.containsKey("ex")) jsonParams.getString("ex") else ""
         Open_im_sdk.joinGroup(
             BaseImpl(promise),
             operationID,
-            options.getString("groupID"),
+            jsonParams.getString("groupID"),
             reqMsg,
             joinSource,
             ex
@@ -485,19 +848,28 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
     }
 
     @ReactMethod
-    fun getSpecifiedGroupsInfo(groupIDList: ReadableArray, operationID: String, promise: Promise) {
-        Open_im_sdk.getSpecifiedGroupsInfo(BaseImpl(promise), operationID, groupIDList.toString())
+    fun getJoinedGroupListPage(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val offset = jsonParams.getIntValue("offset")
+        val count = jsonParams.getIntValue("count")
+        Open_im_sdk.getJoinedGroupListPage(BaseImpl(promise), operationID, offset, count)
     }
 
     @ReactMethod
-    fun getGroupMemberList(options: ReadableMap, operationID: String, promise: Promise) {
-        val filter = if (options.hasKey("filter")) options.getInt("filter") else 0
-        val offset = if (options.hasKey("offset")) options.getInt("offset") else 0
-        val count = if (options.hasKey("count")) options.getInt("count") else 20
+    fun getSpecifiedGroupsInfo(params: String, operationID: String, promise: Promise) {
+        Open_im_sdk.getSpecifiedGroupsInfo(BaseImpl(promise), operationID, params)
+    }
+
+    @ReactMethod
+    fun getGroupMemberList(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val filter = jsonParams.getIntValue("filter")
+        val offset = jsonParams.getIntValue("offset")
+        val count = jsonParams.getIntValue("count")
         Open_im_sdk.getGroupMemberList(
             BaseImpl(promise),
             operationID,
-            options.getString("groupID"),
+            jsonParams.getString("groupID"),
             filter,
             offset,
             count
@@ -510,95 +882,197 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
     }
 
     @ReactMethod
-    fun getSpecifiedGroupMembersInfo(userIDList: ReadableArray, groupID: String, operationID: String, promise: Promise) {
-        Open_im_sdk.getSpecifiedGroupMembersInfo(BaseImpl(promise), operationID, groupID, userIDList.toString())
+    fun getSpecifiedGroupMembersInfo(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val groupID = jsonParams.getString("groupID")
+        val userIDList = jsonParams.getJSONArray("userIDList").toString()
+        Open_im_sdk.getSpecifiedGroupMembersInfo(BaseImpl(promise), operationID, groupID, userIDList)
     }
 
     @ReactMethod
-    fun searchGroups(options: ReadableMap, operationID: String, promise: Promise) {
-        Open_im_sdk.searchGroups(BaseImpl(promise), operationID, map2string(options))
+    fun getUsersInGroup(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val groupID = jsonParams.getString("groupID")
+        val userIDList = jsonParams.getJSONArray("userIDList").toString()
+        Open_im_sdk.getUsersInGroup(BaseImpl(promise), operationID, groupID, userIDList)
     }
 
     @ReactMethod
-    fun setGroupInfo(jsonGroupInfo: ReadableMap, operationID: String, promise: Promise) {
-        Open_im_sdk.setGroupInfo(BaseImpl(promise), operationID, map2string(jsonGroupInfo))
+    fun searchGroupMembers(params: String, operationID: String, promise: Promise) {
+        Open_im_sdk.searchGroupMembers(BaseImpl(promise), operationID, params)
     }
 
     @ReactMethod
-    fun changeGroupMute(options: ReadableMap, operationID: String, promise: Promise) {
+    fun setGroupInfo(params: String, operationID: String, promise: Promise) {
+        Open_im_sdk.setGroupInfo(BaseImpl(promise), operationID, params)
+    }
+
+    @ReactMethod
+    fun changeGroupMute(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
         Open_im_sdk.changeGroupMute(
             BaseImpl(promise),
             operationID,
-            options.getString("groupID"),
-            options.getBoolean("isMute")
+            jsonParams.getString("groupID"),
+            jsonParams.getBoolean("isMute")
         )
     }
 
     @ReactMethod
-    fun changeGroupMemberMute(options: ReadableMap, operationID: String, promise: Promise) {
+    fun changeGroupMemberMute(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
         Open_im_sdk.changeGroupMemberMute(
             BaseImpl(promise),
             operationID,
-            options.getString("groupID"),
-            options.getString("userID"),
-            options.getDouble("mutedSeconds").toLong()
+            jsonParams.getString("groupID"),
+            jsonParams.getString("userID"),
+            jsonParams.getLongValue("mutedSeconds")
         )
     }
 
     @ReactMethod
-    fun setGroupMemberInfo(options: ReadableMap, operationID: String, promise: Promise) {
-        Open_im_sdk.setGroupMemberInfo(BaseImpl(promise), operationID, map2string(options))
+    fun setGroupMemberInfo(params: String, operationID: String, promise: Promise) {
+        Open_im_sdk.setGroupMemberInfo(BaseImpl(promise), operationID, params)
     }
 
     @ReactMethod
-    fun inviteUserToGroup(options: ReadableMap, operationID: String, promise: Promise) {
-        val groupID = options.getString("groupID")
-        val userIDList = options.getArray("userIDList")?.toString() ?: "[]"
-        val reason = if (options.hasKey("reason")) options.getString("reason") ?: "" else ""
+    fun inviteUserToGroup(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val groupID = jsonParams.getString("groupID")
+        val userIDList = jsonParams.getJSONArray("userIDList")?.toString() ?: "[]"
+        val reason = if (jsonParams.containsKey("reason")) jsonParams.getString("reason") ?: "" else ""
         Open_im_sdk.inviteUserToGroup(BaseImpl(promise), operationID, groupID, userIDList, reason)
     }
 
     @ReactMethod
-    fun kickGroupMember(options: ReadableMap, operationID: String, promise: Promise) {
-        val groupID = options.getString("groupID")
-        val userIDList = options.getArray("userIDList")?.toString() ?: "[]"
-        val reason = if (options.hasKey("reason")) options.getString("reason") ?: "" else ""
+    fun kickGroupMember(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val groupID = jsonParams.getString("groupID")
+        val userIDList = jsonParams.getJSONArray("userIDList")?.toString() ?: "[]"
+        val reason = if (jsonParams.containsKey("reason")) jsonParams.getString("reason") ?: "" else ""
         Open_im_sdk.kickGroupMember(BaseImpl(promise), operationID, groupID, userIDList, reason)
     }
 
     @ReactMethod
-    fun transferGroupOwner(options: ReadableMap, operationID: String, promise: Promise) {
+    fun transferGroupOwner(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
         Open_im_sdk.transferGroupOwner(
             BaseImpl(promise),
             operationID,
-            options.getString("groupID"),
-            options.getString("newOwnerUserID")
+            jsonParams.getString("groupID"),
+            jsonParams.getString("newOwnerUserID")
         )
     }
 
     @ReactMethod
-    fun getGroupApplicationListAsApplicant(operationID: String, promise: Promise) {
-        Open_im_sdk.getGroupApplicationListAsApplicant(BaseImpl(promise), operationID, "{}")
+    fun getGroupApplicationListAsApplicant(params: String, operationID: String, promise: Promise) {
+        Open_im_sdk.getGroupApplicationListAsApplicant(BaseImpl(promise), operationID, params)
     }
 
     @ReactMethod
-    fun getGroupApplicationListAsRecipient(operationID: String, promise: Promise) {
-        Open_im_sdk.getGroupApplicationListAsRecipient(BaseImpl(promise), operationID, "{}")
+    fun getGroupApplicationListAsRecipient(params: String, operationID: String, promise: Promise) {
+        Open_im_sdk.getGroupApplicationListAsRecipient(BaseImpl(promise), operationID, params)
     }
 
     @ReactMethod
-    fun acceptGroupApplication(options: ReadableMap, operationID: String, promise: Promise) {
-        val groupID = options.getString("groupID") ?: ""
-        val userID = options.getString("userID") ?: ""
-        val handleMsg = if (options.hasKey("handleMsg")) options.getString("handleMsg") ?: "" else ""
+    fun getGroupApplicationUnhandledCount(params: String, operationID: String, promise: Promise) {
+        Open_im_sdk.getGroupApplicationUnhandledCount(BaseImpl(promise, Number::class.java), operationID, params)
+    }
+
+    @ReactMethod
+    fun acceptGroupApplication(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val groupID = jsonParams.getString("groupID") ?: ""
+        val userID = jsonParams.getString("userID") ?: ""
+        val handleMsg = if (jsonParams.containsKey("handleMsg")) jsonParams.getString("handleMsg") ?: "" else ""
         Open_im_sdk.acceptGroupApplication(BaseImpl(promise), operationID, groupID, userID, handleMsg)
     }
 
     @ReactMethod
-    fun refuseGroupApplication(options: ReadableMap, operationID: String, promise: Promise) {
-        val groupID = options.getString("groupID") ?: ""
-        val userID = options.getString("userID") ?: ""
-        val handleMsg = if (options.hasKey("handleMsg")) options.getString("handleMsg") ?: "" else ""
+    fun refuseGroupApplication(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val groupID = jsonParams.getString("groupID") ?: ""
+        val userID = jsonParams.getString("userID") ?: ""
+        val handleMsg = if (jsonParams.containsKey("handleMsg")) jsonParams.getString("handleMsg") ?: "" else ""
         Open_im_sdk.refuseGroupApplication(BaseImpl(promise), operationID, groupID, userID, handleMsg)
+    }
+
+    @ReactMethod
+    fun searchGroups(params: String, operationID: String, promise: Promise) {
+        Open_im_sdk.searchGroups(BaseImpl(promise), operationID, params)
+    }
+
+    @ReactMethod
+    fun getGroupMemberListByJoinTimeFilter(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val groupID = jsonParams.getString("groupID") ?: ""
+        val offset = jsonParams.getIntValue("offset")
+        val count = jsonParams.getIntValue("count")
+        val joinTimeBegin = jsonParams.getLongValue("joinTimeBegin")
+        val joinTimeEnd = jsonParams.getLongValue("joinTimeEnd")
+        val filterUserIDList = jsonParams.getJSONArray("filterUserIDList")?.toString() ?: "[]"
+        Open_im_sdk.getGroupMemberListByJoinTimeFilter(
+            BaseImpl(promise),
+            operationID,
+            groupID,
+            offset,
+            count,
+            joinTimeBegin,
+            joinTimeEnd,
+            filterUserIDList
+        )
+    }
+
+    @ReactMethod
+    fun isJoinGroup(groupID: String, operationID: String, promise: Promise) {
+        Open_im_sdk.isJoinGroup(BaseImpl(promise, Boolean::class.java), operationID, groupID)
+    }
+
+    // ========== Utility ==========
+
+    @ReactMethod
+    fun updateFcmToken(fcmToken: String, expireTime: Double, operationID: String, promise: Promise) {
+        Open_im_sdk.updateFcmToken(BaseImpl(promise), operationID, fcmToken, expireTime.toInt())
+    }
+
+    @ReactMethod
+    fun setAppBadge(appUnreadCount: Double, operationID: String, promise: Promise) {
+        Open_im_sdk.setAppBadge(BaseImpl(promise), operationID, appUnreadCount.toInt())
+    }
+
+    @ReactMethod
+    fun uploadLogs(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val line = jsonParams.getLongValue("line")
+        val ex = if (jsonParams.containsKey("ex")) jsonParams.getString("ex") ?: "" else ""
+        Open_im_sdk.uploadLogs(BaseImpl(promise), operationID, line, ex, UploadLogProgressListener(reactContext, operationID))
+    }
+
+    @ReactMethod
+    fun logs(params: String, operationID: String, promise: Promise) {
+        val jsonParams = JSON.parseObject(params)
+        val logLevel = jsonParams.getLongValue("logLevel")
+        val file = if (jsonParams.containsKey("file")) jsonParams.getString("file") ?: "" else ""
+        val line = jsonParams.getLongValue("line")
+        val msgs = if (jsonParams.containsKey("msgs")) jsonParams.getString("msgs") ?: "" else ""
+        val err = if (jsonParams.containsKey("err")) jsonParams.getString("err") ?: "" else ""
+        val keyAndValue = if (jsonParams.containsKey("keyAndValue")) jsonParams.getJSONArray("keyAndValue")?.toString() ?: "[]" else "[]"
+        Open_im_sdk.logs(BaseImpl(promise), operationID, logLevel, file, line, msgs, err, keyAndValue)
+    }
+
+    @ReactMethod
+    fun getSdkVersion(operationID: String, promise: Promise) {
+        promise.resolve(Open_im_sdk.getSdkVersion())
+    }
+
+    @ReactMethod
+    fun unInitSDK(operationID: String, promise: Promise) {
+        Open_im_sdk.unInitSDK(operationID)
+        promise.resolve(null)
+    }
+
+    @ReactMethod
+    fun getAtAllTag(operationID: String, promise: Promise) {
+        promise.resolve(Open_im_sdk.getAtAllTag(operationID))
     }
 }

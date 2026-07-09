@@ -1,4 +1,10 @@
+//
+//  ItcCallbackProxy.mm
+//  ItcOpenIM
+//
+
 #import "ItcCallbackProxy.h"
+#import "ItcJSONExtensions.h"
 
 @interface ItcCallbackProxy()
 
@@ -23,30 +29,10 @@
     return self;
 }
 
-- (NSDictionary *)parseJsonStr2Dict:(NSString *)jsonStr {
-    NSData *jsonData = [jsonStr dataUsingEncoding:NSUTF8StringEncoding];
-    NSError *error = nil;
-    id jsonObject = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&error];
-    if (error) {
-        return nil;
-    }
-    NSDictionary *data = (NSDictionary *)jsonObject;
-    return data;
-}
-
-- (NSArray *)parseJsonStr2Array:(NSString *)jsonStr {
-    NSData *jsonData = [jsonStr dataUsingEncoding:NSUTF8StringEncoding];
-    NSError *error = nil;
-    id jsonObject = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&error];
-    if (error) {
-        return nil;
-    }
-    NSArray *data = (NSArray *)jsonObject;
-    return data;
-}
+#pragma mark - Open_im_sdk_callbackBase
 
 - (void)onError:(int32_t)errCode errMsg:(NSString * _Nullable)errMsg {
-    self.rejecter([NSString stringWithFormat:@"%d",errCode],errMsg,nil);
+    self.rejecter([NSString stringWithFormat:@"%d", errCode], errMsg, nil);
 }
 
 - (void)onSuccess:(NSString * _Nullable)data {
@@ -61,11 +47,11 @@
         return;
     }
 
-    NSDictionary *dataDict = [self parseJsonStr2Dict:data];
+    NSDictionary *dataDict = ItcParseJsonStr2Dict(data);
     if (dataDict) {
         self.resolver(dataDict);
     } else {
-        NSArray *dataArray = [self parseJsonStr2Array:data];
+        NSArray *dataArray = ItcParseJsonStr2Array(data);
         if (dataArray) {
             self.resolver(dataArray);
         } else {
