@@ -16,10 +16,26 @@ Pod::Spec.new do |s|
   s.platforms    = { :ios => "15.1" }
   s.source       = { :path => "." }
 
-  s.source_files = "*.{h,m,mm,swift}", "listener/*.{h,m,mm}"
+  s.source_files = "*.{h,m,mm}"
 
   # OpenIM SDK Core iOS
   s.dependency "OpenIMSDK"
+
+  # React-Core dependency for callback proxies that import React headers
+  s.dependency "React-Core"
+
+  # Enable modules for @import support in OpenIMCore framework
+  s.pod_target_xcconfig = {
+    'CLANG_ENABLE_MODULES' => 'YES',
+    'CLANG_ENABLE_OBJC_ARC' => 'YES',
+    'DEFINES_MODULE' => 'YES'
+  }
+
+  # Apply to user targets as well for XCFramework header compilation
+  s.user_target_xcconfig = {
+    'CLANG_ENABLE_MODULES' => 'YES',
+    'DEFINES_MODULE' => 'YES'
+  }
 
   # 使用 react_native_pods 提供的 helper，自动设置 TurboModule 所需的依赖
   install_modules_dependencies(s)

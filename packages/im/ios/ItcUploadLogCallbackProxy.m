@@ -1,0 +1,44 @@
+#import "ItcUploadLogCallbackProxy.h"
+
+@implementation NSDictionary (Extensions)
+
+- (NSString *)json {
+    NSString *json = nil;
+
+    NSError *error = nil;
+    NSData *data = [NSJSONSerialization dataWithJSONObject:self options:NSJSONWritingPrettyPrinted error:&error];
+    json = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+
+    return (error ? nil : json);
+}
+
+@end
+
+@interface ItcUploadLogCallbackProxy()
+
+@property (nonatomic, copy) NSString* opid;
+@property (nonatomic, weak) ItcOpenIMSDK* module;
+
+@end
+
+@implementation ItcUploadLogCallbackProxy
+
+- (nonnull id)initWithOpid:(nonnull NSString *)operationID module:(nonnull ItcOpenIMSDK *)module resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter {
+    if (self = [super init]) {
+        self.opid = operationID;
+        self.module = module;
+    }
+    return self;
+}
+
+- (void)onProgress:(int64_t)current size:(int64_t)size {
+    NSMutableDictionary *params = [NSMutableDictionary dictionary];
+    params[@"current"] = @(current);
+    params[@"size"] = @(size);
+    params[@"operationID"] = _opid;
+    params[@"errCode"] = @(0);
+    params[@"errMsg"] = @"";
+    [self.module pushEvent:@"uploadOnProgress" data:params];
+}
+
+@end
