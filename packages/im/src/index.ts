@@ -647,6 +647,7 @@ class ItcOpenIM extends Emitter {
 // 导出单例实例
 export { ItcOpenIM };
 const itcOpenIM = ItcOpenIM.getInstance();
+export { itcOpenIM };
 export default itcOpenIM;
 
 const TAG = 'im';
@@ -908,6 +909,46 @@ class IMModule extends BaseModule<IMInitOptions> {
   async markConversationAsRead(conversationId: string): Promise<void> {
     try {
       await ItcOpenIMSDK.markConversationMessageAsRead(conversationId, generateOperationID());
+    } catch (e) {
+      throw ItcError.from(e, 'im');
+    }
+  }
+
+  /** 创建群组 */
+  async createGroup(params: CreateGroupParams, operationID: string = id()): Promise<string> {
+    try {
+      const result = await ItcOpenIMSDK.createGroup(serialize(params), operationID);
+      return result as string;
+    } catch (e) {
+      throw ItcError.from(e, 'im');
+    }
+  }
+
+  /** 获取已加入的群组列表 */
+  async getJoinedGroupList(operationID: string = id()): Promise<string> {
+    try {
+      const result = await ItcOpenIMSDK.getJoinedGroupList(operationID);
+      return result as string;
+    } catch (e) {
+      throw ItcError.from(e, 'im');
+    }
+  }
+
+  /** 根据会话类型获取会话ID */
+  async getConversationIDBySessionType(params: GetOneConversationParams, operationID: string = id()): Promise<string> {
+    try {
+      const result = await ItcOpenIMSDK.getConversationIDBySessionType(serialize(params), operationID);
+      return result as string;
+    } catch (e) {
+      throw ItcError.from(e, 'im');
+    }
+  }
+
+  /** 创建文本消息 */
+  async createTextMessage(text: string, operationID: string = id()): Promise<MessageItem> {
+    try {
+      const result = await ItcOpenIMSDK.createTextMessage(text, operationID);
+      return JSON.parse(result as string);
     } catch (e) {
       throw ItcError.from(e, 'im');
     }

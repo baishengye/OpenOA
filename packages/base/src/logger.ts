@@ -19,21 +19,46 @@ const LEVEL_ORDER: Record<LogLevel, number> = {
   error: 3,
 };
 
+/** 尝试获取 React Native 的 Log API（Android logcat / iOS） */
+function getRNLog(): { d: Function; i: Function; w: Function; e: Function } | null {
+  try {
+    const { Log } = require('react-native');
+    return Log ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 输出到 React Native Log（Android logcat / iOS console）
+ */
+function nativeLog(level: 'debug' | 'info' | 'warn' | 'error', tag: string, message: string, extra?: unknown) {
+  const prefix = `[itc:${tag}]`;
+  const content = extra !== undefined
+    ? `${prefix} ${message} ${typeof extra === 'string' ? extra : JSON.stringify(extra)}`
+    : `${prefix} ${message}`;
+
+  const rnLog = getRNLog();
+  if (rnLog) {
+    if (level === 'error') rnLog.e(tag, content);
+    else if (level === 'warn') rnLog.w(tag, content);
+    else if (level === 'info') rnLog.i(tag, content);
+    else rnLog.d(tag, content);
+  }
+
+  // 同时输出到 JS console（会被 RN 桥接到 Xcode console / Metro）
+  const fn = level === 'error' ? console.error : level === 'warn' ? console.warn : console.log;
+  if (extra !== undefined) fn(content, extra);
+  else fn(content);
+}
+
 /** 默认控制台实现，受 minLevel 控制（release 可设为 'warn' 以上）。 */
 export class ConsoleLogger implements Logger {
   constructor(private minLevel: LogLevel = 'debug') {}
 
   private log(level: LogLevel, tag: string, message: string, extra?: unknown) {
     if (LEVEL_ORDER[level] < LEVEL_ORDER[this.minLevel]) return;
-    const line = `[itc:${tag}] ${message}`;
-    const fn =
-      level === 'error'
-        ? console.error
-        : level === 'warn'
-          ? console.warn
-          : console.log;
-    if (extra !== undefined) fn(line, extra);
-    else fn(line);
+    nativeLog(level, tag, message, extra);
   }
 
   debug = (t: string, m: string, e?: unknown) => this.log('debug', t, m, e);

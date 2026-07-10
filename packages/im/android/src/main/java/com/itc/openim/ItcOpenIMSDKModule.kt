@@ -68,7 +68,10 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
     }
 
     @ReactMethod
-    fun login(userID: String, token: String, operationID: String, promise: Promise) {
+    fun login(optionsJson: String, operationID: String, promise: Promise) {
+        val options = JSON.parseObject(optionsJson)
+        val userID = options.getString("userID")
+        val token = options.getString("token")
         Open_im_sdk.login(
             BaseImpl(promise),
             operationID,
