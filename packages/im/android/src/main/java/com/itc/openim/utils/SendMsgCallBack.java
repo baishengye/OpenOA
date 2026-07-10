@@ -38,9 +38,9 @@ public class SendMsgCallBack extends Emitter implements open_im_sdk_callback.Sen
   @Override
   public void onProgress(long progress) {
     WritableMap params = Arguments.createMap();
-    params.putInt("progress", (int) progress);
+    params.putDouble("progress", progress);
     params.putMap("message", Arguments.makeNativeMap(message.toHashMap()));
-    send(ctx, "SendMessageProgress", params);
+    send(ctx, "im:sendMessageProgress", params);
   }
 
   @Override
