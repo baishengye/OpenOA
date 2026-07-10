@@ -753,54 +753,61 @@ class IMModule extends BaseModule<IMInitOptions> {
     const emitter = getNativeEmitter();
 
     // 连接状态事件
-    emitter.addListener('onConnectSuccess', () => {
+    emitter.addListener('im:connectSuccess', () => {
       eventBus.emit('im:connectionChanged', 'connected');
     });
 
-    emitter.addListener('onConnecting', () => {
+    emitter.addListener('im:connecting', () => {
       eventBus.emit('im:connectionChanged', 'connecting');
     });
 
-    emitter.addListener('onConnectFailed', ((event: { code: number; msg: string }) => {
-      logger.error(TAG, `连接失败: ${event.code} ${event.msg}`);
+    emitter.addListener('im:connectFailed', ((event: { errCode: number; errMsg: string }) => {
+      logger.error(TAG, `连接失败: ${event.errCode} ${event.errMsg}`);
       eventBus.emit('im:connectionChanged', 'disconnected');
     }) as (event: unknown) => void);
 
-    emitter.addListener('onKickedOffline', () => {
+    emitter.addListener('im:kickedOffline', () => {
       eventBus.emit('im:kickedOffline', undefined);
       eventBus.emit('im:connectionChanged', 'kickedOffline');
     });
 
-    emitter.addListener('onUserTokenExpired', () => {
+    emitter.addListener('im:userTokenExpired', () => {
+      eventBus.emit('im:tokenExpired', undefined);
+    });
+
+    emitter.addListener('im:userTokenInvalid', () => {
       eventBus.emit('im:tokenExpired', undefined);
     });
 
     // 消息事件
-    emitter.addListener('onRecvNewMessages', ((msgList: string) => {
+    emitter.addListener('im:recvNewMessage', ((msgData: unknown) => {
       try {
-        const messages = JSON.parse(msgList) as IMMessage[];
-        messages.forEach(msg => eventBus.emit('im:newMessage', msg));
+        // 消息可能是单个对象或数组
+        const messages = Array.isArray(msgData) ? msgData : [msgData];
+        messages.forEach((msg: unknown) => {
+          eventBus.emit('im:newMessage', msg as IMMessage);
+        });
       } catch (e) {
         logger.error(TAG, '解析消息失败', e);
       }
     }) as (event: unknown) => void);
 
     // 会话事件
-    emitter.addListener('onConversationChanged', ((conversationList: string) => {
-      eventBus.emit('im:conversationChanged', conversationList);
+    emitter.addListener('im:conversationChanged', ((conversationList: unknown) => {
+      eventBus.emit('im:conversationChanged', String(conversationList));
     }) as (event: unknown) => void);
 
-    emitter.addListener('onInputStatusChanged', ((event: { userId: string; status: boolean }) => {
+    emitter.addListener('im:inputStatusChanged', ((event: { userId: string; status: boolean }) => {
       eventBus.emit('im:typingStatus', { userId: event.userId, status: event.status });
     }) as (event: unknown) => void);
 
-    emitter.addListener('onTotalUnreadMessageCountChanged', ((count: number) => {
+    emitter.addListener('im:totalUnreadMessageCountChanged', ((count: number) => {
       eventBus.emit('im:totalUnreadChanged', count);
     }) as (event: unknown) => void);
 
     // 消息撤回
-    emitter.addListener('onNewRecvMessageRevoked', ((msgId: string) => {
-      eventBus.emit('im:messageRevoked', msgId);
+    emitter.addListener('im:newRecvMessageRevoked', ((msgId: unknown) => {
+      eventBus.emit('im:messageRevoked', String(msgId));
     }) as (event: unknown) => void);
   }
 

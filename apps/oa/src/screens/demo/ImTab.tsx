@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScrollView, StyleSheet, TextInput, Alert } from 'react-native';
 import { itcOpenIM } from '@itc/rn-client-sdk-plus';
+import { eventBus } from '@itc/base';
 import { Text as UiText, Button, Card, YStack, XStack } from '@itc/uikit';
 import { ImDemoMain } from '../demo/imDemo';
 import type { TabProps } from './shared';
 import { loggedAppend } from './shared';
+
+// ConnectionState 类型定义（与 SDK 保持一致）
+type ConnectionState = 'connecting' | 'connected' | 'disconnected' | 'kickedOffline';
 
 // 注册 API 地址（后续可改为动态配置）
 const REGISTER_API = 'http://172.16.82.54:10002';
@@ -19,6 +23,54 @@ export function ImTab({ append, busy: _busy }: TabProps) {
 
   // 包装 append，同时输出到 logger
   const log = loggedAppend(append);
+
+  // 设置连接状态监听器
+  useEffect(() => {
+    log('🔍 useEffect 触发, ready=' + ready);
+
+    if (!ready) {
+      log('🔍 ready 为 false，跳过监听器设置');
+      return;
+    }
+
+    log('🔍 开始设置事件监听器...');
+
+    // 监听连接状态变化
+    const unsubscribe1 = eventBus.on('im:connectionChanged', (state: ConnectionState) => {
+      log(`📡 收到 im:connectionChanged: ${state}`);
+      if (state === 'connected') {
+        setLoggedIn(true);
+        log('✅ 登录成功');
+      } else if (state === 'disconnected' || state === 'kickedOffline') {
+        setLoggedIn(false);
+        log(`❌ 连接断开: ${state}`);
+      }
+    });
+    log('📡 已订阅 im:connectionChanged');
+
+    // 监听被踢下线
+    const unsubscribe2 = eventBus.on('im:kickedOffline', () => {
+      log('⚠️ 被踢下线');
+      setLoggedIn(false);
+    });
+    log('📡 已订阅 im:kickedOffline');
+
+    // 监听 Token 过期
+    const unsubscribe3 = eventBus.on('im:tokenExpired', () => {
+      log('⚠️ Token 已过期');
+      setLoggedIn(false);
+    });
+    log('📡 已订阅 im:tokenExpired');
+
+    log('📡 所有监听器设置完成');
+
+    return () => {
+      log('🧹 清理监听器');
+      unsubscribe1();
+      unsubscribe2();
+      unsubscribe3();
+    };
+  }, [ready, log]);
 
   // 注册
   const handleRegister = async () => {
@@ -74,8 +126,6 @@ export function ImTab({ append, busy: _busy }: TabProps) {
     try {
       log(`正在登录: ${loginUserId}...`);
       await itcOpenIM.login({ userID: loginUserId.trim(), token: token.trim() });
-      setLoggedIn(true);
-      log(`✅ 登录成功: ${loginUserId}`);
     } catch (e: any) {
       log(`❌ 登录失败: ${e.message}`);
     }

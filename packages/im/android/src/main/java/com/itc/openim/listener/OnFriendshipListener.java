@@ -13,12 +13,12 @@ public class OnFriendshipListener extends Emitter implements open_im_sdk_callbac
 
   @Override
   public void onBlackAdded(String s) {
-    send(ctx,"onBlackAdded",jsonStringToMap(s));
+    send(ctx,"im:blackAdded",jsonStringToMap(s));
   }
 
   @Override
   public void onBlackDeleted(String s) {
-    send(ctx,"onBlackDeleted",jsonStringToMap(s));
+    send(ctx,"im:blackDeleted",jsonStringToMap(s));
   }
 
   @Override
@@ -28,7 +28,7 @@ public class OnFriendshipListener extends Emitter implements open_im_sdk_callbac
 
   @Override
   public void onFriendApplicationAccepted(String s) {
-    send(ctx,"onFriendApplicationAccepted",jsonStringToMap(s));
+    send(ctx,"im:friendApplicationAccepted",jsonStringToMap(s));
   }
 
   @Override
@@ -43,7 +43,7 @@ public class OnFriendshipListener extends Emitter implements open_im_sdk_callbac
 
   @Override
   public void onFriendApplicationRejected(String s) {
-    send(ctx,"onFriendApplicationRejected",jsonStringToMap(s));
+    send(ctx,"im:friendApplicationRejected",jsonStringToMap(s));
   }
 
   @Override

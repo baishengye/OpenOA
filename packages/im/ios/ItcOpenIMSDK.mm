@@ -1093,55 +1093,55 @@ RCT_EXPORT_METHOD(setBatchMsgListener) {
 
 - (NSArray<NSString *> *)supportedEvents {
     return @[
-        @"onConnectSuccess",
-        @"onConnecting",
-        @"onConnectFailed",
-        @"onKickedOffline",
-        @"onSelfInfoUpdated",
-        @"onUserStatusChanged",
-        @"onUserTokenExpired",
-        @"onUserTokenInvalid",
-        @"onRecvNewMessages",
-        @"onRecvOfflineNewMessages",
-        @"onMsgDeleted",
-        @"onRecvC2CReadReceipt",
-        @"onNewRecvMessageRevoked",
-        @"onRecvMessageRevoked",
-        @"onRecvNewMessage",
-        @"onRecvOfflineNewMessage",
-        @"onRecvOnlineOnlyMessage",
-        @"onConversationChanged",
-        @"onInputStatusChanged",
-        @"onNewConversation",
-        @"onSyncServerFailed",
-        @"onSyncServerFinish",
-        @"onSyncServerStart",
-        @"onSyncServerProgress",
-        @"onTotalUnreadMessageCountChanged",
-        @"onBlackAdded",
-        @"onBlackDeleted",
-        @"onFriendApplicationAccepted",
-        @"onFriendApplicationAdded",
-        @"onFriendApplicationDeleted",
-        @"onFriendApplicationRejected",
-        @"onFriendInfoChanged",
-        @"onFriendAdded",
-        @"onFriendDeleted",
-        @"onGroupApplicationAccepted",
-        @"onGroupApplicationRejected",
-        @"onGroupApplicationAdded",
-        @"onGroupApplicationDeleted",
-        @"onGroupInfoChanged",
-        @"onGroupMemberInfoChanged",
-        @"onGroupMemberAdded",
-        @"onGroupMemberDeleted",
-        @"onJoinedGroupAdded",
-        @"onJoinedGroupDeleted",
-        @"onGroupDismissed",
+        @"im:connectSuccess",
+        @"im:connecting",
+        @"im:connectFailed",
+        @"im:kickedOffline",
+        @"im:selfInfoUpdated",
+        @"im:userStatusChanged",
+        @"im:userTokenExpired",
+        @"im:userTokenInvalid",
+        @"im:recvNewMessages",
+        @"im:recvOfflineNewMessages",
+        @"im:msgDeleted",
+        @"im:recvC2CReadReceipt",
+        @"im:newRecvMessageRevoked",
+        @"im:recvMessageRevoked",
+        @"im:recvNewMessage",
+        @"im:recvOfflineNewMessage",
+        @"im:recvOnlineOnlyMessage",
+        @"im:conversationChanged",
+        @"im:inputStatusChanged",
+        @"im:newConversation",
+        @"im:syncServerFailed",
+        @"im:syncServerFinish",
+        @"im:syncServerStart",
+        @"im:syncServerProgress",
+        @"im:totalUnreadMessageCountChanged",
+        @"im:blackAdded",
+        @"im:blackDeleted",
+        @"im:friendApplicationAccepted",
+        @"im:friendApplicationAdded",
+        @"im:friendApplicationDeleted",
+        @"im:friendApplicationRejected",
+        @"im:friendInfoChanged",
+        @"im:friendAdded",
+        @"im:friendDeleted",
+        @"im:groupApplicationAccepted",
+        @"im:groupApplicationRejected",
+        @"im:groupApplicationAdded",
+        @"im:groupApplicationDeleted",
+        @"im:groupInfoChanged",
+        @"im:groupMemberInfoChanged",
+        @"im:groupMemberAdded",
+        @"im:groupMemberDeleted",
+        @"im:joinedGroupAdded",
+        @"im:joinedGroupDeleted",
+        @"im:groupDismissed",
         @"uploadComplete",
         @"uploadOnProgress",
-        @"onReceiveNewMessages",
-        @"onReceiveOfflineNewMessages"
+        @"im:receiveNewMessages",
+        @"im:receiveOfflineNewMessages"
     ];
 }
 
@@ -1160,224 +1160,224 @@ RCT_EXPORT_METHOD(setBatchMsgListener) {
 // ============== SDK 回调 (OpenIM SDK -> Native -> JS) ==============
 
 - (void)onConnectSuccess {
-    [self pushEvent:@"onConnectSuccess" data:nil];
+    [self pushEvent:@"im:connectSuccess" data:nil];
 }
 
 - (void)onConnecting {
-    [self pushEvent:@"onConnecting" data:nil];
+    [self pushEvent:@"im:connecting" data:nil];
 }
 
 - (void)onKickedOffline {
-    [self pushEvent:@"onKickedOffline" data:nil];
+    [self pushEvent:@"im:kickedOffline" data:nil];
 }
 
 - (void)onUserTokenExpired {
-    [self pushEvent:@"onUserTokenExpired" data:nil];
+    [self pushEvent:@"im:userTokenExpired" data:nil];
 }
 
 - (void)onUserTokenInvalid:(NSString *)errMsg {
-    [self pushEvent:@"onUserTokenInvalid" data:nil];
+    [self pushEvent:@"im:userTokenInvalid" data:nil];
 }
 
 - (void)onConnectFailed:(int32_t)errCode errMsg:(NSString *)errMsg {
-    [self pushEvent:@"onConnectFailed" data:@{@"errCode": @(errCode), @"errMsg": errMsg ?: @""}];
+    [self pushEvent:@"im:connectFailed" data:@{@"errCode": @(errCode), @"errMsg": errMsg ?: @""}];
 }
 
 - (void)onSelfInfoUpdated:(NSString *)userInfo {
     NSDictionary *data = [self parseJsonStr2Dict:userInfo];
-    [self pushEvent:@"onSelfInfoUpdated" data:data];
+    [self pushEvent:@"im:selfInfoUpdated" data:data];
 }
 
 - (void)onUserStatusChanged:(NSString *)statusMap {
     NSDictionary *data = [self parseJsonStr2Dict:statusMap];
-    [self pushEvent:@"onUserStatusChanged" data:data];
+    [self pushEvent:@"im:userStatusChanged" data:data];
 }
 
 - (void)onRecvNewMessages:(NSString *)messageList {
     NSArray *messageListArray = [self parseJsonStr2Array:messageList];
-    [self pushEvent:@"onRecvNewMessages" data:messageListArray];
+    [self pushEvent:@"im:recvNewMessages" data:messageListArray];
 }
 
 - (void)onRecvOfflineNewMessages:(NSString *)messageList {
     NSArray *messageListArray = [self parseJsonStr2Array:messageList];
-    [self pushEvent:@"onRecvOfflineNewMessages" data:messageListArray];
+    [self pushEvent:@"im:recvOfflineNewMessages" data:messageListArray];
 }
 
 - (void)onMsgDeleted:(NSString *)message {
     NSDictionary *messageDict = [self parseJsonStr2Dict:message];
-    [self pushEvent:@"onMsgDeleted" data:messageDict];
+    [self pushEvent:@"im:msgDeleted" data:messageDict];
 }
 
 - (void)onNewRecvMessageRevoked:(NSString *)messageRevoked {
     NSDictionary *messageRevokedDict = [self parseJsonStr2Dict:messageRevoked];
-    [self pushEvent:@"onNewRecvMessageRevoked" data:messageRevokedDict];
+    [self pushEvent:@"im:newRecvMessageRevoked" data:messageRevokedDict];
 }
 
 - (void)onRecvC2CReadReceipt:(NSString *)msgReceiptList {
     NSArray *msgReceiptListArray = [self parseJsonStr2Array:msgReceiptList];
-    [self pushEvent:@"onRecvC2CReadReceipt" data:msgReceiptListArray];
+    [self pushEvent:@"im:recvC2CReadReceipt" data:msgReceiptListArray];
 }
 
 - (void)onRecvMessageRevoked:(NSString *)msgId {
-    [self pushEvent:@"onRecvMessageRevoked" data:msgId];
+    [self pushEvent:@"im:recvMessageRevoked" data:msgId];
 }
 
 - (void)onRecvNewMessage:(NSString *)message {
     NSDictionary *messageDict = [self parseJsonStr2Dict:message];
-    [self pushEvent:@"onRecvNewMessage" data:messageDict];
+    [self pushEvent:@"im:recvNewMessage" data:messageDict];
 }
 
 - (void)onRecvOfflineNewMessage:(NSString *)message {
     NSArray *messageListArray = [self parseJsonStr2Array:message];
-    [self pushEvent:@"onRecvOfflineNewMessage" data:messageListArray];
+    [self pushEvent:@"im:recvOfflineNewMessage" data:messageListArray];
 }
 
 - (void)onRecvOnlineOnlyMessage:(NSString *)message {
     NSArray *messageListArray = [self parseJsonStr2Array:message];
-    [self pushEvent:@"onRecvOnlineOnlyMessage" data:messageListArray];
+    [self pushEvent:@"im:recvOnlineOnlyMessage" data:messageListArray];
 }
 
 - (void)onConversationChanged:(NSString *)conversationList {
     NSArray *conversationListArray = [self parseJsonStr2Array:conversationList];
-    [self pushEvent:@"onConversationChanged" data:conversationListArray];
+    [self pushEvent:@"im:conversationChanged" data:conversationListArray];
 }
 
 - (void)onConversationUserInputStatusChanged:(NSString *)datils {
     NSDictionary *datilsDic = [self parseJsonStr2Dict:datils];
-    [self pushEvent:@"onInputStatusChanged" data:datilsDic];
+    [self pushEvent:@"im:inputStatusChanged" data:datilsDic];
 }
 
 - (void)onNewConversation:(NSString *)conversationList {
     NSArray *conversationListArray = [self parseJsonStr2Array:conversationList];
-    [self pushEvent:@"onNewConversation" data:conversationListArray];
+    [self pushEvent:@"im:newConversation" data:conversationListArray];
 }
 
 - (void)onSyncServerFailed:(BOOL)reinstalled {
-    [self pushEvent:@"onSyncServerFailed" data:@(reinstalled)];
+    [self pushEvent:@"im:syncServerFailed" data:@(reinstalled)];
 }
 
 - (void)onSyncServerFinish:(BOOL)reinstalled {
-    [self pushEvent:@"onSyncServerFinish" data:@(reinstalled)];
+    [self pushEvent:@"im:syncServerFinish" data:@(reinstalled)];
 }
 
 - (void)onSyncServerStart:(BOOL)reinstalled {
-    [self pushEvent:@"onSyncServerStart" data:@(reinstalled)];
+    [self pushEvent:@"im:syncServerStart" data:@(reinstalled)];
 }
 
 - (void)onSyncServerProgress:(long)progress {
-    [self pushEvent:@"onSyncServerProgress" data:@(progress)];
+    [self pushEvent:@"im:syncServerProgress" data:@(progress)];
 }
 
 - (void)onTotalUnreadMessageCountChanged:(int32_t)totalUnreadCount {
-    [self pushEvent:@"onTotalUnreadMessageCountChanged" data:@(totalUnreadCount)];
+    [self pushEvent:@"im:totalUnreadMessageCountChanged" data:@(totalUnreadCount)];
 }
 
 - (void)onBlackAdded:(NSString *)blackInfo {
     NSDictionary *blackInfoDict = [self parseJsonStr2Dict:blackInfo];
-    [self pushEvent:@"onBlackAdded" data:blackInfoDict];
+    [self pushEvent:@"im:blackAdded" data:blackInfoDict];
 }
 
 - (void)onBlackDeleted:(NSString *)blackInfo {
     NSDictionary *blackInfoDict = [self parseJsonStr2Dict:blackInfo];
-    [self pushEvent:@"onBlackDeleted" data:blackInfoDict];
+    [self pushEvent:@"im:blackDeleted" data:blackInfoDict];
 }
 
 - (void)onFriendAdded:(NSString *)friendInfo {
     NSDictionary *friendInfoDict = [self parseJsonStr2Dict:friendInfo];
-    [self pushEvent:@"onFriendAdded" data:friendInfoDict];
+    [self pushEvent:@"im:friendAdded" data:friendInfoDict];
 }
 
 - (void)onFriendApplicationAccepted:(NSString *)friendApplication {
     NSDictionary *friendApplicationDict = [self parseJsonStr2Dict:friendApplication];
-    [self pushEvent:@"onFriendApplicationAccepted" data:friendApplicationDict];
+    [self pushEvent:@"im:friendApplicationAccepted" data:friendApplicationDict];
 }
 
 - (void)onFriendApplicationAdded:(NSString *)friendApplication {
     NSDictionary *friendApplicationDict = [self parseJsonStr2Dict:friendApplication];
-    [self pushEvent:@"onFriendApplicationAdded" data:friendApplicationDict];
+    [self pushEvent:@"im:friendApplicationAdded" data:friendApplicationDict];
 }
 
 - (void)onFriendApplicationDeleted:(NSString *)friendApplication {
     NSDictionary *friendApplicationDict = [self parseJsonStr2Dict:friendApplication];
-    [self pushEvent:@"onFriendApplicationDeleted" data:friendApplicationDict];
+    [self pushEvent:@"im:friendApplicationDeleted" data:friendApplicationDict];
 }
 
 - (void)onFriendApplicationRejected:(NSString *)friendApplication {
     NSDictionary *friendApplicationDict = [self parseJsonStr2Dict:friendApplication];
-    [self pushEvent:@"onFriendApplicationRejected" data:friendApplicationDict];
+    [self pushEvent:@"im:friendApplicationRejected" data:friendApplicationDict];
 }
 
 - (void)onFriendDeleted:(NSString *)friendInfo {
     NSDictionary *friendInfoDict = [self parseJsonStr2Dict:friendInfo];
-    [self pushEvent:@"onFriendDeleted" data:friendInfoDict];
+    [self pushEvent:@"im:friendDeleted" data:friendInfoDict];
 }
 
 - (void)onFriendInfoChanged:(NSString *)friendInfo {
     NSDictionary *friendInfoDict = [self parseJsonStr2Dict:friendInfo];
-    [self pushEvent:@"onFriendInfoChanged" data:friendInfoDict];
+    [self pushEvent:@"im:friendInfoChanged" data:friendInfoDict];
 }
 
 - (void)onGroupApplicationAccepted:(NSString *)groupApplication {
     NSDictionary *groupApplicationDict = [self parseJsonStr2Dict:groupApplication];
-    [self pushEvent:@"onGroupApplicationAccepted" data:groupApplicationDict];
+    [self pushEvent:@"im:groupApplicationAccepted" data:groupApplicationDict];
 }
 
 - (void)onGroupApplicationAdded:(NSString *)groupApplication {
     NSDictionary *groupApplicationDict = [self parseJsonStr2Dict:groupApplication];
-    [self pushEvent:@"onGroupApplicationAdded" data:groupApplicationDict];
+    [self pushEvent:@"im:groupApplicationAdded" data:groupApplicationDict];
 }
 
 - (void)onGroupApplicationDeleted:(NSString *)groupApplication {
     NSDictionary *groupApplicationDict = [self parseJsonStr2Dict:groupApplication];
-    [self pushEvent:@"onGroupApplicationDeleted" data:groupApplicationDict];
+    [self pushEvent:@"im:groupApplicationDeleted" data:groupApplicationDict];
 }
 
 - (void)onGroupApplicationRejected:(NSString *)groupApplication {
     NSDictionary *groupApplicationDict = [self parseJsonStr2Dict:groupApplication];
-    [self pushEvent:@"onGroupApplicationRejected" data:groupApplicationDict];
+    [self pushEvent:@"im:groupApplicationRejected" data:groupApplicationDict];
 }
 
 - (void)onGroupInfoChanged:(NSString *)groupInfo {
     NSDictionary *groupInfoDict = [self parseJsonStr2Dict:groupInfo];
-    [self pushEvent:@"onGroupInfoChanged" data:groupInfoDict];
+    [self pushEvent:@"im:groupInfoChanged" data:groupInfoDict];
 }
 
 - (void)onGroupMemberAdded:(NSString *)groupMemberInfo {
     NSDictionary *groupMemberInfoDict = [self parseJsonStr2Dict:groupMemberInfo];
-    [self pushEvent:@"onGroupMemberAdded" data:groupMemberInfoDict];
+    [self pushEvent:@"im:groupMemberAdded" data:groupMemberInfoDict];
 }
 
 - (void)onGroupMemberDeleted:(NSString *)groupMemberInfo {
     NSDictionary *groupMemberInfoDict = [self parseJsonStr2Dict:groupMemberInfo];
-    [self pushEvent:@"onGroupMemberDeleted" data:groupMemberInfoDict];
+    [self pushEvent:@"im:groupMemberDeleted" data:groupMemberInfoDict];
 }
 
 - (void)onGroupMemberInfoChanged:(NSString *)groupMemberInfo {
     NSDictionary *groupMemberInfoDict = [self parseJsonStr2Dict:groupMemberInfo];
-    [self pushEvent:@"onGroupMemberInfoChanged" data:groupMemberInfoDict];
+    [self pushEvent:@"im:groupMemberInfoChanged" data:groupMemberInfoDict];
 }
 
 - (void)onJoinedGroupAdded:(NSString *)groupInfo {
     NSDictionary *groupInfoDict = [self parseJsonStr2Dict:groupInfo];
-    [self pushEvent:@"onJoinedGroupAdded" data:groupInfoDict];
+    [self pushEvent:@"im:joinedGroupAdded" data:groupInfoDict];
 }
 
 - (void)onJoinedGroupDeleted:(NSString *)groupInfo {
     NSDictionary *groupInfoDict = [self parseJsonStr2Dict:groupInfo];
-    [self pushEvent:@"onJoinedGroupDeleted" data:groupInfoDict];
+    [self pushEvent:@"im:joinedGroupDeleted" data:groupInfoDict];
 }
 
 - (void)onGroupDismissed:(NSString *)groupInfo {
     NSDictionary *groupInfoDict = [self parseJsonStr2Dict:groupInfo];
-    [self pushEvent:@"onGroupDismissed" data:groupInfoDict];
+    [self pushEvent:@"im:groupDismissed" data:groupInfoDict];
 }
 
 - (void)onReceiveNewMessages:(NSString *)receiveNewMessagesCallback {
-    [self pushEvent:@"onReceiveNewMessages" data:receiveNewMessagesCallback];
+    [self pushEvent:@"im:receiveNewMessages" data:receiveNewMessagesCallback];
 }
 
 - (void)onReceiveOfflineNewMessages:(NSString *)receiveOfflineNewMessages {
-    [self pushEvent:@"onReceiveOfflineNewMessages" data:receiveOfflineNewMessages];
+    [self pushEvent:@"im:receiveOfflineNewMessages" data:receiveOfflineNewMessages];
 }
 
 @end

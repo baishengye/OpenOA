@@ -22,7 +22,7 @@ public class OnConversationListener extends Emitter implements open_im_sdk_callb
 
   @Override
   public void onConversationUserInputStatusChanged(String s) {
-    send(ctx, "onInputStatusChanged", jsonStringToMap(s));
+    send(ctx, "im:inputStatusChanged", jsonStringToMap(s));
   }
 
   @Override
@@ -42,7 +42,7 @@ public class OnConversationListener extends Emitter implements open_im_sdk_callb
 
   @Override
   public void onSyncServerStart(boolean b) {
-    send(ctx, "onSyncServerStart", b);
+    send(ctx, "im:syncServerStart", b);
   }
 
   @Override
@@ -53,6 +53,6 @@ public class OnConversationListener extends Emitter implements open_im_sdk_callb
 
   @Override
   public void onTotalUnreadMessageCountChanged(int i) {
-    send(ctx, "onTotalUnreadMessageCountChanged", i);
+    send(ctx, "im:totalUnreadMessageCountChanged", i);
   }
 }

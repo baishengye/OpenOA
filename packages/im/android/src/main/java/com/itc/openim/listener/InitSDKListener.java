@@ -23,7 +23,7 @@ public class InitSDKListener extends Emitter implements OnConnListener {
     WritableMap params = Arguments.createMap();
     params.putInt("errCode", (int) errCode);
     params.putString("errMsg", errMsg);
-    send(ctx, "im:connectFailed", params);
+    send(ctx, "onConnectFailed", params);
   }
 
   @Override
@@ -33,21 +33,21 @@ public class InitSDKListener extends Emitter implements OnConnListener {
 
   @Override
   public void onConnecting() {
-    send(ctx, "im:connecting", null);
+    send(ctx, "onConnecting", null);
   }
 
   @Override
   public void onKickedOffline() {
-    send(ctx, "im:kickedOffline", null);
+    send(ctx, "onKickedOffline", null);
   }
 
   @Override
   public void onUserTokenExpired() {
-    send(ctx, "im:userTokenExpired", null);
+    send(ctx, "onUserTokenExpired", null);
   }
 
   @Override
   public void onUserTokenInvalid(String s) {
-    send(ctx, "im:userTokenInvalid", null);
+    send(ctx, "onUserTokenInvalid", s);
   }
 }

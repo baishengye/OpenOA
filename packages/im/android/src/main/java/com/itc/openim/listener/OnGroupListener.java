@@ -22,22 +22,22 @@ public class OnGroupListener extends Emitter implements open_im_sdk_callback.OnG
 
   @Override
   public void onGroupApplicationAccepted(String s) {
-    send(ctx,"onGroupApplicationAccepted",jsonStringToMap(s));
+    send(ctx,"im:groupApplicationAccepted",jsonStringToMap(s));
   }
 
   @Override
   public void onGroupApplicationAdded(String s) {
-    send(ctx,"onGroupApplicationAdded",jsonStringToMap(s));
+    send(ctx,"im:groupApplicationAdded",jsonStringToMap(s));
   }
 
   @Override
   public void onGroupApplicationDeleted(String s) {
-    send(ctx,"onGroupApplicationDeleted",jsonStringToMap(s));
+    send(ctx,"im:groupApplicationDeleted",jsonStringToMap(s));
   }
 
   @Override
   public void onGroupApplicationRejected(String s) {
-    send(ctx,"onGroupApplicationRejected",jsonStringToMap(s));
+    send(ctx,"im:groupApplicationRejected",jsonStringToMap(s));
   }
 
   @Override
@@ -62,16 +62,16 @@ public class OnGroupListener extends Emitter implements open_im_sdk_callback.OnG
 
   @Override
   public void onGroupMemberInfoChanged(String s) {
-    send(ctx,"onGroupMemberInfoChanged",jsonStringToMap(s));
+    send(ctx,"im:groupMemberInfoChanged",jsonStringToMap(s));
   }
 
   @Override
   public void onJoinedGroupAdded(String s) {
-    send(ctx,"onJoinedGroupAdded",jsonStringToMap(s));
+    send(ctx,"im:joinedGroupAdded",jsonStringToMap(s));
   }
 
   @Override
   public void onJoinedGroupDeleted(String s) {
-    send(ctx,"onJoinedGroupDeleted",jsonStringToMap(s));
+    send(ctx,"im:joinedGroupDeleted",jsonStringToMap(s));
   }
 }

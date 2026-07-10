@@ -14,12 +14,12 @@ public class AdvancedMsgListener extends Emitter implements OnAdvancedMsgListene
 
   @Override
   public void onMsgDeleted(String s) {
-    send(ctx,"onMsgDeleted",jsonStringToMap(s));
+    send(ctx,"im:msgDeleted",jsonStringToMap(s));
   }
 
   @Override
   public void onNewRecvMessageRevoked(String s) {
-    send(ctx,"onNewRecvMessageRevoked",jsonStringToMap(s));
+    send(ctx,"im:newRecvMessageRevoked",jsonStringToMap(s));
   }
 
   @Override
@@ -34,11 +34,11 @@ public class AdvancedMsgListener extends Emitter implements OnAdvancedMsgListene
 
   @Override
   public void onRecvOfflineNewMessage(String s) {
-    send(ctx,"onRecvOfflineNewMessage",jsonStringToMap(s));
+    send(ctx,"im:recvOfflineNewMessage",jsonStringToMap(s));
   }
 
   @Override
   public void onRecvOnlineOnlyMessage(String s) {
-    send(ctx,"onRecvOnlineOnlyMessage",jsonStringToMap(s));
+    send(ctx,"im:recvOnlineOnlyMessage",jsonStringToMap(s));
   }
 }
