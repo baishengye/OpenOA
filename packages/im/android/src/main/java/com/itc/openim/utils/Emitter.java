@@ -14,12 +14,17 @@ import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 import java.math.BigDecimal;
+import android.util.Log;
 
 public class Emitter {
+  private static final String TAG = "[itc:im:Emitter]";
+
   public void send(ReactContext reactContext, String eventName, @Nullable Object params) {
+    Log.i(TAG, "send event: " + eventName + ", params=" + params);
     reactContext
       .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
       .emit(eventName, params);
+    Log.i(TAG, "send completed for: " + eventName);
   }
 
   public WritableMap jsonStringToMap(String data) {

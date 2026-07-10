@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ScrollView, StyleSheet, TextInput, Alert } from 'react-native';
 import { itcOpenIM } from '@itc/rn-client-sdk-plus';
 import { eventBus } from '@itc/base';
 import { Text as UiText, Button, Card, YStack, XStack } from '@itc/uikit';
 import { ImDemoMain } from '../demo/imDemo';
 import type { TabProps } from './shared';
-import { loggedAppend } from './shared';
+import { logger } from '@itc/base';
+
+const TAG = 'Demo';
 
 // ConnectionState 类型定义（与 SDK 保持一致）
 type ConnectionState = 'connecting' | 'connected' | 'disconnected' | 'kickedOffline';
@@ -21,8 +23,22 @@ export function ImTab({ append, busy: _busy }: TabProps) {
   const [token, setToken] = useState('');
   const [showDemo, setShowDemo] = useState(false);
 
-  // 包装 append，同时输出到 logger
-  const log = loggedAppend(append);
+  // 使用 useRef 存储 append，避免 useCallback 依赖变化
+  const appendRef = useRef(append);
+  appendRef.current = append;
+
+  // 使用 useCallback 稳定 log 函数
+  const log = useCallback((line: string) => {
+    // 判断日志级别
+    if (line.startsWith('❌')) {
+      logger.error(TAG, line);
+    } else if (line.startsWith('⚠️')) {
+      logger.warn(TAG, line);
+    } else {
+      logger.info(TAG, line);
+    }
+    appendRef.current(line);
+  }, []);
 
   // 设置连接状态监听器
   useEffect(() => {
@@ -125,8 +141,12 @@ export function ImTab({ append, busy: _busy }: TabProps) {
     }
     try {
       log(`正在登录: ${loginUserId}...`);
+      logger.info(TAG, `login called with userID=${loginUserId}, token length=${token.length}`);
       await itcOpenIM.login({ userID: loginUserId.trim(), token: token.trim() });
+      logger.info(TAG, 'login() completed without throwing');
+      log('✅ 登录成功');
     } catch (e: any) {
+      logger.error(TAG, `登录失败: ${e.message}`, e);
       log(`❌ 登录失败: ${e.message}`);
     }
   };

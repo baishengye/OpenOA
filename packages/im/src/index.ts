@@ -105,9 +105,255 @@ function serializeArray<T>(params: T[]): string {
   return JSON.stringify(params);
 }
 
+// ============ Native 事件监听器设置 ============
+// Native 层发送的事件列表（全部使用 im: 前缀）
+const TAG_IM = 'im';
+
+function setupNativeListeners(): void {
+  const emitter = getNativeEmitter();
+  if (!emitter) return;
+
+  logger.info(TAG_IM, '开始设置 Native 事件监听器...');
+
+  // ========== 连接状态事件 (InitSDKListener) ==========
+  emitter.addListener('im:connectSuccess', () => {
+    logger.info(TAG_IM, '收到 im:connectSuccess');
+    eventBus.emit('im:connectionChanged', 'connected');
+  });
+
+  emitter.addListener('im:connecting', () => {
+    logger.info(TAG_IM, '收到 im:connecting');
+    eventBus.emit('im:connectionChanged', 'connecting');
+  });
+
+  emitter.addListener('im:connectFailed', ((event: { errCode: number; errMsg: string }) => {
+    logger.error(TAG_IM, `收到 im:connectFailed: ${event.errCode} ${event.errMsg}`);
+    eventBus.emit('im:connectionChanged', 'disconnected');
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:kickedOffline', () => {
+    logger.info(TAG_IM, '收到 im:kickedOffline');
+    eventBus.emit('im:kickedOffline', undefined);
+    eventBus.emit('im:connectionChanged', 'kickedOffline');
+  });
+
+  emitter.addListener('im:userTokenExpired', () => {
+    logger.info(TAG_IM, '收到 im:userTokenExpired');
+    eventBus.emit('im:tokenExpired', undefined);
+  });
+
+  emitter.addListener('im:userTokenInvalid', () => {
+    logger.info(TAG_IM, '收到 im:userTokenInvalid');
+    eventBus.emit('im:tokenExpired', undefined);
+  });
+
+  // ========== 用户事件 (UserListener) ==========
+  emitter.addListener('im:selfInfoUpdated', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:selfInfoUpdated');
+    eventBus.emit('im:selfInfoUpdated', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:userStatusChanged', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:userStatusChanged');
+    eventBus.emit('im:userStatusChanged', data);
+  }) as (event: unknown) => void);
+
+  // ========== 会话事件 (OnConversationListener) ==========
+  emitter.addListener('im:conversationChanged', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:conversationChanged');
+    eventBus.emit('im:conversationChanged', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:newConversation', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:newConversation');
+    eventBus.emit('im:newConversation', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:inputStatusChanged', ((data: { userId: string; status: boolean }) => {
+    logger.info(TAG_IM, '收到 im:inputStatusChanged');
+    eventBus.emit('im:typingStatus', { userId: data.userId, status: data.status });
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:syncServerFailed', ((data: boolean) => {
+    logger.info(TAG_IM, '收到 im:syncServerFailed');
+    eventBus.emit('im:syncServerFailed', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:syncServerFinish', ((data: boolean) => {
+    logger.info(TAG_IM, '收到 im:syncServerFinish');
+    eventBus.emit('im:syncServerFinish', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:syncServerStart', ((data: boolean) => {
+    logger.info(TAG_IM, '收到 im:syncServerStart');
+    eventBus.emit('im:syncServerStart', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:syncServerProgress', ((data: number) => {
+    eventBus.emit('im:syncServerProgress', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:totalUnreadMessageCountChanged', ((count: number) => {
+    logger.info(TAG_IM, `收到 im:totalUnreadMessageCountChanged: ${count}`);
+    eventBus.emit('im:totalUnreadChanged', count);
+  }) as (event: unknown) => void);
+
+  // ========== 消息事件 (AdvancedMsgListener) ==========
+  emitter.addListener('im:recvNewMessage', ((msgData: unknown) => {
+    logger.info(TAG_IM, '收到 im:recvNewMessage');
+    eventBus.emit('im:newMessage', msgData);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:recvOfflineNewMessage', ((msgData: unknown) => {
+    logger.info(TAG_IM, '收到 im:recvOfflineNewMessage');
+    eventBus.emit('im:offlineMessage', msgData);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:recvOnlineOnlyMessage', ((msgData: unknown) => {
+    logger.info(TAG_IM, '收到 im:recvOnlineOnlyMessage');
+    eventBus.emit('im:onlineOnlyMessage', msgData);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:msgDeleted', ((msgData: unknown) => {
+    logger.info(TAG_IM, '收到 im:msgDeleted');
+    eventBus.emit('im:messageDeleted', msgData);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:recvC2CReadReceipt', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:recvC2CReadReceipt');
+    eventBus.emit('im:readReceipt', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:newRecvMessageRevoked', ((msgData: unknown) => {
+    logger.info(TAG_IM, '收到 im:newRecvMessageRevoked');
+    eventBus.emit('im:messageRevoked', msgData);
+  }) as (event: unknown) => void);
+
+  // ========== 批量消息事件 (BatchMsgListener) ==========
+  emitter.addListener('im:recvNewMessages', ((msgList: unknown) => {
+    logger.info(TAG_IM, '收到 im:recvNewMessages');
+    eventBus.emit('im:newMessages', msgList);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:recvOfflineNewMessages', ((msgList: unknown) => {
+    logger.info(TAG_IM, '收到 im:recvOfflineNewMessages');
+    eventBus.emit('im:offlineMessages', msgList);
+  }) as (event: unknown) => void);
+
+  // ========== 发送消息进度 ==========
+  emitter.addListener('im:sendMessageProgress', ((data: { progress: number; message: unknown }) => {
+    eventBus.emit('im:sendProgress', data);
+  }) as (event: unknown) => void);
+
+  // ========== 好友事件 (OnFriendshipListener) ==========
+  emitter.addListener('im:blackAdded', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:blackAdded');
+    eventBus.emit('im:blackAdded', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:blackDeleted', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:blackDeleted');
+    eventBus.emit('im:blackDeleted', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:friendApplicationAccepted', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:friendApplicationAccepted');
+    eventBus.emit('im:friendApplicationAccepted', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:friendApplicationAdded', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:friendApplicationAdded');
+    eventBus.emit('im:friendApplicationAdded', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:friendApplicationDeleted', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:friendApplicationDeleted');
+    eventBus.emit('im:friendApplicationDeleted', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:friendApplicationRejected', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:friendApplicationRejected');
+    eventBus.emit('im:friendApplicationRejected', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:friendAdded', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:friendAdded');
+    eventBus.emit('im:friendAdded', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:friendDeleted', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:friendDeleted');
+    eventBus.emit('im:friendDeleted', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:friendInfoChanged', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:friendInfoChanged');
+    eventBus.emit('im:friendInfoChanged', data);
+  }) as (event: unknown) => void);
+
+  // ========== 群组事件 (OnGroupListener) ==========
+  emitter.addListener('im:groupApplicationAccepted', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:groupApplicationAccepted');
+    eventBus.emit('im:groupApplicationAccepted', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:groupApplicationAdded', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:groupApplicationAdded');
+    eventBus.emit('im:groupApplicationAdded', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:groupApplicationDeleted', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:groupApplicationDeleted');
+    eventBus.emit('im:groupApplicationDeleted', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:groupApplicationRejected', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:groupApplicationRejected');
+    eventBus.emit('im:groupApplicationRejected', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:groupDismissed', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:groupDismissed');
+    eventBus.emit('im:groupDismissed', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:groupInfoChanged', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:groupInfoChanged');
+    eventBus.emit('im:groupInfoChanged', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:groupMemberAdded', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:groupMemberAdded');
+    eventBus.emit('im:groupMemberAdded', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:groupMemberDeleted', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:groupMemberDeleted');
+    eventBus.emit('im:groupMemberDeleted', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:groupMemberInfoChanged', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:groupMemberInfoChanged');
+    eventBus.emit('im:groupMemberInfoChanged', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:joinedGroupAdded', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:joinedGroupAdded');
+    eventBus.emit('im:joinedGroupAdded', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:joinedGroupDeleted', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:joinedGroupDeleted');
+    eventBus.emit('im:joinedGroupDeleted', data);
+  }) as (event: unknown) => void);
+
+  logger.info(TAG_IM, 'Native 事件监听器设置完成（共 47 个事件）');
+}
+
 // ItcOpenIM 类：直接封装 OpenIM SDK，与官方 open-im-sdk-reactnative 保持一致
 class ItcOpenIM extends Emitter {
   private static instance: ItcOpenIM;
+  private listenersSetup = false;
 
   private constructor() {
     super();
@@ -118,6 +364,14 @@ class ItcOpenIM extends Emitter {
       ItcOpenIM.instance = new ItcOpenIM();
     }
     return ItcOpenIM.instance;
+  }
+
+  /** 确保监听器已设置 */
+  private ensureListeners(): void {
+    if (!this.listenersSetup) {
+      this.listenersSetup = true;
+      setupNativeListeners();
+    }
   }
 
   private async invoke<T extends (...args: any[]) => any, R = ReturnType<T>>(
@@ -137,10 +391,12 @@ class ItcOpenIM extends Emitter {
 
   // login
   initSDK(params: InitOptions, operationID: string = id()) {
+    this.ensureListeners();
     return this.invoke(ItcOpenIMSDK.initSDK, [serialize(params), operationID]);
   }
 
   login(params: LoginParams, operationID: string = id()) {
+    this.ensureListeners();
     return this.invoke(ItcOpenIMSDK.login, [serialize(params), operationID]);
   }
 
@@ -674,14 +930,54 @@ function getNativeEmitter(): NativeEventEmitter {
 // ============ 事件类型声明 ============
 declare module '@itc/base' {
   interface ItcEventMap {
-    'im:newMessage': IMMessage;
+    // 连接状态
     'im:connectionChanged': ConnectionState;
-    'im:conversationChanged': string;
-    'im:messageRevoked': string;
-    'im:typingStatus': { userId: string; status: boolean };
-    'im:totalUnreadChanged': number;
     'im:kickedOffline': void;
     'im:tokenExpired': void;
+    // 用户
+    'im:selfInfoUpdated': unknown;
+    'im:userStatusChanged': unknown;
+    // 会话
+    'im:conversationChanged': unknown;
+    'im:newConversation': unknown;
+    'im:typingStatus': { userId: string; status: boolean };
+    'im:syncServerFailed': boolean;
+    'im:syncServerFinish': boolean;
+    'im:syncServerStart': boolean;
+    'im:syncServerProgress': number;
+    'im:totalUnreadChanged': number;
+    // 消息
+    'im:newMessage': unknown;
+    'im:offlineMessage': unknown;
+    'im:onlineOnlyMessage': unknown;
+    'im:messageDeleted': unknown;
+    'im:readReceipt': unknown;
+    'im:messageRevoked': unknown;
+    'im:newMessages': unknown;
+    'im:offlineMessages': unknown;
+    'im:sendProgress': { progress: number; message: unknown };
+    // 好友
+    'im:blackAdded': unknown;
+    'im:blackDeleted': unknown;
+    'im:friendApplicationAccepted': unknown;
+    'im:friendApplicationAdded': unknown;
+    'im:friendApplicationDeleted': unknown;
+    'im:friendApplicationRejected': unknown;
+    'im:friendAdded': unknown;
+    'im:friendDeleted': unknown;
+    'im:friendInfoChanged': unknown;
+    // 群组
+    'im:groupApplicationAccepted': unknown;
+    'im:groupApplicationAdded': unknown;
+    'im:groupApplicationDeleted': unknown;
+    'im:groupApplicationRejected': unknown;
+    'im:groupDismissed': unknown;
+    'im:groupInfoChanged': unknown;
+    'im:groupMemberAdded': unknown;
+    'im:groupMemberDeleted': unknown;
+    'im:groupMemberInfoChanged': unknown;
+    'im:joinedGroupAdded': unknown;
+    'im:joinedGroupDeleted': unknown;
   }
 }
 
@@ -750,65 +1046,48 @@ class IMModule extends BaseModule<IMInitOptions> {
     if (this._listenersSet) return;
     this._listenersSet = true;
 
+    logger.info(TAG, '_setupListeners: 开始设置事件监听器');
     const emitter = getNativeEmitter();
 
     // 连接状态事件
+    logger.info(TAG, '_setupListeners: 监听 im:connectSuccess');
     emitter.addListener('im:connectSuccess', () => {
+      logger.info(TAG, '_setupListeners: 收到 im:connectSuccess 事件');
       eventBus.emit('im:connectionChanged', 'connected');
     });
 
+    logger.info(TAG, '_setupListeners: 监听 im:connecting');
     emitter.addListener('im:connecting', () => {
+      logger.info(TAG, '_setupListeners: 收到 im:connecting 事件');
       eventBus.emit('im:connectionChanged', 'connecting');
     });
 
+    logger.info(TAG, '_setupListeners: 监听 im:connectFailed');
     emitter.addListener('im:connectFailed', ((event: { errCode: number; errMsg: string }) => {
-      logger.error(TAG, `连接失败: ${event.errCode} ${event.errMsg}`);
+      logger.error(TAG, `_setupListeners: 收到 im:connectFailed 事件: ${event.errCode} ${event.errMsg}`);
       eventBus.emit('im:connectionChanged', 'disconnected');
     }) as (event: unknown) => void);
 
+    logger.info(TAG, '_setupListeners: 监听 im:kickedOffline');
     emitter.addListener('im:kickedOffline', () => {
+      logger.info(TAG, '_setupListeners: 收到 im:kickedOffline 事件');
       eventBus.emit('im:kickedOffline', undefined);
       eventBus.emit('im:connectionChanged', 'kickedOffline');
     });
 
+    logger.info(TAG, '_setupListeners: 监听 im:userTokenExpired');
     emitter.addListener('im:userTokenExpired', () => {
+      logger.info(TAG, '_setupListeners: 收到 im:userTokenExpired 事件');
       eventBus.emit('im:tokenExpired', undefined);
     });
 
+    logger.info(TAG, '_setupListeners: 监听 im:userTokenInvalid');
     emitter.addListener('im:userTokenInvalid', () => {
+      logger.info(TAG, '_setupListeners: 收到 im:userTokenInvalid 事件');
       eventBus.emit('im:tokenExpired', undefined);
     });
 
-    // 消息事件
-    emitter.addListener('im:recvNewMessage', ((msgData: unknown) => {
-      try {
-        // 消息可能是单个对象或数组
-        const messages = Array.isArray(msgData) ? msgData : [msgData];
-        messages.forEach((msg: unknown) => {
-          eventBus.emit('im:newMessage', msg as IMMessage);
-        });
-      } catch (e) {
-        logger.error(TAG, '解析消息失败', e);
-      }
-    }) as (event: unknown) => void);
-
-    // 会话事件
-    emitter.addListener('im:conversationChanged', ((conversationList: unknown) => {
-      eventBus.emit('im:conversationChanged', String(conversationList));
-    }) as (event: unknown) => void);
-
-    emitter.addListener('im:inputStatusChanged', ((event: { userId: string; status: boolean }) => {
-      eventBus.emit('im:typingStatus', { userId: event.userId, status: event.status });
-    }) as (event: unknown) => void);
-
-    emitter.addListener('im:totalUnreadMessageCountChanged', ((count: number) => {
-      eventBus.emit('im:totalUnreadChanged', count);
-    }) as (event: unknown) => void);
-
-    // 消息撤回
-    emitter.addListener('im:newRecvMessageRevoked', ((msgId: unknown) => {
-      eventBus.emit('im:messageRevoked', String(msgId));
-    }) as (event: unknown) => void);
+    logger.info(TAG, '_setupListeners: 所有监听器设置完成');
   }
 
   /** 移除事件监听 */
