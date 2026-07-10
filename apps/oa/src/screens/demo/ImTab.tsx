@@ -56,6 +56,7 @@ export function ImTab({ append, busy: _busy }: TabProps) {
       await itcOpenIM.initSDK({
         apiAddr: 'http://172.16.82.54:10002',
         wsAddr: 'ws://172.16.82.54:10001',
+        dataDir: 'itc_openim_data',
       });
       setReady(true);
       log('✅ SDK 初始化成功');

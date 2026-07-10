@@ -15,6 +15,7 @@ import com.itc.openim.listener.*
 import com.itc.openim.utils.BaseImpl
 import com.itc.openim.utils.Emitter
 import com.itc.openim.utils.SendMsgCallBack
+import java.io.File
 import java.util.Objects
 
 class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
@@ -47,6 +48,32 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
     fun initSDK(config: String, operationID: String, promise: Promise) {
         val jsonConfig = JSON.parseObject(config)
         jsonConfig["platformID"] = 2
+
+        // 处理 dataDir 路径（如果是相对路径，转换为沙盒绝对路径）
+        var dataDir = jsonConfig.getString("dataDir")
+        if(dataDir.isEmpty()){
+            dataDir = "default_openim_data"
+        }
+        if (dataDir != null && !dataDir.startsWith("/")) {
+            // 相对路径，转换为应用私有目录下的绝对路径
+            val filesDir = reactContext.filesDir.absolutePath
+            dataDir = "$filesDir/$dataDir"
+            jsonConfig["dataDir"] = dataDir
+        }
+
+        // 确保 dataDir 目录存在
+        if (dataDir != null) {
+            val dir = File(dataDir)
+            if (!dir.exists()) {
+                val created = dir.mkdirs()
+                android.util.Log.i(TAG, "创建数据目录: $dataDir, 结果: $created")
+            } else {
+                android.util.Log.i(TAG, "数据目录已存在: $dataDir")
+            }
+        }
+
+        // 打印实际传给 SDK 的配置
+        android.util.Log.i(TAG, "initSDK config: ${jsonConfig.toString()}")
 
         val initialized = Open_im_sdk.initSDK(
             InitSDKListener(reactContext),

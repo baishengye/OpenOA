@@ -10,7 +10,7 @@
  * 经 @itc/base 的 eventBus 下发。
  */
 import { BaseModule, eventBus, ItcError, logger } from '@itc/base';
-import { NativeEventEmitter } from 'react-native';
+import { NativeEventEmitter, Platform } from 'react-native';
 import ItcOpenIMSDK, { NativeItcOpenIM } from './ItcOpenIMSDK';
 import type { IMMessage, ConnectionState, IMInitOptions } from './types';
 
@@ -705,14 +705,28 @@ class IMModule extends BaseModule<IMInitOptions> {
     logger.info(TAG, '初始化 OpenIM SDK...');
 
     // 设置平台 ID：1=iOS, 2=Android
-    const platformId = 2; // 默认 Android，后续根据平台动态设置
+    const platformId = Platform.OS === 'ios' ? 1 : 2;
+
+    // 获取沙盒目录（Android: dataDir, iOS: 相对路径）
+    let dataDir = _options.dataDir;
+    if (!dataDir) {
+      if (Platform.OS === 'android') {
+        // Android 使用应用私有目录
+        dataDir = 'open_im_android';
+      } else if (Platform.OS === 'ios') {
+        // iOS 使用 Documents 目录下的子目录
+        dataDir = 'openim_ios';
+      }
+    }
 
     try {
       const config = {
         ..._options,
         platformID: platformId,
+        dataDir,
       };
 
+      logger.info(TAG, `初始化配置: api=${_options.apiAddr}, dataDir=${dataDir}`);
       await ItcOpenIMSDK.initSDK(serialize(config), generateOperationID());
       this._setupListeners();
       logger.info(TAG, 'OpenIM SDK 初始化成功');
