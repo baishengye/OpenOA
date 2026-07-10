@@ -10,6 +10,20 @@
 #import "listeners/FriendshipListener.h"
 #import "listeners/GroupListener.h"
 #import "listeners/CustomBusinessListener.h"
+#import "listeners/InitListener.h"
+
+@interface ItcOpenIMSDK () <InitListenerDelegate, UserListenerDelegate, ConversationListenerDelegate, AdvancedMsgListenerDelegate, BatchMsgListenerDelegate, FriendshipListenerDelegate, GroupListenerDelegate, CustomBusinessListenerDelegate>
+
+@property (nonatomic, strong) InitListener *sdkInitListener;
+@property (nonatomic, strong) UserListener *userListener;
+@property (nonatomic, strong) ConversationListener *conversationListener;
+@property (nonatomic, strong) AdvancedMsgListener *advancedMsgListener;
+@property (nonatomic, strong) BatchMsgListener *batchMsgListener;
+@property (nonatomic, strong) FriendshipListener *friendshipListener;
+@property (nonatomic, strong) GroupListener *groupListener;
+@property (nonatomic, strong) CustomBusinessListener *customBusinessListener;
+
+@end
 
 @implementation NSDictionary (Extensions)
 
@@ -33,18 +47,6 @@
 
 @end
 
-@interface ItcOpenIMSDK () <UserListenerDelegate, ConversationListenerDelegate, AdvancedMsgListenerDelegate, BatchMsgListenerDelegate, FriendshipListenerDelegate, GroupListenerDelegate, CustomBusinessListenerDelegate>
-
-@property (nonatomic, strong) UserListener *userListener;
-@property (nonatomic, strong) ConversationListener *conversationListener;
-@property (nonatomic, strong) AdvancedMsgListener *advancedMsgListener;
-@property (nonatomic, strong) BatchMsgListener *batchMsgListener;
-@property (nonatomic, strong) FriendshipListener *friendshipListener;
-@property (nonatomic, strong) GroupListener *groupListener;
-@property (nonatomic, strong) CustomBusinessListener *customBusinessListener;
-
-@end
-
 @implementation ItcOpenIMSDK
 
 bool hasListeners;
@@ -52,6 +54,7 @@ bool hasListeners;
 - (instancetype)init {
     self = [super init];
     if (self) {
+        _sdkInitListener = [[InitListener alloc] initWithDelegate:self];
         _userListener = [[UserListener alloc] initWithDelegate:self];
         _conversationListener = [[ConversationListener alloc] initWithDelegate:self];
         _advancedMsgListener = [[AdvancedMsgListener alloc] initWithDelegate:self];
@@ -133,7 +136,7 @@ RCT_EXPORT_METHOD(initSDK:(NSString *)configJson operationID:(NSString *)operati
 
     NSLog(@"[ItcOpenIM] initSDK config: %@", [newConfig json]);
 
-    BOOL flag = Open_im_sdkInitSDK(self.userListener, operationID, [newConfig json]);
+    BOOL flag = Open_im_sdkInitSDK(self.sdkInitListener, operationID, [newConfig json]);
 
     // 注册所有监听器
     Open_im_sdkSetUserListener(self.userListener);
@@ -1225,31 +1228,11 @@ RCT_EXPORT_METHOD(setAppBadge:(nonnull NSNumber *)appUnreadCount operationID:(NS
     [self sendEventWithName:eventName body:data];
 }
 
+#pragma mark - InitListenerDelegate
+
+// 连接事件由 InitListener 直接通过 pushEvent 发送，这里不需要额外处理
+
 #pragma mark - UserListenerDelegate
-
-- (void)onConnectSuccess {
-    [self pushEvent:@"im:connectSuccess" data:nil];
-}
-
-- (void)onConnecting {
-    [self pushEvent:@"im:connecting" data:nil];
-}
-
-- (void)onKickedOffline {
-    [self pushEvent:@"im:kickedOffline" data:nil];
-}
-
-- (void)onUserTokenExpired {
-    [self pushEvent:@"im:userTokenExpired" data:nil];
-}
-
-- (void)onUserTokenInvalid:(NSString *)errMsg {
-    [self pushEvent:@"im:userTokenInvalid" data:nil];
-}
-
-- (void)onConnectFailed:(int32_t)errCode errMsg:(NSString *)errMsg {
-    [self pushEvent:@"im:connectFailed" data:@{@"errCode": @(errCode), @"errMsg": errMsg ?: @""}];
-}
 
 - (void)onSelfInfoUpdated:(NSString *)userInfo {
     NSDictionary *data = [self parseJsonStr2Dict:userInfo];
@@ -1259,6 +1242,21 @@ RCT_EXPORT_METHOD(setAppBadge:(nonnull NSNumber *)appUnreadCount operationID:(NS
 - (void)onUserStatusChanged:(NSString *)statusMap {
     NSDictionary *data = [self parseJsonStr2Dict:statusMap];
     [self pushEvent:@"im:userStatusChanged" data:data];
+}
+
+- (void)onUserCommandAdd:(NSString *)userCommand {
+    NSDictionary *data = [self parseJsonStr2Dict:userCommand];
+    [self pushEvent:@"im:userCommandAdd" data:data];
+}
+
+- (void)onUserCommandDelete:(NSString *)userCommand {
+    NSDictionary *data = [self parseJsonStr2Dict:userCommand];
+    [self pushEvent:@"im:userCommandDelete" data:data];
+}
+
+- (void)onUserCommandUpdate:(NSString *)userCommand {
+    NSDictionary *data = [self parseJsonStr2Dict:userCommand];
+    [self pushEvent:@"im:userCommandUpdate" data:data];
 }
 
 #pragma mark - ConversationListenerDelegate

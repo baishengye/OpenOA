@@ -2,7 +2,7 @@
 //  UserListener.h
 //  ItcOpenIM
 //
-//  用户监听器 - 连接状态/用户信息变更
+//  用户监听器 - 用户信息变更/用户命令
 //
 
 #import <Foundation/Foundation.h>
@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)pushEvent:(NSString *)eventName data:(id)data;
 @end
 
-@interface UserListener : NSObject <Open_im_sdk_callbackOnConnListener, Open_im_sdk_callbackOnUserListener>
+@interface UserListener : NSObject <Open_im_sdk_callbackOnUserListener>
 
 @property (nonatomic, weak) id<UserListenerDelegate> delegate;
 

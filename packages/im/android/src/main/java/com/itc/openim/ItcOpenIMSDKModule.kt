@@ -2,19 +2,25 @@ package com.itc.openim
 
 import com.alibaba.fastjson.JSON
 import com.alibaba.fastjson.JSONObject
-import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
-import com.facebook.react.bridge.ReadableArray
-import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
-import com.facebook.react.bridge.WritableMap
-import open_im_sdk.Open_im_sdk
-import com.itc.openim.listener.*
+import com.facebook.react.bridge.ReadableMap
+import com.itc.openim.listener.AdvancedMsgListener
+import com.itc.openim.listener.BatchMsgListener
+import com.itc.openim.listener.InitSDKListener
+import com.itc.openim.listener.OnConversationListener
+import com.itc.openim.listener.OnFriendshipListener
+import com.itc.openim.listener.OnGroupListener
+import com.itc.openim.listener.SendMsgCallBack
+import com.itc.openim.listener.UploadFileCallbackListener
+import com.itc.openim.listener.UploadLogProgressListener
+import com.itc.openim.listener.UserListener
 import com.itc.openim.utils.BaseImpl
+import com.itc.openim.utils.Emitter
+import open_im_sdk.Open_im_sdk
 import java.io.File
-import java.util.Objects
 
 class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
 
@@ -342,7 +348,7 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
 
     @ReactMethod
     fun setSignalingListener() {
-        Open_im_sdk.setSignalingListener(OnSignalingListener(reactContext))
+//        Open_im_sdk.setSignalingListener(OnSignalingListener(reactContext))
     }
 
     @ReactMethod
