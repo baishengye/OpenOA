@@ -25,6 +25,10 @@
 
 #pragma mark - Open_im_sdk_callbackUploadLog
 
+/// 日志上传进度回调
+/// 报告日志上传的当前进度和总大小
+/// @param current 当前已上传字节数
+/// @param size 日志文件总大小
 - (void)onProgress:(int64_t)current size:(int64_t)size {
     NSDictionary *params = @{
         @"current": @(current),
@@ -33,7 +37,7 @@
         @"errCode": @(0),
         @"errMsg": @""
     };
-    [self.module pushEvent:@"uploadOnProgress" data:params];
+    [self.module pushEvent:@"im:uploadOnProgress" data:params];
 }
 
 @end

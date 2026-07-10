@@ -29,22 +29,29 @@
 
 #pragma mark - Open_im_sdk_callbackSendMsgCallBack
 
+/// 发送消息错误回调
+/// @param errCode 错误码
+/// @param errMsg 错误信息
 - (void)onError:(int32_t)errCode errMsg:(NSString * _Nullable)errMsg {
     self.rejecter([NSString stringWithFormat:@"%d", errCode], errMsg, nil);
 }
 
+/// 发送消息成功回调
+/// @param data 发送成功的消息JSON字符串
 - (void)onSuccess:(NSString * _Nullable)data {
     NSDictionary *messageDict = ItcParseJsonStr2Dict(data);
     self.resolver(messageDict);
 }
 
+/// 发送消息进度回调
+/// @param progress 当前进度（0-100）
 - (void)onProgress:(long)progress {
     NSDictionary *messageDict = ItcParseJsonStr2Dict(self.msg);
     NSDictionary *data = @{
         @"progress": @(progress),
         @"message": messageDict ?: @{}
     };
-    [self.module pushEvent:@"SendMessageProgress" data:data];
+    [self.module pushEvent:@"im:sendMessageProgress" data:data];
 }
 
 @end

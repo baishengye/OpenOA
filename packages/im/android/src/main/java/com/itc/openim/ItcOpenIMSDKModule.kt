@@ -86,6 +86,7 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
         setGroupListener()
         setAdvancedMsgListener()
         setBatchMsgListener()
+        setSignalingListener()
 
         if (initialized) {
             promise.resolve("init success")
@@ -339,6 +340,11 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
     @ReactMethod
     fun setBatchMsgListener() {
         Open_im_sdk.setBatchMsgListener(BatchMsgListener(reactContext))
+    }
+
+    @ReactMethod
+    fun setSignalingListener() {
+        Open_im_sdk.setSignalingListener(OnSignalingListener(reactContext))
     }
 
     @ReactMethod

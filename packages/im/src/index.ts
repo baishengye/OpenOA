@@ -158,6 +158,21 @@ function setupNativeListeners(): void {
     eventBus.emit('im:userStatusChanged', data);
   }) as (event: unknown) => void);
 
+  emitter.addListener('im:userCommandAdd', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:userCommandAdd');
+    eventBus.emit('im:userCommandAdd', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:userCommandDelete', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:userCommandDelete');
+    eventBus.emit('im:userCommandDelete', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:userCommandUpdate', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:userCommandUpdate');
+    eventBus.emit('im:userCommandUpdate', data);
+  }) as (event: unknown) => void);
+
   // ========== 会话事件 (OnConversationListener) ==========
   emitter.addListener('im:conversationChanged', ((data: unknown) => {
     logger.info(TAG_IM, '收到 im:conversationChanged');
@@ -229,6 +244,48 @@ function setupNativeListeners(): void {
     eventBus.emit('im:messageRevoked', msgData);
   }) as (event: unknown) => void);
 
+  // ========== 上传事件 (UploadListener) ==========
+  emitter.addListener('im:uploadComplete', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:uploadComplete');
+    eventBus.emit('im:uploadComplete', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:uploadOnProgress', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:uploadOnProgress');
+    eventBus.emit('im:uploadOnProgress', data);
+  }) as (event: unknown) => void);
+
+  // ========== 上传文件详细事件 (UploadFileCallbackListener) ==========
+  emitter.addListener('im:uploadOpen', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:uploadOpen');
+    eventBus.emit('im:uploadOpen', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:uploadPartSize', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:uploadPartSize');
+    eventBus.emit('im:uploadPartSize', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:uploadHashPartProgress', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:uploadHashPartProgress');
+    eventBus.emit('im:uploadHashPartProgress', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:uploadHashPartComplete', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:uploadHashPartComplete');
+    eventBus.emit('im:uploadHashPartComplete', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:uploadPartComplete', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:uploadPartComplete');
+    eventBus.emit('im:uploadPartComplete', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:uploadID', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:uploadID');
+    eventBus.emit('im:uploadID', data);
+  }) as (event: unknown) => void);
+
   // ========== 批量消息事件 (BatchMsgListener) ==========
   emitter.addListener('im:recvNewMessages', ((msgList: unknown) => {
     logger.info(TAG_IM, '收到 im:recvNewMessages');
@@ -238,6 +295,12 @@ function setupNativeListeners(): void {
   emitter.addListener('im:recvOfflineNewMessages', ((msgList: unknown) => {
     logger.info(TAG_IM, '收到 im:recvOfflineNewMessages');
     eventBus.emit('im:offlineMessages', msgList);
+  }) as (event: unknown) => void);
+
+  // ========== 自定义业务消息事件 (SetCustomBusinessListener) ==========
+  emitter.addListener('im:recvCustomBusinessMessage', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:recvCustomBusinessMessage');
+    eventBus.emit('im:recvCustomBusinessMessage', data);
   }) as (event: unknown) => void);
 
   // ========== 发送消息进度 ==========
@@ -347,7 +410,58 @@ function setupNativeListeners(): void {
     eventBus.emit('im:joinedGroupDeleted', data);
   }) as (event: unknown) => void);
 
-  logger.info(TAG_IM, 'Native 事件监听器设置完成（共 47 个事件）');
+  // ========== 信令事件 (OnSignalingListener) ==========
+  emitter.addListener('im:hangUp', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:hangUp');
+    eventBus.emit('im:hangUp', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:invitationCancelled', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:invitationCancelled');
+    eventBus.emit('im:invitationCancelled', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:invitationTimeout', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:invitationTimeout');
+    eventBus.emit('im:invitationTimeout', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:inviteeAccepted', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:inviteeAccepted');
+    eventBus.emit('im:inviteeAccepted', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:inviteeAcceptedByOtherDevice', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:inviteeAcceptedByOtherDevice');
+    eventBus.emit('im:inviteeAcceptedByOtherDevice', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:inviteeRejected', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:inviteeRejected');
+    eventBus.emit('im:inviteeRejected', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:inviteeRejectedByOtherDevice', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:inviteeRejectedByOtherDevice');
+    eventBus.emit('im:inviteeRejectedByOtherDevice', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:receiveNewInvitation', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:receiveNewInvitation');
+    eventBus.emit('im:receiveNewInvitation', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:roomParticipantConnected', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:roomParticipantConnected');
+    eventBus.emit('im:roomParticipantConnected', data);
+  }) as (event: unknown) => void);
+
+  emitter.addListener('im:roomParticipantDisconnected', ((data: unknown) => {
+    logger.info(TAG_IM, '收到 im:roomParticipantDisconnected');
+    eventBus.emit('im:roomParticipantDisconnected', data);
+  }) as (event: unknown) => void);
+
+  logger.info(TAG_IM, 'Native 事件监听器设置完成（共 71 个事件）');
 }
 
 // ItcOpenIM 类：直接封装 OpenIM SDK，与官方 open-im-sdk-reactnative 保持一致
@@ -937,6 +1051,9 @@ declare module '@itc/base' {
     // 用户
     'im:selfInfoUpdated': unknown;
     'im:userStatusChanged': unknown;
+    'im:userCommandAdd': unknown;
+    'im:userCommandDelete': unknown;
+    'im:userCommandUpdate': unknown;
     // 会话
     'im:conversationChanged': unknown;
     'im:newConversation': unknown;
@@ -956,6 +1073,17 @@ declare module '@itc/base' {
     'im:newMessages': unknown;
     'im:offlineMessages': unknown;
     'im:sendProgress': { progress: number; message: unknown };
+    // 上传
+    'im:uploadComplete': unknown;
+    'im:uploadOnProgress': unknown;
+    'im:uploadOpen': unknown;
+    'im:uploadPartSize': unknown;
+    'im:uploadHashPartProgress': unknown;
+    'im:uploadHashPartComplete': unknown;
+    'im:uploadPartComplete': unknown;
+    'im:uploadID': unknown;
+    // 自定义业务消息
+    'im:recvCustomBusinessMessage': unknown;
     // 好友
     'im:blackAdded': unknown;
     'im:blackDeleted': unknown;
@@ -978,6 +1106,17 @@ declare module '@itc/base' {
     'im:groupMemberInfoChanged': unknown;
     'im:joinedGroupAdded': unknown;
     'im:joinedGroupDeleted': unknown;
+    // 信令（音视频通话）
+    'im:hangUp': unknown;
+    'im:invitationCancelled': unknown;
+    'im:invitationTimeout': unknown;
+    'im:inviteeAccepted': unknown;
+    'im:inviteeAcceptedByOtherDevice': unknown;
+    'im:inviteeRejected': unknown;
+    'im:inviteeRejectedByOtherDevice': unknown;
+    'im:receiveNewInvitation': unknown;
+    'im:roomParticipantConnected': unknown;
+    'im:roomParticipantDisconnected': unknown;
   }
 }
 
