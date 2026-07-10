@@ -1,5 +1,5 @@
 //
-//  ItcJSONExtensions.h
+//  JSONExtensions.h
 //  ItcOpenIM
 //
 //  JSON 工具扩展，提供 NSDictionary/NSArray 与 JSON 字符串之间的转换
@@ -9,14 +9,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface NSDictionary (ItcJSON)
+@interface NSDictionary (ItcJSONPlus)
 
 // 将字典序列化为 JSON 字符串
 - (nullable NSString *)toJsonString;
 
 @end
 
-@interface NSArray (ItcJSON)
+@interface NSArray (ItcJSONPlus)
 
 // 将数组序列化为 JSON 字符串
 - (nullable NSString *)toJsonString;
@@ -30,10 +30,10 @@ NS_ASSUME_NONNULL_BEGIN
 extern "C" {
 #endif
 
-NSDictionary * _Nullable ItcParseJsonStr2Dict(NSString *jsonStr);
-NSArray * _Nullable ItcParseJsonStr2Array(NSString *jsonStr);
-NSString * _Nullable ItcDict2JsonStr(NSDictionary *dict);
-NSString * _Nullable ItcArray2JsonStr(NSArray *array);
+NSDictionary * _Nullable ItcParseJsonStr2DictPlus(NSString *jsonStr);
+NSArray * _Nullable ItcParseJsonStr2ArrayPlus(NSString *jsonStr);
+NSString * _Nullable ItcDict2JsonStrPlus(NSDictionary *dict);
+NSString * _Nullable ItcArray2JsonStrPlus(NSArray *array);
 
 #ifdef __cplusplus
 }

@@ -1,12 +1,12 @@
 //
-//  ItcCallbackProxy.mm
+//  CallbackProxy.mm
 //  ItcOpenIM
 //
 
-#import "ItcCallbackProxy.h"
-#import "ItcJSONExtensions.h"
+#import "CallbackProxyPlus.h"
+#import "JSONExtensionsPlus.h"
 
-@interface ItcCallbackProxy()
+@interface CallbackProxyPlus()
 
 @property (nonatomic, copy) RCTPromiseResolveBlock resolver;
 @property (nonatomic, copy) RCTPromiseRejectBlock rejecter;
@@ -14,7 +14,7 @@
 
 @end
 
-@implementation ItcCallbackProxy
+@implementation CallbackProxyPlus
 
 - (id)initWithCallback:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter {
     return [self initWithCallback:resolver rejecter:rejecter onSuccess:nil];
@@ -47,11 +47,11 @@
         return;
     }
 
-    NSDictionary *dataDict = ItcParseJsonStr2Dict(data);
+    NSDictionary *dataDict = ItcParseJsonStr2DictPlus(data);
     if (dataDict) {
         self.resolver(dataDict);
     } else {
-        NSArray *dataArray = ItcParseJsonStr2Array(data);
+        NSArray *dataArray = ItcParseJsonStr2ArrayPlus(data);
         if (dataArray) {
             self.resolver(dataArray);
         } else {

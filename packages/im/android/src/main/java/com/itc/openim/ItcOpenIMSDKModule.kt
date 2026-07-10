@@ -13,8 +13,6 @@ import com.facebook.react.bridge.WritableMap
 import open_im_sdk.Open_im_sdk
 import com.itc.openim.listener.*
 import com.itc.openim.utils.BaseImpl
-import com.itc.openim.utils.Emitter
-import com.itc.openim.utils.SendMsgCallBack
 import java.io.File
 import java.util.Objects
 

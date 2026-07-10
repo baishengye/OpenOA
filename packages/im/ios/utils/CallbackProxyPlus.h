@@ -1,5 +1,5 @@
 //
-//  ItcCallbackProxy.h
+//  CallbackProxy.h
 //  ItcOpenIM
 //
 
@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 typedef _Nullable id (^RNOIMSuccessCallback)(NSString * _Nullable data);
 
-@interface ItcCallbackProxy : NSObject <Open_im_sdk_callbackBase>
+@interface CallbackProxyPlus : NSObject <Open_im_sdk_callbackBase>
 
 - (id)initWithCallback:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter;
 - (id)initWithCallback:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter onSuccess:(RNOIMSuccessCallback _Nullable)onSuccess;

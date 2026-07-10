@@ -1,4 +1,4 @@
-package com.itc.openim.utils;
+package com.itc.openim.listener;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;

@@ -1,19 +1,19 @@
 //
-//  ItcUploadFileCallbackProxy.mm
+//  UploadFileCallbackProxy.mm
 //  ItcOpenIM
 //
 
-#import "ItcUploadFileCallbackProxy.h"
-#import "ItcJSONExtensions.h"
+#import "UploadFileCallbackProxyPlus.h"
+#import "../utils/JSONExtensionsPlus.h"
 
-@interface ItcUploadFileCallbackProxy()
+@interface UploadFileCallbackProxyPlus()
 
 @property (nonatomic, copy) NSString *opid;
 @property (nonatomic, weak) ItcOpenIMSDK *module;
 
 @end
 
-@implementation ItcUploadFileCallbackProxy
+@implementation UploadFileCallbackProxyPlus
 
 - (nonnull id)initWithOpid:(nonnull NSString *)operationID module:(nonnull ItcOpenIMSDK *)module resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter {
     if (self = [super init]) {

@@ -1,13 +1,13 @@
 //
-//  ItcJSONExtensions.m
+//  JSONExtensions.m
 //  ItcOpenIM
 //
 //  JSON 工具扩展实现
 //
 
-#import "ItcJSONExtensions.h"
+#import "JSONExtensionsPlus.h"
 
-@implementation NSDictionary (ItcJSON)
+@implementation NSDictionary (ItcJSONPlus)
 
 - (nullable NSString *)toJsonString {
     if (!self) return nil;
@@ -19,7 +19,7 @@
 
 @end
 
-@implementation NSArray (ItcJSON)
+@implementation NSArray (ItcJSONPlus)
 
 - (nullable NSString *)toJsonString {
     if (!self) return nil;
@@ -33,7 +33,7 @@
 
 // ============ 通用 JSON 解析函数 ============
 
-NSDictionary * _Nullable ItcParseJsonStr2Dict(NSString *jsonStr) {
+NSDictionary * _Nullable ItcParseJsonStr2DictPlus(NSString *jsonStr) {
     if (!jsonStr || jsonStr.length == 0) return nil;
     NSData *data = [jsonStr dataUsingEncoding:NSUTF8StringEncoding];
     if (!data) return nil;
@@ -43,7 +43,7 @@ NSDictionary * _Nullable ItcParseJsonStr2Dict(NSString *jsonStr) {
     return (NSDictionary *)jsonObject;
 }
 
-NSArray * _Nullable ItcParseJsonStr2Array(NSString *jsonStr) {
+NSArray * _Nullable ItcParseJsonStr2ArrayPlus(NSString *jsonStr) {
     if (!jsonStr || jsonStr.length == 0) return nil;
     NSData *data = [jsonStr dataUsingEncoding:NSUTF8StringEncoding];
     if (!data) return nil;
@@ -53,12 +53,12 @@ NSArray * _Nullable ItcParseJsonStr2Array(NSString *jsonStr) {
     return (NSArray *)jsonObject;
 }
 
-NSString * _Nullable ItcDict2JsonStr(NSDictionary *dict) {
+NSString * _Nullable ItcDict2JsonStrPlus(NSDictionary *dict) {
     if (!dict) return nil;
     return [dict toJsonString];
 }
 
-NSString * _Nullable ItcArray2JsonStr(NSArray *array) {
+NSString * _Nullable ItcArray2JsonStrPlus(NSArray *array) {
     if (!array) return nil;
     return [array toJsonString];
 }

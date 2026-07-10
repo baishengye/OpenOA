@@ -3,7 +3,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ItcUploadFileCallbackProxy : NSObject <Open_im_sdk_callbackUploadFileCallback>
+@interface UploadFileCallbackProxyPlus : NSObject <Open_im_sdk_callbackUploadFileCallback>
 
 - (id)initWithOpid:(NSString *)operationID module:(ItcOpenIMSDK *)module resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter;
 

@@ -1,7 +1,14 @@
 #import "ItcOpenIMSDK.h"
-#import "ItcSendMessageCallbackProxy.h"
-#import "ItcUploadFileCallbackProxy.h"
-#import "ItcUploadLogCallbackProxy.h"
+#import "utils/CallbackProxyPlus.h"
+#import "listeners/SendMessageCallbackProxyPlus.h"
+#import "listeners/UploadFileCallbackProxyPlus.h"
+#import "listeners/UploadLogCallbackProxyPlus.h"
+#import "listeners/UserListener.h"
+#import "listeners/ConversationListener.h"
+#import "listeners/AdvancedMsgListener.h"
+#import "listeners/BatchMsgListener.h"
+#import "listeners/FriendshipListener.h"
+#import "listeners/GroupListener.h"
 
 @implementation NSDictionary (Extensions)
 
@@ -25,9 +32,33 @@
 
 @end
 
+@interface ItcOpenIMSDK () <UserListenerDelegate, ConversationListenerDelegate, AdvancedMsgListenerDelegate, BatchMsgListenerDelegate, FriendshipListenerDelegate, GroupListenerDelegate>
+
+@property (nonatomic, strong) UserListener *userListener;
+@property (nonatomic, strong) ConversationListener *conversationListener;
+@property (nonatomic, strong) AdvancedMsgListener *advancedMsgListener;
+@property (nonatomic, strong) BatchMsgListener *batchMsgListener;
+@property (nonatomic, strong) FriendshipListener *friendshipListener;
+@property (nonatomic, strong) GroupListener *groupListener;
+
+@end
+
 @implementation ItcOpenIMSDK
 
 bool hasListeners;
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _userListener = [[UserListener alloc] initWithDelegate:self];
+        _conversationListener = [[ConversationListener alloc] initWithDelegate:self];
+        _advancedMsgListener = [[AdvancedMsgListener alloc] initWithDelegate:self];
+        _batchMsgListener = [[BatchMsgListener alloc] initWithDelegate:self];
+        _friendshipListener = [[FriendshipListener alloc] initWithDelegate:self];
+        _groupListener = [[GroupListener alloc] initWithDelegate:self];
+    }
+    return self;
+}
 
 - (dispatch_queue_t)methodQueue {
     return dispatch_get_main_queue();
@@ -73,13 +104,16 @@ RCT_EXPORT_METHOD(initSDK:(NSString *)configJson operationID:(NSString *)operati
     NSMutableDictionary *newConfig = [config mutableCopy];
     newConfig[@"platformID"] = @1;
 
-    BOOL flag = Open_im_sdkInitSDK(self, operationID, [newConfig json]);
-    Open_im_sdkSetUserListener(self);
-    Open_im_sdkSetConversationListener(self);
-    Open_im_sdkSetFriendListener(self);
-    Open_im_sdkSetGroupListener(self);
-    Open_im_sdkSetAdvancedMsgListener(self);
-    Open_im_sdkSetBatchMsgListener(self);
+    BOOL flag = Open_im_sdkInitSDK(self.userListener, operationID, [newConfig json]);
+
+    // 注册所有监听器
+    Open_im_sdkSetUserListener(self.userListener);
+    Open_im_sdkSetConversationListener(self.conversationListener);
+    Open_im_sdkSetFriendListener(self.friendshipListener);
+    Open_im_sdkSetGroupListener(self.groupListener);
+    Open_im_sdkSetAdvancedMsgListener(self.advancedMsgListener);
+    Open_im_sdkSetBatchMsgListener(self.batchMsgListener);
+    // 注：iOS SDK 未暴露 Open_im_sdkSetSignalingListener API，信令监听器通过 SignalingListener 类实现
 
     if (flag) {
         resolve(@"init success");
@@ -95,14 +129,14 @@ RCT_EXPORT_METHOD(login:(NSString *)optionsJson operationID:(NSString *)operatio
         return;
     }
 
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSString *userID = options[@"userID"];
     NSString *token = options[@"token"];
     Open_im_sdkLogin(proxy, operationID, userID, token);
 }
 
 RCT_EXPORT_METHOD(logout:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkLogout(proxy, operationID);
 }
 
@@ -119,47 +153,47 @@ RCT_EXPORT_METHOD(getLoginUserID:(NSString *)operationID resolver:(RCTPromiseRes
 // ============== 用户相关 (TurboModule: 基本类型) ==============
 
 RCT_EXPORT_METHOD(getUsersInfo:(NSString *)uidListJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkGetUsersInfo(proxy, operationID, uidListJson);
 }
 
 RCT_EXPORT_METHOD(setSelfInfo:(NSString *)infoJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkSetSelfInfo(proxy, operationID, infoJson);
 }
 
 RCT_EXPORT_METHOD(getSelfUserInfo:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkGetSelfUserInfo(proxy, operationID);
 }
 
 RCT_EXPORT_METHOD(subscribeUsersStatus:(NSString *)userIDListJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkSubscribeUsersStatus(proxy, operationID, userIDListJson);
 }
 
 RCT_EXPORT_METHOD(unsubscribeUsersStatus:(NSString *)userIDListJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkUnsubscribeUsersStatus(proxy, operationID, userIDListJson);
 }
 
 RCT_EXPORT_METHOD(getSubscribeUsersStatus:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkGetSubscribeUsersStatus(proxy, operationID);
 }
 
 RCT_EXPORT_METHOD(setAppBackgroundStatus:(BOOL)isBackground operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkSetAppBackgroundStatus(proxy, operationID, isBackground);
 }
 
 RCT_EXPORT_METHOD(networkStatusChanged:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkNetworkStatusChanged(proxy, operationID);
 }
 
 RCT_EXPORT_METHOD(setGlobalRecvMessageOpt:(NSInteger)opt operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *param = @{@"globalRecvMsgOpt": @(opt)};
     Open_im_sdkSetSelfInfo(proxy, operationID, [param json]);
 }
@@ -167,12 +201,12 @@ RCT_EXPORT_METHOD(setGlobalRecvMessageOpt:(NSInteger)opt operationID:(NSString *
 // ============== 会话相关 (TurboModule: 基本类型) ==============
 
 RCT_EXPORT_METHOD(getAllConversationList:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkGetAllConversationList(proxy, operationID);
 }
 
 RCT_EXPORT_METHOD(getConversationListSplit:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -182,7 +216,7 @@ RCT_EXPORT_METHOD(getConversationListSplit:(NSString *)optionsJson operationID:(
 }
 
 RCT_EXPORT_METHOD(getOneConversation:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -192,7 +226,7 @@ RCT_EXPORT_METHOD(getOneConversation:(NSString *)optionsJson operationID:(NSStri
 }
 
 RCT_EXPORT_METHOD(getMultipleConversation:(NSString *)conversationIDListJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkGetMultipleConversation(proxy, operationID, conversationIDListJson);
 }
 
@@ -207,19 +241,19 @@ RCT_EXPORT_METHOD(getConversationIDBySessionType:(NSString *)optionsJson operati
 }
 
 RCT_EXPORT_METHOD(getTotalUnreadMsgCount:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter onSuccess:^id _Nullable(NSString * _Nullable data) {
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter onSuccess:^id _Nullable(NSString * _Nullable data) {
         return data ? @([data intValue]) : nil;
     }];
     Open_im_sdkGetTotalUnreadMsgCount(proxy, operationID);
 }
 
 RCT_EXPORT_METHOD(markConversationMessageAsRead:(NSString *)conversationID operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkMarkConversationMessageAsRead(proxy, operationID, conversationID);
 }
 
 RCT_EXPORT_METHOD(setConversation:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -229,7 +263,7 @@ RCT_EXPORT_METHOD(setConversation:(NSString *)optionsJson operationID:(NSString 
 }
 
 RCT_EXPORT_METHOD(setConversationDraft:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -239,7 +273,7 @@ RCT_EXPORT_METHOD(setConversationDraft:(NSString *)optionsJson operationID:(NSSt
 }
 
 RCT_EXPORT_METHOD(pinConversation:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -250,7 +284,7 @@ RCT_EXPORT_METHOD(pinConversation:(NSString *)optionsJson operationID:(NSString 
 }
 
 RCT_EXPORT_METHOD(setConversationRecvMessageOpt:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -261,7 +295,7 @@ RCT_EXPORT_METHOD(setConversationRecvMessageOpt:(NSString *)optionsJson operatio
 }
 
 RCT_EXPORT_METHOD(setConversationPrivateChat:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -272,7 +306,7 @@ RCT_EXPORT_METHOD(setConversationPrivateChat:(NSString *)optionsJson operationID
 }
 
 RCT_EXPORT_METHOD(setConversationBurnDuration:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -283,28 +317,28 @@ RCT_EXPORT_METHOD(setConversationBurnDuration:(NSString *)optionsJson operationI
 }
 
 RCT_EXPORT_METHOD(resetConversationGroupAtType:(NSString *)conversationID operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *param = @{@"groupAtType": @0};
     Open_im_sdkSetConversation(proxy, operationID, conversationID, [param json]);
 }
 
 RCT_EXPORT_METHOD(hideConversation:(NSString *)conversationID operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkHideConversation(proxy, operationID, conversationID);
 }
 
 RCT_EXPORT_METHOD(hideAllConversations:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkHideAllConversations(proxy, operationID);
 }
 
 RCT_EXPORT_METHOD(clearConversationAndDeleteAllMsg:(NSString *)conversationID operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkClearConversationAndDeleteAllMsg(proxy, operationID, conversationID);
 }
 
 RCT_EXPORT_METHOD(deleteConversationAndDeleteAllMsg:(NSString *)conversationID operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkDeleteConversationAndDeleteAllMsg(proxy, operationID, conversationID);
 }
 
@@ -529,7 +563,7 @@ RCT_EXPORT_METHOD(sendMessage:(NSString *)paramsJson operationID:(NSString *)ope
         };
     }
 
-    ItcSendMessageCallbackProxy *proxy = [[ItcSendMessageCallbackProxy alloc] initWithMessage:[message json] module:self resolver:resolver rejecter:rejecter];
+    SendMessageCallbackProxyPlus *proxy = [[SendMessageCallbackProxyPlus alloc] initWithMessage:[message json] module:self resolver:resolver rejecter:rejecter];
     Open_im_sdkSendMessage(proxy, operationID, [message json], recvID, groupID, [offlinePushInfo json], isOnlineOnly);
 }
 
@@ -556,12 +590,12 @@ RCT_EXPORT_METHOD(sendMessageNotOss:(NSString *)paramsJson operationID:(NSString
         };
     }
 
-    ItcSendMessageCallbackProxy *proxy = [[ItcSendMessageCallbackProxy alloc] initWithMessage:[message json] module:self resolver:resolver rejecter:rejecter];
+    SendMessageCallbackProxyPlus *proxy = [[SendMessageCallbackProxyPlus alloc] initWithMessage:[message json] module:self resolver:resolver rejecter:rejecter];
     Open_im_sdkSendMessageNotOss(proxy, operationID, [message json], recvID, groupID, [offlinePushInfo json], isOnlineOnly);
 }
 
 RCT_EXPORT_METHOD(typingStatusUpdate:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -571,7 +605,7 @@ RCT_EXPORT_METHOD(typingStatusUpdate:(NSString *)optionsJson operationID:(NSStri
 }
 
 RCT_EXPORT_METHOD(changeInputStates:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -581,7 +615,7 @@ RCT_EXPORT_METHOD(changeInputStates:(NSString *)optionsJson operationID:(NSStrin
 }
 
 RCT_EXPORT_METHOD(getInputStates:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -591,7 +625,7 @@ RCT_EXPORT_METHOD(getInputStates:(NSString *)optionsJson operationID:(NSString *
 }
 
 RCT_EXPORT_METHOD(revokeMessage:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -601,7 +635,7 @@ RCT_EXPORT_METHOD(revokeMessage:(NSString *)optionsJson operationID:(NSString *)
 }
 
 RCT_EXPORT_METHOD(deleteMessage:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -611,7 +645,7 @@ RCT_EXPORT_METHOD(deleteMessage:(NSString *)optionsJson operationID:(NSString *)
 }
 
 RCT_EXPORT_METHOD(deleteMessageFromLocalStorage:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -621,37 +655,37 @@ RCT_EXPORT_METHOD(deleteMessageFromLocalStorage:(NSString *)optionsJson operatio
 }
 
 RCT_EXPORT_METHOD(deleteAllMsgFromLocal:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkDeleteAllMsgFromLocal(proxy, operationID);
 }
 
 RCT_EXPORT_METHOD(deleteAllMsgFromLocalAndSvr:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkDeleteAllMsgFromLocalAndSvr(proxy, operationID);
 }
 
 RCT_EXPORT_METHOD(searchLocalMessages:(NSString *)searchParamJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkSearchLocalMessages(proxy, operationID, searchParamJson);
 }
 
 RCT_EXPORT_METHOD(getAdvancedHistoryMessageList:(NSString *)paramsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkGetAdvancedHistoryMessageList(proxy, operationID, paramsJson);
 }
 
 RCT_EXPORT_METHOD(getAdvancedHistoryMessageListReverse:(NSString *)paramsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkGetAdvancedHistoryMessageListReverse(proxy, operationID, paramsJson);
 }
 
 RCT_EXPORT_METHOD(findMessageList:(NSString *)findOptionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkFindMessageList(proxy, operationID, findOptionsJson);
 }
 
 RCT_EXPORT_METHOD(insertGroupMessageToLocalStorage:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -662,7 +696,7 @@ RCT_EXPORT_METHOD(insertGroupMessageToLocalStorage:(NSString *)optionsJson opera
 }
 
 RCT_EXPORT_METHOD(insertSingleMessageToLocalStorage:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -673,7 +707,7 @@ RCT_EXPORT_METHOD(insertSingleMessageToLocalStorage:(NSString *)optionsJson oper
 }
 
 RCT_EXPORT_METHOD(setMessageLocalEx:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -685,7 +719,7 @@ RCT_EXPORT_METHOD(setMessageLocalEx:(NSString *)optionsJson operationID:(NSStrin
 // ============== 好友相关 (TurboModule: 基本类型) ==============
 
 RCT_EXPORT_METHOD(getSpecifiedFriendsInfo:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -697,12 +731,12 @@ RCT_EXPORT_METHOD(getSpecifiedFriendsInfo:(NSString *)optionsJson operationID:(N
 }
 
 RCT_EXPORT_METHOD(getFriendList:(BOOL)filterBlack operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkGetFriendList(proxy, operationID, filterBlack);
 }
 
 RCT_EXPORT_METHOD(getFriendListPage:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -712,27 +746,27 @@ RCT_EXPORT_METHOD(getFriendListPage:(NSString *)optionsJson operationID:(NSStrin
 }
 
 RCT_EXPORT_METHOD(searchFriends:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkSearchFriends(proxy, operationID, optionsJson);
 }
 
 RCT_EXPORT_METHOD(checkFriend:(NSString *)userIDListJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkCheckFriend(proxy, operationID, userIDListJson);
 }
 
 RCT_EXPORT_METHOD(addFriend:(NSString *)paramsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkAddFriend(proxy, operationID, paramsJson);
 }
 
 RCT_EXPORT_METHOD(updateFriends:(NSString *)paramsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkUpdateFriends(proxy, operationID, paramsJson);
 }
 
 RCT_EXPORT_METHOD(setFriendRemark:(NSString *)paramsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:paramsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid params JSON", nil);
@@ -746,17 +780,17 @@ RCT_EXPORT_METHOD(setFriendRemark:(NSString *)paramsJson operationID:(NSString *
 }
 
 RCT_EXPORT_METHOD(deleteFriend:(NSString *)friendUserID operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkDeleteFriend(proxy, operationID, friendUserID);
 }
 
 RCT_EXPORT_METHOD(getFriendApplicationListAsApplicant:(NSString *)paramsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkGetFriendApplicationListAsApplicant(proxy, operationID);
 }
 
 RCT_EXPORT_METHOD(getFriendApplicationListAsRecipient:(NSString *)paramsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkGetFriendApplicationListAsRecipient(proxy, operationID);
 }
 
@@ -765,17 +799,17 @@ RCT_EXPORT_METHOD(getFriendApplicationUnhandledCount:(NSString *)paramsJson oper
 }
 
 RCT_EXPORT_METHOD(acceptFriendApplication:(NSString *)paramsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkAcceptFriendApplication(proxy, operationID, paramsJson);
 }
 
 RCT_EXPORT_METHOD(refuseFriendApplication:(NSString *)paramsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkRefuseFriendApplication(proxy, operationID, paramsJson);
 }
 
 RCT_EXPORT_METHOD(addBlack:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -786,24 +820,24 @@ RCT_EXPORT_METHOD(addBlack:(NSString *)optionsJson operationID:(NSString *)opera
 }
 
 RCT_EXPORT_METHOD(getBlackList:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkGetBlackList(proxy, operationID);
 }
 
 RCT_EXPORT_METHOD(removeBlack:(NSString *)removeUserID operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkRemoveBlack(proxy, operationID, removeUserID);
 }
 
 // ============== 群组相关 (TurboModule: 基本类型) ==============
 
 RCT_EXPORT_METHOD(createGroup:(NSString *)ginfoJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkCreateGroup(proxy, operationID, ginfoJson);
 }
 
 RCT_EXPORT_METHOD(joinGroup:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -814,17 +848,17 @@ RCT_EXPORT_METHOD(joinGroup:(NSString *)optionsJson operationID:(NSString *)oper
 }
 
 RCT_EXPORT_METHOD(quitGroup:(NSString *)gid operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkQuitGroup(proxy, operationID, gid);
 }
 
 RCT_EXPORT_METHOD(dismissGroup:(NSString *)groupID operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkDismissGroup(proxy, operationID, groupID);
 }
 
 RCT_EXPORT_METHOD(changeGroupMute:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -834,7 +868,7 @@ RCT_EXPORT_METHOD(changeGroupMute:(NSString *)optionsJson operationID:(NSString 
 }
 
 RCT_EXPORT_METHOD(changeGroupMemberMute:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -844,22 +878,22 @@ RCT_EXPORT_METHOD(changeGroupMemberMute:(NSString *)optionsJson operationID:(NSS
 }
 
 RCT_EXPORT_METHOD(setGroupMemberInfo:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkSetGroupMemberInfo(proxy, operationID, optionsJson);
 }
 
 RCT_EXPORT_METHOD(setGroupInfo:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkSetGroupInfo(proxy, operationID, optionsJson);
 }
 
 RCT_EXPORT_METHOD(getJoinedGroupList:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkGetJoinedGroupList(proxy, operationID);
 }
 
 RCT_EXPORT_METHOD(getJoinedGroupListPage:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -869,22 +903,22 @@ RCT_EXPORT_METHOD(getJoinedGroupListPage:(NSString *)optionsJson operationID:(NS
 }
 
 RCT_EXPORT_METHOD(searchGroups:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkSearchGroups(proxy, operationID, optionsJson);
 }
 
 RCT_EXPORT_METHOD(getSpecifiedGroupsInfo:(NSString *)groupIDListJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkGetSpecifiedGroupsInfo(proxy, operationID, groupIDListJson);
 }
 
 RCT_EXPORT_METHOD(getGroupApplicationListAsApplicant:(NSString *)paramsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkGetGroupApplicationListAsApplicant(proxy, operationID);
 }
 
 RCT_EXPORT_METHOD(getGroupApplicationListAsRecipient:(NSString *)paramsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkGetGroupApplicationListAsRecipient(proxy, operationID);
 }
 
@@ -893,7 +927,7 @@ RCT_EXPORT_METHOD(getGroupApplicationUnhandledCount:(NSString *)paramsJson opera
 }
 
 RCT_EXPORT_METHOD(acceptGroupApplication:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -903,7 +937,7 @@ RCT_EXPORT_METHOD(acceptGroupApplication:(NSString *)optionsJson operationID:(NS
 }
 
 RCT_EXPORT_METHOD(refuseGroupApplication:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -913,7 +947,7 @@ RCT_EXPORT_METHOD(refuseGroupApplication:(NSString *)optionsJson operationID:(NS
 }
 
 RCT_EXPORT_METHOD(getGroupMemberList:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -926,12 +960,12 @@ RCT_EXPORT_METHOD(getGroupMemberList:(NSString *)optionsJson operationID:(NSStri
 }
 
 RCT_EXPORT_METHOD(getGroupMemberOwnerAndAdmin:(NSString *)groupID operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkGetGroupMemberOwnerAndAdmin(proxy, operationID, groupID);
 }
 
 RCT_EXPORT_METHOD(getGroupMemberListByJoinTimeFilter:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -948,7 +982,7 @@ RCT_EXPORT_METHOD(getGroupMemberListByJoinTimeFilter:(NSString *)optionsJson ope
 }
 
 RCT_EXPORT_METHOD(getSpecifiedGroupMembersInfo:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -960,7 +994,7 @@ RCT_EXPORT_METHOD(getSpecifiedGroupMembersInfo:(NSString *)optionsJson operation
 }
 
 RCT_EXPORT_METHOD(getUsersInGroup:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -972,7 +1006,7 @@ RCT_EXPORT_METHOD(getUsersInGroup:(NSString *)optionsJson operationID:(NSString 
 }
 
 RCT_EXPORT_METHOD(kickGroupMember:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -984,7 +1018,7 @@ RCT_EXPORT_METHOD(kickGroupMember:(NSString *)optionsJson operationID:(NSString 
 }
 
 RCT_EXPORT_METHOD(transferGroupOwner:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -994,7 +1028,7 @@ RCT_EXPORT_METHOD(transferGroupOwner:(NSString *)optionsJson operationID:(NSStri
 }
 
 RCT_EXPORT_METHOD(inviteUserToGroup:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -1006,12 +1040,12 @@ RCT_EXPORT_METHOD(inviteUserToGroup:(NSString *)optionsJson operationID:(NSStrin
 }
 
 RCT_EXPORT_METHOD(searchGroupMembers:(NSString *)searchOptionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkSearchGroupMembers(proxy, operationID, searchOptionsJson);
 }
 
 RCT_EXPORT_METHOD(isJoinGroup:(NSString *)groupID operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter onSuccess:^id _Nullable(NSString * _Nullable data) {
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter onSuccess:^id _Nullable(NSString * _Nullable data) {
         return data ? @([data boolValue]) : @NO;
     }];
     Open_im_sdkIsJoinGroup(proxy, operationID, groupID);
@@ -1020,14 +1054,14 @@ RCT_EXPORT_METHOD(isJoinGroup:(NSString *)groupID operationID:(NSString *)operat
 // ============== 工具方法 (TurboModule: 基本类型) ==============
 
 RCT_EXPORT_METHOD(uploadFile:(NSString *)reqDataJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
-    ItcUploadFileCallbackProxy *uploadProxy = [[ItcUploadFileCallbackProxy alloc] initWithOpid:operationID module:self resolver:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
+    UploadFileCallbackProxyPlus *uploadProxy = [[UploadFileCallbackProxyPlus alloc] initWithOpid:operationID module:self resolver:resolver rejecter:rejecter];
     Open_im_sdkUploadFile(proxy, operationID, reqDataJson, uploadProxy);
 }
 
 RCT_EXPORT_METHOD(uploadLogs:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
-    ItcUploadLogCallbackProxy *uploadProxy = [[ItcUploadLogCallbackProxy alloc] initWithOpid:operationID module:self resolver:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
+    UploadLogCallbackProxyPlus *uploadProxy = [[UploadLogCallbackProxyPlus alloc] initWithOpid:operationID module:self resolver:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -1038,7 +1072,7 @@ RCT_EXPORT_METHOD(uploadLogs:(NSString *)optionsJson operationID:(NSString *)ope
 }
 
 RCT_EXPORT_METHOD(logs:(NSString *)optionsJson operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     NSDictionary *options = [self parseJsonStr2Dict:optionsJson];
     if (!options) {
         rejecter(@"-1", @"Invalid options JSON", nil);
@@ -1054,45 +1088,20 @@ RCT_EXPORT_METHOD(unInitSDK:(NSString *)operationID resolver:(RCTPromiseResolveB
 }
 
 RCT_EXPORT_METHOD(updateFcmToken:(NSString *)fcmToken expireTime:(nonnull NSNumber *)expireTime operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkUpdateFcmToken(proxy, operationID, fcmToken, (int64_t)[expireTime intValue]);
 }
 
 RCT_EXPORT_METHOD(setAppBadge:(nonnull NSNumber *)appUnreadCount operationID:(NSString *)operationID resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter) {
-    ItcCallbackProxy *proxy = [[ItcCallbackProxy alloc] initWithCallback:resolver rejecter:rejecter];
+    CallbackProxyPlus *proxy = [[CallbackProxyPlus alloc] initWithCallback:resolver rejecter:rejecter];
     Open_im_sdkSetAppBadge(proxy, operationID, (int32_t)[appUnreadCount intValue]);
-}
-
-// ============== 监听器设置 ==============
-
-RCT_EXPORT_METHOD(setUserListener) {
-    Open_im_sdkSetUserListener(self);
-}
-
-RCT_EXPORT_METHOD(setConversationListener) {
-    Open_im_sdkSetConversationListener(self);
-}
-
-RCT_EXPORT_METHOD(setFriendListener) {
-    Open_im_sdkSetFriendListener(self);
-}
-
-RCT_EXPORT_METHOD(setGroupListener) {
-    Open_im_sdkSetGroupListener(self);
-}
-
-RCT_EXPORT_METHOD(setAdvancedMsgListener) {
-    Open_im_sdkSetAdvancedMsgListener(self);
-}
-
-RCT_EXPORT_METHOD(setBatchMsgListener) {
-    Open_im_sdkSetBatchMsgListener(self);
 }
 
 // ============== 事件发送 (Native -> JS) ==============
 
 - (NSArray<NSString *> *)supportedEvents {
     return @[
+        // 用户/连接事件
         @"im:connectSuccess",
         @"im:connecting",
         @"im:connectFailed",
@@ -1101,6 +1110,7 @@ RCT_EXPORT_METHOD(setBatchMsgListener) {
         @"im:userStatusChanged",
         @"im:userTokenExpired",
         @"im:userTokenInvalid",
+        // 消息事件
         @"im:recvNewMessages",
         @"im:recvOfflineNewMessages",
         @"im:msgDeleted",
@@ -1110,6 +1120,9 @@ RCT_EXPORT_METHOD(setBatchMsgListener) {
         @"im:recvNewMessage",
         @"im:recvOfflineNewMessage",
         @"im:recvOnlineOnlyMessage",
+        @"im:receiveNewMessages",
+        @"im:receiveOfflineNewMessages",
+        // 会话事件
         @"im:conversationChanged",
         @"im:inputStatusChanged",
         @"im:newConversation",
@@ -1118,6 +1131,7 @@ RCT_EXPORT_METHOD(setBatchMsgListener) {
         @"im:syncServerStart",
         @"im:syncServerProgress",
         @"im:totalUnreadMessageCountChanged",
+        // 好友事件
         @"im:blackAdded",
         @"im:blackDeleted",
         @"im:friendApplicationAccepted",
@@ -1127,6 +1141,7 @@ RCT_EXPORT_METHOD(setBatchMsgListener) {
         @"im:friendInfoChanged",
         @"im:friendAdded",
         @"im:friendDeleted",
+        // 群组事件
         @"im:groupApplicationAccepted",
         @"im:groupApplicationRejected",
         @"im:groupApplicationAdded",
@@ -1138,10 +1153,10 @@ RCT_EXPORT_METHOD(setBatchMsgListener) {
         @"im:joinedGroupAdded",
         @"im:joinedGroupDeleted",
         @"im:groupDismissed",
+        // 上传事件
         @"uploadComplete",
         @"uploadOnProgress",
-        @"im:receiveNewMessages",
-        @"im:receiveOfflineNewMessages"
+        @"im:sendMessageProgress"
     ];
 }
 
@@ -1157,7 +1172,7 @@ RCT_EXPORT_METHOD(setBatchMsgListener) {
     [self sendEventWithName:eventName body:data];
 }
 
-// ============== SDK 回调 (OpenIM SDK -> Native -> JS) ==============
+#pragma mark - UserListenerDelegate
 
 - (void)onConnectSuccess {
     [self pushEvent:@"im:connectSuccess" data:nil];
@@ -1193,49 +1208,7 @@ RCT_EXPORT_METHOD(setBatchMsgListener) {
     [self pushEvent:@"im:userStatusChanged" data:data];
 }
 
-- (void)onRecvNewMessages:(NSString *)messageList {
-    NSArray *messageListArray = [self parseJsonStr2Array:messageList];
-    [self pushEvent:@"im:recvNewMessages" data:messageListArray];
-}
-
-- (void)onRecvOfflineNewMessages:(NSString *)messageList {
-    NSArray *messageListArray = [self parseJsonStr2Array:messageList];
-    [self pushEvent:@"im:recvOfflineNewMessages" data:messageListArray];
-}
-
-- (void)onMsgDeleted:(NSString *)message {
-    NSDictionary *messageDict = [self parseJsonStr2Dict:message];
-    [self pushEvent:@"im:msgDeleted" data:messageDict];
-}
-
-- (void)onNewRecvMessageRevoked:(NSString *)messageRevoked {
-    NSDictionary *messageRevokedDict = [self parseJsonStr2Dict:messageRevoked];
-    [self pushEvent:@"im:newRecvMessageRevoked" data:messageRevokedDict];
-}
-
-- (void)onRecvC2CReadReceipt:(NSString *)msgReceiptList {
-    NSArray *msgReceiptListArray = [self parseJsonStr2Array:msgReceiptList];
-    [self pushEvent:@"im:recvC2CReadReceipt" data:msgReceiptListArray];
-}
-
-- (void)onRecvMessageRevoked:(NSString *)msgId {
-    [self pushEvent:@"im:recvMessageRevoked" data:msgId];
-}
-
-- (void)onRecvNewMessage:(NSString *)message {
-    NSDictionary *messageDict = [self parseJsonStr2Dict:message];
-    [self pushEvent:@"im:recvNewMessage" data:messageDict];
-}
-
-- (void)onRecvOfflineNewMessage:(NSString *)message {
-    NSArray *messageListArray = [self parseJsonStr2Array:message];
-    [self pushEvent:@"im:recvOfflineNewMessage" data:messageListArray];
-}
-
-- (void)onRecvOnlineOnlyMessage:(NSString *)message {
-    NSArray *messageListArray = [self parseJsonStr2Array:message];
-    [self pushEvent:@"im:recvOnlineOnlyMessage" data:messageListArray];
-}
+#pragma mark - ConversationListenerDelegate
 
 - (void)onConversationChanged:(NSString *)conversationList {
     NSArray *conversationListArray = [self parseJsonStr2Array:conversationList];
@@ -1271,6 +1244,56 @@ RCT_EXPORT_METHOD(setBatchMsgListener) {
 - (void)onTotalUnreadMessageCountChanged:(int32_t)totalUnreadCount {
     [self pushEvent:@"im:totalUnreadMessageCountChanged" data:@(totalUnreadCount)];
 }
+
+#pragma mark - AdvancedMsgListenerDelegate
+
+- (void)onRecvNewMessage:(NSString *)message {
+    NSDictionary *messageDict = [self parseJsonStr2Dict:message];
+    [self pushEvent:@"im:recvNewMessage" data:messageDict];
+}
+
+- (void)onRecvOfflineNewMessage:(NSString *)message {
+    NSArray *messageListArray = [self parseJsonStr2Array:message];
+    [self pushEvent:@"im:recvOfflineNewMessage" data:messageListArray];
+}
+
+- (void)onRecvOnlineOnlyMessage:(NSString *)message {
+    NSArray *messageListArray = [self parseJsonStr2Array:message];
+    [self pushEvent:@"im:recvOnlineOnlyMessage" data:messageListArray];
+}
+
+- (void)onMsgDeleted:(NSString *)message {
+    NSDictionary *messageDict = [self parseJsonStr2Dict:message];
+    [self pushEvent:@"im:msgDeleted" data:messageDict];
+}
+
+- (void)onNewRecvMessageRevoked:(NSString *)messageRevoked {
+    NSDictionary *messageRevokedDict = [self parseJsonStr2Dict:messageRevoked];
+    [self pushEvent:@"im:newRecvMessageRevoked" data:messageRevokedDict];
+}
+
+- (void)onRecvC2CReadReceipt:(NSString *)msgReceiptList {
+    NSArray *msgReceiptListArray = [self parseJsonStr2Array:msgReceiptList];
+    [self pushEvent:@"im:recvC2CReadReceipt" data:msgReceiptListArray];
+}
+
+- (void)onRecvMessageRevoked:(NSString *)msgId {
+    [self pushEvent:@"im:recvMessageRevoked" data:msgId];
+}
+
+#pragma mark - BatchMsgListenerDelegate
+
+- (void)onRecvNewMessages:(NSString *)messageList {
+    NSArray *messageListArray = [self parseJsonStr2Array:messageList];
+    [self pushEvent:@"im:recvNewMessages" data:messageListArray];
+}
+
+- (void)onRecvOfflineNewMessages:(NSString *)messageList {
+    NSArray *messageListArray = [self parseJsonStr2Array:messageList];
+    [self pushEvent:@"im:recvOfflineNewMessages" data:messageListArray];
+}
+
+#pragma mark - FriendshipListenerDelegate
 
 - (void)onBlackAdded:(NSString *)blackInfo {
     NSDictionary *blackInfoDict = [self parseJsonStr2Dict:blackInfo];
@@ -1317,6 +1340,8 @@ RCT_EXPORT_METHOD(setBatchMsgListener) {
     [self pushEvent:@"im:friendInfoChanged" data:friendInfoDict];
 }
 
+#pragma mark - GroupListenerDelegate
+
 - (void)onGroupApplicationAccepted:(NSString *)groupApplication {
     NSDictionary *groupApplicationDict = [self parseJsonStr2Dict:groupApplication];
     [self pushEvent:@"im:groupApplicationAccepted" data:groupApplicationDict];
@@ -1335,6 +1360,11 @@ RCT_EXPORT_METHOD(setBatchMsgListener) {
 - (void)onGroupApplicationRejected:(NSString *)groupApplication {
     NSDictionary *groupApplicationDict = [self parseJsonStr2Dict:groupApplication];
     [self pushEvent:@"im:groupApplicationRejected" data:groupApplicationDict];
+}
+
+- (void)onGroupDismissed:(NSString *)groupInfo {
+    NSDictionary *groupInfoDict = [self parseJsonStr2Dict:groupInfo];
+    [self pushEvent:@"im:groupDismissed" data:groupInfoDict];
 }
 
 - (void)onGroupInfoChanged:(NSString *)groupInfo {
@@ -1365,19 +1395,6 @@ RCT_EXPORT_METHOD(setBatchMsgListener) {
 - (void)onJoinedGroupDeleted:(NSString *)groupInfo {
     NSDictionary *groupInfoDict = [self parseJsonStr2Dict:groupInfo];
     [self pushEvent:@"im:joinedGroupDeleted" data:groupInfoDict];
-}
-
-- (void)onGroupDismissed:(NSString *)groupInfo {
-    NSDictionary *groupInfoDict = [self parseJsonStr2Dict:groupInfo];
-    [self pushEvent:@"im:groupDismissed" data:groupInfoDict];
-}
-
-- (void)onReceiveNewMessages:(NSString *)receiveNewMessagesCallback {
-    [self pushEvent:@"im:receiveNewMessages" data:receiveNewMessagesCallback];
-}
-
-- (void)onReceiveOfflineNewMessages:(NSString *)receiveOfflineNewMessages {
-    [self pushEvent:@"im:receiveOfflineNewMessages" data:receiveOfflineNewMessages];
 }
 
 @end

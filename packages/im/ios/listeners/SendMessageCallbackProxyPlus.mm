@@ -1,12 +1,12 @@
 //
-//  ItcSendMessageCallbackProxy.mm
+//  SendMessageCallbackProxy.mm
 //  ItcOpenIM
 //
 
-#import "ItcSendMessageCallbackProxy.h"
-#import "ItcJSONExtensions.h"
+#import "SendMessageCallbackProxyPlus.h"
+#import "../utils/JSONExtensionsPlus.h"
 
-@interface ItcSendMessageCallbackProxy()
+@interface SendMessageCallbackProxyPlus()
 
 @property (nonatomic, copy) RCTPromiseResolveBlock resolver;
 @property (nonatomic, copy) RCTPromiseRejectBlock rejecter;
@@ -15,7 +15,7 @@
 
 @end
 
-@implementation ItcSendMessageCallbackProxy
+@implementation SendMessageCallbackProxyPlus
 
 - (id)initWithMessage:(NSString *)msg module:(ItcOpenIMSDK *)module resolver:(RCTPromiseResolveBlock)resolver rejecter:(RCTPromiseRejectBlock)rejecter {
     if (self = [super init]) {
@@ -39,14 +39,14 @@
 /// 发送消息成功回调
 /// @param data 发送成功的消息JSON字符串
 - (void)onSuccess:(NSString * _Nullable)data {
-    NSDictionary *messageDict = ItcParseJsonStr2Dict(data);
+    NSDictionary *messageDict = ItcParseJsonStr2DictPlus(data);
     self.resolver(messageDict);
 }
 
 /// 发送消息进度回调
 /// @param progress 当前进度（0-100）
 - (void)onProgress:(long)progress {
-    NSDictionary *messageDict = ItcParseJsonStr2Dict(self.msg);
+    NSDictionary *messageDict = ItcParseJsonStr2DictPlus(self.msg);
     NSDictionary *data = @{
         @"progress": @(progress),
         @"message": messageDict ?: @{}
