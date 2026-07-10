@@ -9,6 +9,7 @@
 #import "listeners/BatchMsgListener.h"
 #import "listeners/FriendshipListener.h"
 #import "listeners/GroupListener.h"
+#import "listeners/CustomBusinessListener.h"
 
 @implementation NSDictionary (Extensions)
 
@@ -32,7 +33,7 @@
 
 @end
 
-@interface ItcOpenIMSDK () <UserListenerDelegate, ConversationListenerDelegate, AdvancedMsgListenerDelegate, BatchMsgListenerDelegate, FriendshipListenerDelegate, GroupListenerDelegate>
+@interface ItcOpenIMSDK () <UserListenerDelegate, ConversationListenerDelegate, AdvancedMsgListenerDelegate, BatchMsgListenerDelegate, FriendshipListenerDelegate, GroupListenerDelegate, CustomBusinessListenerDelegate>
 
 @property (nonatomic, strong) UserListener *userListener;
 @property (nonatomic, strong) ConversationListener *conversationListener;
@@ -40,6 +41,7 @@
 @property (nonatomic, strong) BatchMsgListener *batchMsgListener;
 @property (nonatomic, strong) FriendshipListener *friendshipListener;
 @property (nonatomic, strong) GroupListener *groupListener;
+@property (nonatomic, strong) CustomBusinessListener *customBusinessListener;
 
 @end
 
@@ -56,6 +58,7 @@ bool hasListeners;
         _batchMsgListener = [[BatchMsgListener alloc] initWithDelegate:self];
         _friendshipListener = [[FriendshipListener alloc] initWithDelegate:self];
         _groupListener = [[GroupListener alloc] initWithDelegate:self];
+        _customBusinessListener = [[CustomBusinessListener alloc] initWithDelegate:self];
     }
     return self;
 }
@@ -104,6 +107,32 @@ RCT_EXPORT_METHOD(initSDK:(NSString *)configJson operationID:(NSString *)operati
     NSMutableDictionary *newConfig = [config mutableCopy];
     newConfig[@"platformID"] = @1;
 
+    // 处理 dataDir 路径（如果是相对路径，转换为沙盒绝对路径）
+    NSString *dataDir = newConfig[@"dataDir"];
+    if (!dataDir || dataDir.length == 0) {
+        dataDir = @"default_openim_data";
+        newConfig[@"dataDir"] = dataDir;
+    }
+    if (dataDir && ![dataDir hasPrefix:@"/"]) {
+        // 相对路径，转换为应用 Documents 目录下的绝对路径
+        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+        NSString *documentsDir = paths.firstObject;
+        dataDir = [documentsDir stringByAppendingPathComponent:dataDir];
+        newConfig[@"dataDir"] = dataDir;
+
+        // 确保 dataDir 目录存在
+        NSFileManager *fileManager = [NSFileManager defaultManager];
+        if (![fileManager fileExistsAtPath:dataDir]) {
+            NSError *error = nil;
+            BOOL created = [fileManager createDirectoryAtPath:dataDir withIntermediateDirectories:YES attributes:nil error:&error];
+            NSLog(@"[ItcOpenIM] 创建数据目录: %@, 结果: %d, 错误: %@", dataDir, created, error.localizedDescription);
+        } else {
+            NSLog(@"[ItcOpenIM] 数据目录已存在: %@", dataDir);
+        }
+    }
+
+    NSLog(@"[ItcOpenIM] initSDK config: %@", [newConfig json]);
+
     BOOL flag = Open_im_sdkInitSDK(self.userListener, operationID, [newConfig json]);
 
     // 注册所有监听器
@@ -113,6 +142,9 @@ RCT_EXPORT_METHOD(initSDK:(NSString *)configJson operationID:(NSString *)operati
     Open_im_sdkSetGroupListener(self.groupListener);
     Open_im_sdkSetAdvancedMsgListener(self.advancedMsgListener);
     Open_im_sdkSetBatchMsgListener(self.batchMsgListener);
+    Open_im_sdkSetCustomBusinessListener(self.customBusinessListener);
+    // iOS SDK 的 signalingListener 属性只有 getter，暂时无法从外部设置
+    // 需要联系 OpenIM SDK 团队添加 setSignalingListener 方法
     // 注：iOS SDK 未暴露 Open_im_sdkSetSignalingListener API，信令监听器通过 SignalingListener 类实现
 
     if (flag) {
@@ -1110,6 +1142,9 @@ RCT_EXPORT_METHOD(setAppBadge:(nonnull NSNumber *)appUnreadCount operationID:(NS
         @"im:userStatusChanged",
         @"im:userTokenExpired",
         @"im:userTokenInvalid",
+        @"im:userCommandAdd",
+        @"im:userCommandDelete",
+        @"im:userCommandUpdate",
         // 消息事件
         @"im:recvNewMessages",
         @"im:recvOfflineNewMessages",
@@ -1122,6 +1157,7 @@ RCT_EXPORT_METHOD(setAppBadge:(nonnull NSNumber *)appUnreadCount operationID:(NS
         @"im:recvOnlineOnlyMessage",
         @"im:receiveNewMessages",
         @"im:receiveOfflineNewMessages",
+        @"im:recvCustomBusinessMessage",
         // 会话事件
         @"im:conversationChanged",
         @"im:inputStatusChanged",
@@ -1154,9 +1190,26 @@ RCT_EXPORT_METHOD(setAppBadge:(nonnull NSNumber *)appUnreadCount operationID:(NS
         @"im:joinedGroupDeleted",
         @"im:groupDismissed",
         // 上传事件
-        @"uploadComplete",
-        @"uploadOnProgress",
-        @"im:sendMessageProgress"
+        @"im:uploadComplete",
+        @"im:uploadOnProgress",
+        @"im:sendMessageProgress",
+        @"im:uploadHashPartComplete",
+        @"im:uploadHashPartProgress",
+        @"im:uploadOpen",
+        @"im:uploadPartSize",
+        @"im:uploadID",
+        @"im:uploadPartComplete",
+        // 信令事件
+        @"im:hangUp",
+        @"im:invitationCancelled",
+        @"im:invitationTimeout",
+        @"im:inviteeAccepted",
+        @"im:inviteeAcceptedByOtherDevice",
+        @"im:inviteeRejected",
+        @"im:inviteeRejectedByOtherDevice",
+        @"im:receiveNewInvitation",
+        @"im:roomParticipantConnected",
+        @"im:roomParticipantDisconnected"
     ];
 }
 
@@ -1395,6 +1448,13 @@ RCT_EXPORT_METHOD(setAppBadge:(nonnull NSNumber *)appUnreadCount operationID:(NS
 - (void)onJoinedGroupDeleted:(NSString *)groupInfo {
     NSDictionary *groupInfoDict = [self parseJsonStr2Dict:groupInfo];
     [self pushEvent:@"im:joinedGroupDeleted" data:groupInfoDict];
+}
+
+#pragma mark - CustomBusinessListenerDelegate
+
+- (void)onRecvCustomBusinessMessage:(NSString *)businessMessage {
+    NSDictionary *data = [self parseJsonStr2Dict:businessMessage];
+    [self pushEvent:@"im:recvCustomBusinessMessage" data:data];
 }
 
 @end

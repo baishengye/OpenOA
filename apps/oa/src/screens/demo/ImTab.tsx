@@ -144,7 +144,6 @@ export function ImTab({ append, busy: _busy }: TabProps) {
       logger.info(TAG, `login called with userID=${loginUserId}, token length=${token.length}`);
       await itcOpenIM.login({ userID: loginUserId.trim(), token: token.trim() });
       logger.info(TAG, 'login() completed without throwing');
-      log('✅ 登录成功');
     } catch (e: any) {
       logger.error(TAG, `登录失败: ${e.message}`, e);
       log(`❌ 登录失败: ${e.message}`);

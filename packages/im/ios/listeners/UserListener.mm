@@ -55,6 +55,23 @@
     [self pushEvent:@"im:userStatusChanged" data:data];
 }
 
+#pragma mark - UserCommand
+
+- (void)onUserCommandAdd:(NSString *)userCommand {
+    NSDictionary *data = ItcParseJsonStr2DictPlus(userCommand);
+    [self pushEvent:@"im:userCommandAdd" data:data];
+}
+
+- (void)onUserCommandDelete:(NSString *)userCommand {
+    NSDictionary *data = ItcParseJsonStr2DictPlus(userCommand);
+    [self pushEvent:@"im:userCommandDelete" data:data];
+}
+
+- (void)onUserCommandUpdate:(NSString *)userCommand {
+    NSDictionary *data = ItcParseJsonStr2DictPlus(userCommand);
+    [self pushEvent:@"im:userCommandUpdate" data:data];
+}
+
 #pragma mark - Private
 
 - (void)pushEvent:(NSString *)eventName data:(id)data {

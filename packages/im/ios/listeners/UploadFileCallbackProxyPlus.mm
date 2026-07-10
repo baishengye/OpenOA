@@ -1,6 +1,8 @@
 //
-//  UploadFileCallbackProxy.mm
+//  UploadFileCallbackProxyPlus.mm
 //  ItcOpenIM
+//
+//  文件上传回调代理 - 实现所有上传阶段事件回调
 //
 
 #import "UploadFileCallbackProxyPlus.h"
@@ -31,7 +33,18 @@
 /// @param url 上传后的文件URL
 /// @param typ 文件类型
 - (void)complete:(int64_t)size url:(NSString * _Nullable)url typ:(long)typ {
-    // Not used
+    NSDictionary *data = @{
+        @"url": url ?: @"",
+        @"operationID": self.opid ?: @""
+    };
+
+    NSDictionary *params = @{
+        @"data": data,
+        @"errCode": @(0),
+        @"errMsg": @""
+    };
+
+    [self.module pushEvent:@"im:uploadComplete" data:params];
 }
 
 /// Hash分片完成回调
@@ -39,7 +52,19 @@
 /// @param partsHash 分片Hash列表
 /// @param fileHash 整体文件Hash
 - (void)hashPartComplete:(NSString * _Nullable)partsHash fileHash:(NSString * _Nullable)fileHash {
-    // Not used
+    NSDictionary *data = @{
+        @"partsHash": partsHash ?: @"",
+        @"fileHash": fileHash ?: @"",
+        @"operationID": self.opid ?: @""
+    };
+
+    NSDictionary *params = @{
+        @"data": data,
+        @"errCode": @(0),
+        @"errMsg": @""
+    };
+
+    [self.module pushEvent:@"im:uploadHashPartComplete" data:params];
 }
 
 /// Hash分片进度回调
@@ -48,14 +73,26 @@
 /// @param size 当前分片大小
 /// @param partHash 当前分片Hash值
 - (void)hashPartProgress:(long)index size:(int64_t)size partHash:(NSString * _Nullable)partHash {
-    // Not used
+    NSDictionary *data = @{
+        @"index": @(index),
+        @"size": @(size),
+        @"partHash": partHash ?: @"",
+        @"operationID": self.opid ?: @""
+    };
+
+    [self.module pushEvent:@"im:uploadHashPartProgress" data:data];
 }
 
 /// 文件打开回调
 /// 开始处理文件时触发，报告待上传文件大小
 /// @param size 文件总大小
 - (void)open:(int64_t)size {
-    // Not used
+    NSDictionary *data = @{
+        @"size": @(size),
+        @"operationID": self.opid ?: @""
+    };
+
+    [self.module pushEvent:@"im:uploadOpen" data:data];
 }
 
 /// 分片大小计算回调
@@ -63,7 +100,13 @@
 /// @param partSize 单个分片大小
 /// @param num 分片总数
 - (void)partSize:(int64_t)partSize num:(long)num {
-    // Not used
+    NSDictionary *data = @{
+        @"partSize": @(partSize),
+        @"num": @(num),
+        @"operationID": self.opid ?: @""
+    };
+
+    [self.module pushEvent:@"im:uploadPartSize" data:data];
 }
 
 /// 上传完成回调（详细）
@@ -92,7 +135,12 @@
 /// 开始上传时获取到上传任务ID时触发
 /// @param uploadID 上传任务ID
 - (void)uploadID:(NSString * _Nullable)uploadID {
-    // Not used
+    NSDictionary *data = @{
+        @"uploadID": uploadID ?: @"",
+        @"operationID": self.opid ?: @""
+    };
+
+    [self.module pushEvent:@"im:uploadID" data:data];
 }
 
 /// 分片上传完成回调
@@ -101,7 +149,14 @@
 /// @param partSize 分片大小
 /// @param partHash 分片Hash
 - (void)uploadPartComplete:(long)index partSize:(int64_t)partSize partHash:(NSString * _Nullable)partHash {
-    // Not used
+    NSDictionary *data = @{
+        @"index": @(index),
+        @"partSize": @(partSize),
+        @"partHash": partHash ?: @"",
+        @"operationID": self.opid ?: @""
+    };
+
+    [self.module pushEvent:@"im:uploadPartComplete" data:data];
 }
 
 @end
