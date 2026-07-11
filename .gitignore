@@ -47,7 +47,6 @@ harmony/build/
 harmony/oh_modules/
 harmony/.idea/
 harmony/local.properties
-*.har
 
 # misc
 .DS_Store

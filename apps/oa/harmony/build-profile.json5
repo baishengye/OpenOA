@@ -59,6 +59,10 @@
     {
       "name": "hotfix",
       "srcPath": "../../../packages/hotfix/harmony/hotfix"
+    },
+    {
+      "name": "openim",
+      "srcPath": "../../../packages/im/harmony/imsdk"
     }
   ]
 }

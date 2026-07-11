@@ -1,0 +1,36 @@
+{
+  "HVIGOR": {
+    "IS_INCREMENTAL": true,
+    "IS_DAEMON": true,
+    "IS_PARALLEL": true,
+    "IS_HVIGORFILE_TYPE_CHECK": false,
+    "IS_EXECUTION_OHPM_BY_HVIGOR": false,
+    "BUILD_ANALYSIS_MODE": "normal",
+    "TASK_TIME": {},
+    "CUSTOM_TASK_TIME": {},
+    "CUSTOM_PLUGIN_TIME": {},
+    "APIS": [],
+    "CONFIG_EXPERIMENT": {
+      "ENABLE_MODULE_SKIP": false,
+      "ENABLE_CPP_FUNCTION_LEVEL_INCREMENTAL": false
+    },
+    "CONFIG_PROPERTIES": {},
+    "BUILD_ID": "202607111246207640",
+    "ERROR_MESSAGE": [
+      {
+        "CODE": "00303010",
+        "MESSAGE": "The property of module should be an array in root project %s. At file: %s",
+        "SOLUTIONS": [
+          "Check the project-level build-profile.json5 file and ensure that the module's option is an array."
+        ],
+        "TIMESTAMP": "1783745180765"
+      },
+      {
+        "CODE": "00303010",
+        "STACK": "00303010 Configuration Error\n...",
+        "PROJECT_CONFIG": {}
+      }
+    ],
+    "TOTAL_TIME": 13976875
+  }
+}

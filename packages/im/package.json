@@ -48,6 +48,11 @@
       "javaPackageName": "com.itc.openim"
     }
   },
+  "harmony": {
+    "codegenConfig": {
+      "specPaths": ["./src/NativeItcOpenIM.ts"]
+    }
+  },
   "publishConfig": { "access": "restricted" },
   "license": "UNLICENSED"
 }
