@@ -7,13 +7,22 @@ import { ImDemoMain } from '../demo/imDemo';
 import type { TabProps } from './shared';
 import { logger } from '@itc/base';
 
+// 生成唯一操作ID（时间戳 + 随机数）
+const getOperationID = () => {
+  const timestamp = Date.now().toString(36);
+  const randomPart = Math.random().toString(36).substring(2, 9);
+  return `openim-${timestamp}-${randomPart}`;
+};
+
 const TAG = 'Demo';
 
 // ConnectionState 类型定义（与 SDK 保持一致）
 type ConnectionState = 'connecting' | 'connected' | 'disconnected' | 'kickedOffline';
 
-// 注册 API 地址（后续可改为动态配置）
-const REGISTER_API = 'http://172.16.82.54:10002';
+// 服务器配置
+const API_ADDR = 'http://172.16.204.62:10002';
+const WS_ADDR = 'ws://172.16.204.62:10001';
+const LOGIN_API = 'http://172.16.204.62:10008/account/login';
 
 /** IM 测试 Tab - 入口页面 */
 export function ImTab({ append, busy: _busy }: TabProps) {
@@ -96,9 +105,13 @@ export function ImTab({ append, busy: _busy }: TabProps) {
     }
     try {
       log(`正在注册: ${loginUserId}...`);
-      const response = await fetch(`${REGISTER_API}/auth/register`, {
+      const response = await fetch(`${API_ADDR}/auth/register`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'operationID': getOperationID(),
+          'token': token || 'admin_token', // 注册可能需要管理员token
+        },
         body: JSON.stringify({ userID: loginUserId.trim() }),
       });
       const data = await response.json();
@@ -122,14 +135,42 @@ export function ImTab({ append, busy: _busy }: TabProps) {
     try {
       log('正在初始化 SDK...');
       await itcOpenIM.initSDK({
-        apiAddr: 'http://172.16.82.54:10002',
-        wsAddr: 'ws://172.16.82.54:10001',
+        apiAddr: API_ADDR,
+        wsAddr: WS_ADDR,
         dataDir: 'itc_openim_data',
       });
       setReady(true);
       log('✅ SDK 初始化成功');
     } catch (e: any) {
       log(`❌ 初始化失败: ${e.message}`);
+    }
+  };
+
+  // 从服务器登录获取 Token
+  const handleGetToken = async () => {
+    if (!loginUserId.trim()) {
+      Alert.alert('提示', '请输入要登录的用户ID');
+      return;
+    }
+    try {
+      log(`正在从服务器获取 Token: ${loginUserId}...`);
+      const response = await fetch(LOGIN_API, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'operationID': getOperationID(),
+        },
+        body: JSON.stringify({ userID: loginUserId.trim() }),
+      });
+      const data = await response.json();
+      if (data.code === 0 && data.data?.token) {
+        setToken(data.data.token);
+        log(`✅ Token 获取成功`);
+      } else {
+        log(`❌ 获取 Token 失败: ${data.msg || JSON.stringify(data)}`);
+      }
+    } catch (e: any) {
+      log(`❌ 获取 Token 失败: ${e.message}`);
     }
   };
 
@@ -237,9 +278,14 @@ export function ImTab({ append, busy: _busy }: TabProps) {
             autoCapitalize="none"
           />
           {!loggedIn ? (
-            <Button onPress={handleLogin} disabled={!ready}>
-              登录
-            </Button>
+            <XStack gap={8}>
+              <Button onPress={handleGetToken} disabled={!ready}>
+                获取 Token
+              </Button>
+              <Button onPress={handleLogin} disabled={!ready || !token}>
+                登录
+              </Button>
+            </XStack>
           ) : (
             <YStack gap={8}>
               <UiText color="$green9">✓ 已登录: {loginUserId}</UiText>

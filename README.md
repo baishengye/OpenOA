@@ -25,6 +25,21 @@
 
 ---
 
+## 1.5 三端兼容性（版本要求）
+
+| 平台 | 最低版本 | 推荐版本 | 最高兼容 | 说明 |
+|---|---|---|---|---|
+| **Android** | API 24（Android 7.0） | API 34（Android 14） | API 36 | minSdk / targetSdk / compileSdk |
+| **iOS** | 15.1 | 17.x | 18.x | — |
+| **HarmonyOS** | 5.0.0（API 12） | 6.1.1（API 24） | 6.1.1（API 24） | compatibleSdk / targetSdk |
+
+> **说明**：
+> - Android 和 iOS 版本由 React Native 0.82 和 IM SDK 共同决定
+> - HarmonyOS 5.0.0(API 12) 为兼容模式最低要求，6.1.1(API 24) 为推荐目标版本
+> - 实际测试建议覆盖各平台最近 2 个大版本
+
+---
+
 ## 2. 目录结构
 
 ```
