@@ -198,7 +198,7 @@ export class ItcOpenIMTurboModule extends UITurboModule {
   async initSDK(config: string, _operationID: string): Promise<boolean> {
     try {
       const cfg: Record<string, string | number> = JSON.parse(config);
-      await getSDK().initSDK({
+      getSDK().initSDK({
         platformID: (cfg.platformID as number) ?? 1,
         apiAddr: (cfg.apiAddr as string) ?? '',
         wsAddr: (cfg.wsAddr as string) ?? '',

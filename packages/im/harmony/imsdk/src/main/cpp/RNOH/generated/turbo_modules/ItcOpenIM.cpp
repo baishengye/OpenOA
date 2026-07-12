@@ -9,17 +9,12 @@ using namespace facebook;
 
 ItcOpenIM::ItcOpenIM(const ArkTSTurboModule::Context ctx, const std::string name) : ArkTSTurboModule(ctx, name) {
     methodMap_ = {
-        // ============ SDK 初始化 ============
         ARK_ASYNC_METHOD_METADATA(initSDK, 2),
         ARK_ASYNC_METHOD_METADATA(unInitSDK, 1),
-
-        // ============ 登录相关 ============
         ARK_ASYNC_METHOD_METADATA(login, 2),
         ARK_ASYNC_METHOD_METADATA(logout, 1),
         ARK_ASYNC_METHOD_METADATA(getLoginStatus, 1),
         ARK_ASYNC_METHOD_METADATA(getLoginUserID, 1),
-
-        // ============ 用户相关 ============
         ARK_ASYNC_METHOD_METADATA(getUsersInfo, 2),
         ARK_ASYNC_METHOD_METADATA(getSelfUserInfo, 1),
         ARK_ASYNC_METHOD_METADATA(setSelfInfo, 2),
@@ -29,8 +24,6 @@ ItcOpenIM::ItcOpenIM(const ArkTSTurboModule::Context ctx, const std::string name
         ARK_ASYNC_METHOD_METADATA(setAppBackgroundStatus, 2),
         ARK_ASYNC_METHOD_METADATA(networkStatusChanged, 1),
         ARK_ASYNC_METHOD_METADATA(setGlobalRecvMessageOpt, 2),
-
-        // ============ 会话相关 ============
         ARK_ASYNC_METHOD_METADATA(getAllConversationList, 1),
         ARK_ASYNC_METHOD_METADATA(getConversationListSplit, 2),
         ARK_ASYNC_METHOD_METADATA(getOneConversation, 2),
@@ -49,8 +42,6 @@ ItcOpenIM::ItcOpenIM(const ArkTSTurboModule::Context ctx, const std::string name
         ARK_ASYNC_METHOD_METADATA(hideAllConversations, 1),
         ARK_ASYNC_METHOD_METADATA(clearConversationAndDeleteAllMsg, 2),
         ARK_ASYNC_METHOD_METADATA(deleteConversationAndDeleteAllMsg, 2),
-
-        // ============ 消息相关 ============
         ARK_ASYNC_METHOD_METADATA(createTextMessage, 2),
         ARK_ASYNC_METHOD_METADATA(createImageMessageFromFullPath, 2),
         ARK_ASYNC_METHOD_METADATA(createVideoMessageFromFullPath, 2),
@@ -85,8 +76,6 @@ ItcOpenIM::ItcOpenIM(const ArkTSTurboModule::Context ctx, const std::string name
         ARK_ASYNC_METHOD_METADATA(insertGroupMessageToLocalStorage, 2),
         ARK_ASYNC_METHOD_METADATA(insertSingleMessageToLocalStorage, 2),
         ARK_ASYNC_METHOD_METADATA(setMessageLocalEx, 2),
-
-        // ============ 好友相关 ============
         ARK_ASYNC_METHOD_METADATA(acceptFriendApplication, 2),
         ARK_ASYNC_METHOD_METADATA(addBlack, 2),
         ARK_ASYNC_METHOD_METADATA(addFriend, 2),
@@ -104,8 +93,6 @@ ItcOpenIM::ItcOpenIM(const ArkTSTurboModule::Context ctx, const std::string name
         ARK_ASYNC_METHOD_METADATA(removeBlack, 2),
         ARK_ASYNC_METHOD_METADATA(searchFriends, 2),
         ARK_ASYNC_METHOD_METADATA(setFriendRemark, 2),
-
-        // ============ 群组相关 ============
         ARK_ASYNC_METHOD_METADATA(createGroup, 2),
         ARK_ASYNC_METHOD_METADATA(joinGroup, 2),
         ARK_ASYNC_METHOD_METADATA(inviteUserToGroup, 2),
@@ -133,11 +120,7 @@ ItcOpenIM::ItcOpenIM(const ArkTSTurboModule::Context ctx, const std::string name
         ARK_ASYNC_METHOD_METADATA(dismissGroup, 2),
         ARK_ASYNC_METHOD_METADATA(quitGroup, 2),
         ARK_ASYNC_METHOD_METADATA(isJoinGroup, 2),
-
-        // ============ 文件上传 ============
         ARK_ASYNC_METHOD_METADATA(uploadFile, 2),
-
-        // ============ 工具方法 ============
         ARK_ASYNC_METHOD_METADATA(uploadLogs, 2),
         ARK_ASYNC_METHOD_METADATA(logs, 2),
         ARK_ASYNC_METHOD_METADATA(updateFcmToken, 3),

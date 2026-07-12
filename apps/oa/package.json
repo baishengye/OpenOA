@@ -21,7 +21,7 @@
     "@itc/biometric": "workspace:*",
     "@itc/db": "workspace:*",
     "@itc/hotfix": "workspace:*",
-    "@openim/rn-client-sdk-plus": "workspace:*",
+    "@itc/rn-client-sdk-plus": "workspace:*",
     "@itc/push": "workspace:*",
     "@itc/storage": "workspace:*",
     "@itc/uikit": "workspace:*",

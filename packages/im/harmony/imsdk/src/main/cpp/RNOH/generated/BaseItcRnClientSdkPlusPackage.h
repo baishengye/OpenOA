@@ -10,7 +10,7 @@
 
 namespace rnoh {
 
-class BaseItcOpenIMPackageTurboModuleFactoryDelegate : public TurboModuleFactoryDelegate {
+class BaseItcRnClientSdkPlusPackageTurboModuleFactoryDelegate : public TurboModuleFactoryDelegate {
   public:
     SharedTurboModule createTurboModule(Context ctx, const std::string &name) const override {
         if (name == "ItcOpenIM") {
@@ -20,7 +20,7 @@ class BaseItcOpenIMPackageTurboModuleFactoryDelegate : public TurboModuleFactory
     };
 };
 
-class BaseItcOpenIMPackageEventEmitRequestHandler : public EventEmitRequestHandler {
+class BaseItcRnClientSdkPlusPackageEventEmitRequestHandler : public EventEmitRequestHandler {
   public:
     void handleEvent(Context const &ctx) override {
         auto eventEmitter = ctx.shadowViewRegistry->getEventEmitter<facebook::react::EventEmitter>(ctx.tag);
@@ -34,28 +34,22 @@ class BaseItcOpenIMPackageEventEmitRequestHandler : public EventEmitRequestHandl
         };
 
         std::vector<std::string> supportedEventNames = {
-            // OpenIM 事件（如果需要在 C++ 层处理）
-            // "im:connectSuccess",
-            // "im:connectFailed",
-            // "im:kickedOffline",
-            // "im:messageReceived",
-            // ...
         };
 
         if (std::find(supportedComponentNames.begin(), supportedComponentNames.end(), componentName) != supportedComponentNames.end() &&
             std::find(supportedEventNames.begin(), supportedEventNames.end(), ctx.eventName) != supportedEventNames.end()) {
             eventEmitter->dispatchEvent(ctx.eventName, ArkJS(ctx.env).getDynamic(ctx.payload));
-        }
+        }    
     }
 };
 
 
-class BaseItcOpenIMPackage : public Package {
+class BaseItcRnClientSdkPlusPackage : public Package {
   public:
-    BaseItcOpenIMPackage(Package::Context ctx) : Package(ctx){};
+    BaseItcRnClientSdkPlusPackage(Package::Context ctx) : Package(ctx){};
 
     std::unique_ptr<TurboModuleFactoryDelegate> createTurboModuleFactoryDelegate() override {
-        return std::make_unique<BaseItcOpenIMPackageTurboModuleFactoryDelegate>();
+        return std::make_unique<BaseItcRnClientSdkPlusPackageTurboModuleFactoryDelegate>();
     }
 
     std::vector<facebook::react::ComponentDescriptorProvider> createComponentDescriptorProviders() override {
@@ -70,7 +64,7 @@ class BaseItcOpenIMPackage : public Package {
 
     EventEmitRequestHandlers createEventEmitRequestHandlers() override {
         return {
-            std::make_shared<BaseItcOpenIMPackageEventEmitRequestHandler>(),
+            std::make_shared<BaseItcRnClientSdkPlusPackageEventEmitRequestHandler>(),
         };
     }
 };

@@ -34,12 +34,17 @@ file(GLOB GENERATED_CPP_FILES "${CMAKE_CURRENT_SOURCE_DIR}/generated/*.cpp")
 set(BIOMETRIC_LIB_CPP "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../../packages/biometric/harmony/biometric/src/main/cpp")
 file(GLOB BIOMETRIC_LIB_CPP_FILES "${BIOMETRIC_LIB_CPP}/RNOH/generated/turbo_modules/*.cpp")
 
+# @itc/openim 库自带的 C++（codegen-lib-harmony 产物：ItcOpenIM 桥）。
+set(OPENIM_LIB_CPP "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../../packages/im/harmony/imsdk/src/main/cpp")
+file(GLOB OPENIM_LIB_CPP_FILES "${OPENIM_LIB_CPP}/RNOH/generated/turbo_modules/*.cpp")
+
 add_library(rnoh_app SHARED
     ${GENERATED_CPP_FILES}
     ${BIOMETRIC_LIB_CPP_FILES}
+    ${OPENIM_LIB_CPP_FILES}
     "./PackageProvider.cpp"
     "${RNOH_CPP_DIR}/RNOHAppNapiBridge.cpp"
 )
 
-target_include_directories(rnoh_app PUBLIC "${BIOMETRIC_LIB_CPP}")
+target_include_directories(rnoh_app PUBLIC "${BIOMETRIC_LIB_CPP}" "${OPENIM_LIB_CPP}")
 target_link_libraries(rnoh_app PUBLIC rnoh rnoh_rn_op_sqlite rnoh_mmkv_storage rnoh_safe_area rnoh_code_push)
