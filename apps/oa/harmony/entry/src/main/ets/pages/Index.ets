@@ -11,7 +11,7 @@ import {
   RNOHCoreContext,
 } from '@rnoh/react-native-openharmony';
 import common from '@ohos.app.ability.common';
-import { comparingVersion } from '@react-native-oh-tpl/react-native-code-push';
+import { comparingVersion } from '@react-native-ohos/react-native-code-push/ts';
 import { createRNPackages } from '../RNPackagesFactory';
 
 // 自定义 Fabric 组件构建器（本演示无自定义原生组件，留空）

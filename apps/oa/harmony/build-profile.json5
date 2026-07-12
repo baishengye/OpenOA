@@ -56,9 +56,5 @@
       "name": "biometric",
       "srcPath": "../../../packages/biometric/harmony/biometric"
     },
-    {
-      "name": "hotfix",
-      "srcPath": "../../../packages/hotfix/harmony/hotfix"
-    }
   ]
 }

@@ -1,8 +1,7 @@
 /**
  * App-level generated package shell.
- * All TurboModule bridges are now self-contained in their respective packages:
- *   - RTNCodePush  → packages/hotfix/harmony (BaseRTNCodePushPackage)
- *   - ItcBiometric → packages/biometric/harmony (BaseItcBiometricPackage)
+ * All TurboModule bridges are self-contained in their respective packages:
+ *   - Biometric     → packages/biometric/harmony (BaseItcBiometricPackage)
  */
 
 #pragma once

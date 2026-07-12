@@ -9,7 +9,7 @@
   },
   "scripts": {
     "start": "react-native start",
-    "start:harmony": "node scripts/harmony-rport.mjs && react-native start --config metro.config.harmony.js",
+    "harmony": "node scripts/harmony-rport.mjs && react-native start --config metro.config.harmony.js",
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "typecheck": "tsc --noEmit",
@@ -26,7 +26,7 @@
     "@itc/storage": "workspace:*",
     "@itc/uikit": "workspace:*",
     "@op-engineering/op-sqlite": "^16.2.0",
-    "@react-native-oh-tpl/react-native-code-push": "8.2.2-0.0.10",
+    "@react-native-ohos/react-native-code-push": "8.2.3",
     "@react-native-oh-tpl/react-native-mmkv-storage": "0.10.3-0.0.2",
     "@react-native-ohos/op-sqlite": "^14.0.1",
     "@react-native-ohos/react-native-safe-area-context": "5.6.3",
