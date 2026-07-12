@@ -7,8 +7,8 @@ import { ItcBiometricPackage } from '@itc/biometric';
 import { RNOpSqlitePackage } from '@react-native-ohos/op-sqlite/ts';
 // storage 改用 MMKV（RNOH 移植包），原 @itc/storage 自包含 TurboModule 已废弃。
 import { RNMMKVStoragePackage } from '@react-native-oh-tpl/react-native-mmkv-storage';
-// 热修复 OTA（CodePush 鸿蒙移植包）。
-import { CodePushPackage } from '@react-native-oh-tpl/react-native-code-push/ts';
+// 热修复 OTA（CodePush 鸿蒙移植包，支持 autolink）。
+import { CodePushPackage } from '@react-native-ohos/react-native-code-push/ts';
 // safe-area-context 鸿蒙移植包（@react-native-ohos 5.6.3，RNOH 0.82）；取代旧 stub 降级。
 import { SafeAreaViewPackage } from '@react-native-ohos/react-native-safe-area-context/ts';
 

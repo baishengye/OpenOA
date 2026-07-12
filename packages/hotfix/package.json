@@ -26,7 +26,7 @@
     "patch:verify": "node scripts/verify-patch.mjs"
   },
   "dependencies": {
-    "@react-native-oh-tpl/react-native-code-push": "8.2.2-0.0.10",
+    "@react-native-ohos/react-native-code-push": "8.2.3",
     "react-native-code-push": "^8.2.2"
   },
   "peerDependencies": {

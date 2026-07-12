@@ -23,6 +23,10 @@ add_subdirectory("${OH_MODULE_DIR}/@react-native-oh-tpl/react-native-mmkv-storag
 # 自带 CMake 子工程，产出 rnoh_safe_area 供链接。取代旧的纯 RN stub 降级。
 add_subdirectory("${OH_MODULE_DIR}/@react-native-ohos/react-native-safe-area-context/src/main/cpp" ./safe_area)
 
+# 第三方库 react-native-code-push（@react-native-ohos 8.2.3，RNOH autolink 支持）。
+# 自带 CMake 子工程，产出 rnoh_code_push 供链接。
+add_subdirectory("${OH_MODULE_DIR}/@react-native-ohos/react-native-code-push/src/main/cpp" ./code_push)
+
 # codegen-harmony v1 产物（app 级）：biometric 的 C++ 已迁到其库里，此处现为空壳。
 file(GLOB GENERATED_CPP_FILES "${CMAKE_CURRENT_SOURCE_DIR}/generated/*.cpp")
 
@@ -30,18 +34,12 @@ file(GLOB GENERATED_CPP_FILES "${CMAKE_CURRENT_SOURCE_DIR}/generated/*.cpp")
 set(BIOMETRIC_LIB_CPP "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../../packages/biometric/harmony/biometric/src/main/cpp")
 file(GLOB BIOMETRIC_LIB_CPP_FILES "${BIOMETRIC_LIB_CPP}/RNOH/generated/turbo_modules/*.cpp")
 
-# @itc/hotfix 库自带的 C++（RTNCodePush codegen 产物，自包含在 packages/hotfix/harmony）。
-# 运行 pnpm codegen:hotfix 可更新这批文件。
-set(HOTFIX_LIB_CPP "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../../packages/hotfix/harmony/hotfix/src/main/cpp")
-file(GLOB HOTFIX_LIB_CPP_FILES "${HOTFIX_LIB_CPP}/RNOH/generated/turbo_modules/*.cpp")
-
 add_library(rnoh_app SHARED
     ${GENERATED_CPP_FILES}
     ${BIOMETRIC_LIB_CPP_FILES}
-    ${HOTFIX_LIB_CPP_FILES}
     "./PackageProvider.cpp"
     "${RNOH_CPP_DIR}/RNOHAppNapiBridge.cpp"
 )
 
-target_include_directories(rnoh_app PUBLIC "${BIOMETRIC_LIB_CPP}" "${HOTFIX_LIB_CPP}")
-target_link_libraries(rnoh_app PUBLIC rnoh rnoh_rn_op_sqlite rnoh_mmkv_storage rnoh_safe_area)
+target_include_directories(rnoh_app PUBLIC "${BIOMETRIC_LIB_CPP}")
+target_link_libraries(rnoh_app PUBLIC rnoh rnoh_rn_op_sqlite rnoh_mmkv_storage rnoh_safe_area rnoh_code_push)

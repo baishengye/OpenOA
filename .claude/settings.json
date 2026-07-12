@@ -33,7 +33,9 @@
       "Read(//Volumes/MacExtend/Code/ReactNative/openim-harmonyos-sdk/**)",
       "Bash(ls -la /Volumes/MacExtend/Code/ReactNative/openim-harmonyos-sdk/src/main/ets/sdk/)",
       "Bash(/Applications/DevEco-Studio.app/Contents/tools/hvigor/bin/hvigorw --mode module -p product=default assembleHap)",
-      "Bash(ln -sf ../node_modules oh_modules)"
+      "Bash(ln -sf ../node_modules oh_modules)",
+      "Bash(node node_modules/react-native/cli.js bundle-harmony --config metro.config.harmony.js --dev false)",
+      "Bash(pnpm install *)"
     ]
   }
 }
