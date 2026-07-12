@@ -1,7 +1,0 @@
-{
-  "module": {
-    "name": "hotfix",
-    "type": "har",
-    "deviceTypes": ["phone", "tablet"]
-  }
-}

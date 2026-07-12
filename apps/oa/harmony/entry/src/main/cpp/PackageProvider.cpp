@@ -1,7 +1,7 @@
 #include "RNOH/PackageProvider.h"
-#include "generated/RNOHGeneratedPackage.h"
+#include "./generated/RNOHGeneratedPackage.h"
 #include "RNOH/generated/BaseItcBiometricPackage.h"
-#include "RNOH/generated/BaseRTNCodePushPackage.h"
+#include "RNOH/generated/BaseReactNativeCodePushPackage.h"
 #include "RNOpSqlitePackage.h"
 #include "MMKVNativePackage.h"
 #include "SafeAreaViewPackage.h"
@@ -12,7 +12,7 @@ std::vector<std::shared_ptr<Package>> PackageProvider::getPackages(Package::Cont
   return {
     std::make_shared<RNOHGeneratedPackage>(ctx),
     std::make_shared<BaseItcBiometricPackage>(ctx),
-    std::make_shared<BaseRTNCodePushPackage>(ctx),
+    std::make_shared<BaseReactNativeCodePushPackage>(ctx),
     std::make_shared<RNOpSqlitePackage>(ctx),
     std::make_shared<RNOHMMKVStoragePackage>(ctx),
     std::make_shared<SafeAreaViewPackage>(ctx),
