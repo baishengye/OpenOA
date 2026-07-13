@@ -8,7 +8,10 @@
 import { UITurboModule, UITurboModuleContext } from '@rnoh/react-native-openharmony/ts';
 import { getSDK } from 'imsdk';
 import { CbEvents } from 'imsdk/src/main/ets/sdk/enum';
+import type { CbEventData } from 'imsdk/src/main/ets/sdk/entity';
 import Logger from './common/utils/Logger';
+import { fileIo } from '@kit.CoreFileKit';
+import { BusinessError } from '@kit.BasicServicesKit';
 
 const TAG = 'ItcOpenIMTurboModule';
 
@@ -19,11 +22,228 @@ export class ItcOpenIMTurboModule extends UITurboModule {
 
   constructor(ctx: UITurboModuleContext) {
     super(ctx);
+    Logger.info(TAG, '🏗️ ItcOpenIMTurboModule constructor called!');
+    Logger.info(TAG, `🧪 ctx type: ${typeof ctx}`);
+    Logger.info(TAG, `🧪 ctx.rnInstance: ${typeof this.ctx.rnInstance}`);
     this.initEventListener();
+    Logger.info(TAG, '🏗️ Constructor completed');
   }
 
   private initEventListener(): void {
-    getSDK().startListener();
+    Logger.info(TAG, '=== initEventListener START ===');
+    const sdk = getSDK();
+    Logger.info(TAG, `getSDK() returned: ${typeof sdk}`);
+    Logger.info(TAG, `sdk.on exists: ${typeof sdk.on === 'function'}`);
+    Logger.info(TAG, `sdk.startListener exists: ${typeof sdk.startListener === 'function'}`);
+
+    // 注册 SDK 事件监听器
+    // 连接状态事件
+    sdk.on(CbEvents.OnConnectSuccess, () => {
+      Logger.info(TAG, '🔥 OnConnectSuccess callback triggered!');
+      this.handleSdkEvent(CbEvents.OnConnectSuccess, '');
+    });
+
+    sdk.on(CbEvents.OnConnecting, () => {
+      Logger.info(TAG, '🔥 OnConnecting callback triggered!');
+      this.handleSdkEvent(CbEvents.OnConnecting, '');
+    });
+
+    sdk.on(CbEvents.OnConnectFailed, (data: CbEventData) => {
+      Logger.info(TAG, `🔥 OnConnectFailed callback triggered! data: ${JSON.stringify(data)}`);
+      this.handleSdkEvent(CbEvents.OnConnectFailed, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnKickedOffline, () => {
+      Logger.info(TAG, '🔥 OnKickedOffline callback triggered!');
+      this.handleSdkEvent(CbEvents.OnKickedOffline, '');
+    });
+
+    sdk.on(CbEvents.OnUserTokenExpired, () => {
+      Logger.info(TAG, '🔥 OnUserTokenExpired callback triggered!');
+      this.handleSdkEvent(CbEvents.OnUserTokenExpired, '');
+    });
+
+    sdk.on(CbEvents.OnUserTokenInvalid, () => {
+      this.handleSdkEvent(CbEvents.OnUserTokenInvalid, '');
+    });
+
+    sdk.on(CbEvents.OnSelfInfoUpdated, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnSelfInfoUpdated, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnUserStatusChanged, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnUserStatusChanged, JSON.stringify(data));
+    });
+
+    // 消息事件
+    sdk.on(CbEvents.OnRecvNewMessage, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnRecvNewMessage, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnRecvNewMessages, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnRecvNewMessages, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnRecvOfflineNewMessage, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnRecvOfflineNewMessage, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnRecvOfflineNewMessages, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnRecvOfflineNewMessages, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnRecvOnlineOnlyMessage, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnRecvOnlineOnlyMessage, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnMsgDeleted, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnMsgDeleted, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnRecvC2CReadReceipt, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnRecvC2CReadReceipt, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnRecvGroupReadReceipt, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnRecvGroupReadReceipt, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnNewRecvMessageRevoked, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnNewRecvMessageRevoked, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnRecvMessageExtensionsChanged, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnRecvMessageExtensionsChanged, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnRecvMessageExtensionsDeleted, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnRecvMessageExtensionsDeleted, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnRecvMessageExtensionsAdded, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnRecvMessageExtensionsAdded, JSON.stringify(data));
+    });
+
+    // 会话事件
+    sdk.on(CbEvents.OnConversationChanged, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnConversationChanged, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnNewConversation, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnNewConversation, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnTotalUnreadMessageCountChanged, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnTotalUnreadMessageCountChanged, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnConversationUserInputStatusChanged, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnConversationUserInputStatusChanged, JSON.stringify(data));
+    });
+
+    // 同步事件
+    sdk.on(CbEvents.OnSyncServerStart, () => {
+      this.handleSdkEvent(CbEvents.OnSyncServerStart, '');
+    });
+
+    sdk.on(CbEvents.OnSyncServerFinish, () => {
+      this.handleSdkEvent(CbEvents.OnSyncServerFinish, '');
+    });
+
+    sdk.on(CbEvents.OnSyncServerProgress, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnSyncServerProgress, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnSyncServerFailed, () => {
+      this.handleSdkEvent(CbEvents.OnSyncServerFailed, '');
+    });
+
+    // 好友事件
+    sdk.on(CbEvents.OnFriendApplicationAccepted, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnFriendApplicationAccepted, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnFriendApplicationAdded, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnFriendApplicationAdded, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnFriendApplicationDeleted, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnFriendApplicationDeleted, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnFriendApplicationRejected, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnFriendApplicationRejected, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnFriendInfoChanged, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnFriendInfoChanged, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnFriendAdded, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnFriendAdded, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnFriendDeleted, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnFriendDeleted, JSON.stringify(data));
+    });
+
+    // 黑名单事件
+    sdk.on(CbEvents.OnBlackAdded, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnBlackAdded, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnBlackDeleted, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnBlackDeleted, JSON.stringify(data));
+    });
+
+    // 群组事件
+    sdk.on(CbEvents.OnGroupApplicationAccepted, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnGroupApplicationAccepted, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnGroupApplicationRejected, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnGroupApplicationRejected, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnGroupApplicationAdded, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnGroupApplicationAdded, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnGroupApplicationDeleted, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnGroupApplicationDeleted, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnGroupInfoChanged, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnGroupInfoChanged, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnGroupMemberInfoChanged, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnGroupMemberInfoChanged, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnGroupMemberAdded, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnGroupMemberAdded, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnGroupMemberDeleted, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnGroupMemberDeleted, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnJoinedGroupAdded, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnJoinedGroupAdded, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnJoinedGroupDeleted, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnJoinedGroupDeleted, JSON.stringify(data));
+    });
+
+    sdk.on(CbEvents.OnGroupDismissed, (data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnGroupDismissed, JSON.stringify(data));
+    });
+
+    // 启动原生监听器
+    sdk.startListener();
+
     this.isInitialized = true;
     Logger.info(TAG, 'Event listener initialized');
   }
@@ -37,7 +257,7 @@ export class ItcOpenIMTurboModule extends UITurboModule {
     }
   }
 
-  private handleSdkEvent(event: number, data: string): void {
+  private handleSdkEvent(event: CbEvents, data: string): void {
     let jsEventName: string | null = null;
     let jsData: string = data;
 
@@ -50,13 +270,13 @@ export class ItcOpenIMTurboModule extends UITurboModule {
         break;
       case CbEvents.OnConnectFailed:
         try {
-          const failedData: Record<string, number | string> = JSON.parse(data);
+          const failedData: Record<string, number | string> = typeof data === 'string' ? JSON.parse(data) : data as Record<string, number | string>;
           this.emitRNEvent('im:connectFailed', JSON.stringify({
             errCode: failedData.errCode ?? 0,
             errMsg: failedData.errMsg ?? ''
           }));
         } catch {
-          this.emitRNEvent('im:connectFailed', JSON.stringify({ errCode: 0, errMsg: data }));
+          this.emitRNEvent('im:connectFailed', JSON.stringify({ errCode: 0, errMsg: data as string }));
         }
         return;
       case CbEvents.OnKickedOffline:
@@ -95,6 +315,9 @@ export class ItcOpenIMTurboModule extends UITurboModule {
       case CbEvents.OnRecvC2CReadReceipt:
         jsEventName = 'im:c2cReadReceipt';
         break;
+      case CbEvents.OnRecvGroupReadReceipt:
+        jsEventName = 'im:groupReadReceipt';
+        break;
       case CbEvents.OnNewRecvMessageRevoked:
         jsEventName = 'im:messageRevoked';
         break;
@@ -111,17 +334,45 @@ export class ItcOpenIMTurboModule extends UITurboModule {
       case CbEvents.OnSyncServerFinish:
         jsEventName = 'im:syncFinish';
         break;
+      case CbEvents.OnSyncServerProgress:
+        jsEventName = 'im:syncProgress';
+        break;
       case CbEvents.OnSyncServerFailed:
         jsEventName = 'im:syncFailed';
         break;
       case CbEvents.OnTotalUnreadMessageCountChanged:
         jsEventName = 'im:unreadCountChanged';
         try {
-          const count = parseInt(data) || 0;
+          let count = 0;
+          if (typeof data === 'number') {
+            count = data;
+          } else if (typeof data === 'string') {
+            count = parseInt(data) || 0;
+          } else if (typeof data === 'object' && data !== null) {
+            count = (data as Record<string, number>).count ?? 0;
+          }
           jsData = JSON.stringify({ count: count });
         } catch {
           jsData = JSON.stringify({ count: 0 });
         }
+        break;
+      case CbEvents.OnConversationUserInputStatusChanged:
+        jsEventName = 'im:inputStatusChanged';
+        break;
+      case CbEvents.OnRecvMessageExtensionsChanged:
+        jsEventName = 'im:messageExtensionsChanged';
+        break;
+      case CbEvents.OnRecvMessageExtensionsDeleted:
+        jsEventName = 'im:messageExtensionsDeleted';
+        break;
+      case CbEvents.OnRecvMessageExtensionsAdded:
+        jsEventName = 'im:messageExtensionsAdded';
+        break;
+      case CbEvents.OnRecvCustomBusinessMessage:
+        jsEventName = 'im:customBusinessMessage';
+        break;
+      case CbEvents.OnMessageKVInfoChanged:
+        jsEventName = 'im:messageKVInfoChanged';
         break;
       case CbEvents.OnFriendApplicationAccepted:
         jsEventName = 'im:friendApplicationAccepted';
@@ -183,6 +434,34 @@ export class ItcOpenIMTurboModule extends UITurboModule {
       case CbEvents.OnGroupDismissed:
         jsEventName = 'im:groupDismissed';
         break;
+      // 上传相关事件
+      case CbEvents.OnOpen:
+        jsEventName = 'im:uploadOpen';
+        break;
+      case CbEvents.OnPartSize:
+        jsEventName = 'im:uploadPartSize';
+        break;
+      case CbEvents.OnHashPartProgress:
+        jsEventName = 'im:uploadHashProgress';
+        break;
+      case CbEvents.OnHashPartComplete:
+        jsEventName = 'im:uploadHashComplete';
+        break;
+      case CbEvents.OnUploadID:
+        jsEventName = 'im:uploadId';
+        break;
+      case CbEvents.OnUploadPartComplete:
+        jsEventName = 'im:uploadPartComplete';
+        break;
+      case CbEvents.OnUploadComplete:
+        jsEventName = 'im:uploadComplete';
+        break;
+      case CbEvents.OnComplete:
+        jsEventName = 'im:uploadDone';
+        break;
+      case CbEvents.OnProgress:
+        jsEventName = 'im:uploadProgress';
+        break;
       default:
         Logger.warn(TAG, `Unknown event: ${event}, data: ${data}`);
         return;
@@ -198,20 +477,53 @@ export class ItcOpenIMTurboModule extends UITurboModule {
   async initSDK(config: string, _operationID: string): Promise<boolean> {
     try {
       const cfg: Record<string, string | number> = JSON.parse(config);
-      getSDK().initSDK({
+      Logger.info(TAG, `initSDK raw config: ${JSON.stringify(cfg)}`);
+
+      // 处理 dataDir 路径（参考 Android 实现）
+      let dataDir = (cfg.dataDir as string) ?? '';
+      if (!dataDir || dataDir.trim() === '') {
+        dataDir = 'default_openim_data';
+      }
+
+      // 如果是相对路径，转换为应用私有目录下的绝对路径
+      if (!dataDir.startsWith('/')) {
+        // 使用 RNOH context 的 uiAbilityContext 获取应用文件目录（API 12+ 兼容）
+        const abilityContext = this.ctx.uiAbilityContext;
+        const filesDir: string = abilityContext.filesDir;
+        dataDir = `${filesDir}/${dataDir}`;
+        Logger.info(TAG, `initSDK filesDir: ${filesDir}, dataDir: ${dataDir}`);
+      }
+
+      Logger.info(TAG, `initSDK dataDir: ${dataDir}`);
+
+      // 确保目录存在
+      try {
+        const dirExists: boolean = fileIo.accessSync(dataDir);
+        if (!dirExists) {
+          fileIo.mkdirSync(dataDir, true);
+          Logger.info(TAG, `Created dataDir: ${dataDir}`);
+        }
+      } catch (err) {
+        const bErr = err as BusinessError;
+        Logger.warn(TAG, `dataDir check failed: ${bErr.code}, ${bErr.message}`);
+      }
+
+      const initResult = getSDK().initSDK({
         platformID: (cfg.platformID as number) ?? 1,
         apiAddr: (cfg.apiAddr as string) ?? '',
         wsAddr: (cfg.wsAddr as string) ?? '',
-        dataDir: (cfg.dataDir as string) ?? '',
+        dataDir: dataDir,
         logLevel: 4,
         isLogStandardOutput: false,
         logFilePath: '',
         isExternalExtensions: false,
       });
+      Logger.info(TAG, `initSDK result: ${initResult}`);
       Logger.info(TAG, 'initSDK successful');
       return true;
     } catch (e) {
-      Logger.error(TAG, `initSDK failed: ${e}`);
+      const bErr = e as BusinessError;
+      Logger.error(TAG, `initSDK failed: ${bErr.code}, ${bErr.message}`);
       return false;
     }
   }
@@ -230,19 +542,33 @@ export class ItcOpenIMTurboModule extends UITurboModule {
   // ============ 登录相关 ============
 
   async login(options: string, _operationID: string): Promise<boolean> {
+    Logger.info(TAG, '📞 login() called');
+    Logger.info(TAG, `📞 login options: ${options}`);
     try {
       const opts: Record<string, string | number> = JSON.parse(options);
-      await getSDK().login({
+      Logger.info(TAG, `📞 Parsed userID: ${opts.userID}`);
+
+      const sdk = getSDK();
+      Logger.info(TAG, `📞 getSDK() in login, type: ${typeof sdk}`);
+      Logger.info(TAG, `📞 getSDK().login exists: ${typeof sdk.login === 'function'}`);
+
+      Logger.info(TAG, '📞 Calling sdk.login...');
+      const result = await sdk.login({
         userID: opts.userID as string,
         token: opts.token as string,
         platformID: (opts.platformID as number) ?? 1,
         apiAddr: opts.apiAddr as string,
         wsAddr: opts.wsAddr as string,
       });
-      Logger.info(TAG, `login successful: ${opts.userID}`);
+      Logger.info(TAG, `📞 sdk.login returned: "${result}"`);
+      if (result && result.length > 0) {
+        throw new Error(`SDK login failed with result: ${result}`);
+      }
+      Logger.info(TAG, `✅ login() completed successfully for: ${opts.userID}`);
       return true;
     } catch (e) {
-      Logger.error(TAG, `login failed: ${e}`);
+      const errorMsg = e instanceof Error ? `${e.message}, stack: ${e.stack}` : JSON.stringify(e);
+      Logger.error(TAG, `❌ login() failed: ${errorMsg}`);
       return false;
     }
   }
