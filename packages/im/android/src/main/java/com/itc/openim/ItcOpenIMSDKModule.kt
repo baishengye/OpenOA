@@ -17,6 +17,7 @@ import com.itc.openim.listener.SendMsgCallBack
 import com.itc.openim.listener.UploadFileCallbackListener
 import com.itc.openim.listener.UploadLogProgressListener
 import com.itc.openim.listener.UserListener
+import com.itc.openim.listener.SetCustomBusinessListener
 import com.itc.openim.utils.BaseImpl
 import com.itc.openim.utils.Emitter
 import open_im_sdk.Open_im_sdk
@@ -91,6 +92,7 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
         setAdvancedMsgListener()
         setBatchMsgListener()
         setSignalingListener()
+        setCustomBusinessListener()
 
         if (initialized) {
             promise.resolve("init success")
@@ -142,6 +144,12 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
     @ReactMethod
     fun setUserListener() {
         Open_im_sdk.setUserListener(UserListener(reactContext))
+    }
+
+
+    @ReactMethod
+    fun setCustomBusinessListener() {
+        Open_im_sdk.setCustomBusinessListener(SetCustomBusinessListener(reactContext))
     }
 
     @ReactMethod

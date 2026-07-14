@@ -627,6 +627,10 @@ export class ItcOpenIMTurboModule extends UITurboModule {
       this.handleSdkEvent(CbEvents.OnGroupDismissed, this.safeSerializeEventData(data));
     });
 
+    sdk.on(CbEvents.OnMessageProgress,(data: CbEventData) => {
+      this.handleSdkEvent(CbEvents.OnMessageProgress, this.safeSerializeEventData(data));
+    })
+
     this.isInitialized = true;
     Logger.info(TAG, 'Event listener initialized');
   }
@@ -876,6 +880,9 @@ export class ItcOpenIMTurboModule extends UITurboModule {
         break;
       case CbEvents.OnProgress:
         jsEventName = 'im:uploadProgress';
+        break;
+      case CbEvents.OnMessageProgress:
+        jsEventName = "im:sendMessageProgress";
         break;
       default:
         Logger.warn(TAG, `Unknown event: ${event}, data: ${data}`);
