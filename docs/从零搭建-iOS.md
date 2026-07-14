@@ -208,5 +208,5 @@ xcrun simctl launch $SIM <bundle-id>
 | 真机要签名 | 配置 Team/证书；本仓库当前只验证模拟器。 |
 
 ## 附录：本仓库样例
-- storage（MMKV，同步）：`packages/storage/ios/ItcStorage.{h,mm}` + `ItcStorage.podspec`
-- biometric（LocalAuthentication/Secure Enclave，Promise）：`packages/biometric/ios/`
+- biometric（LocalAuthentication/Secure Enclave，Promise）：`packages/biometric/ios/ItcBiometric.{h,mm}`
+- im（OpenIM SDK）：`packages/im/ios/`

@@ -56,8 +56,8 @@ OpenOA/
 │   ├── storage/     @itc/storage     KV 持久化（MMKV 封装，实现 @itc/base 的 KVStorage 接口）
 │   ├── hotfix/      @itc/hotfix      热修复（CodePush 三端封装，OTA JS Bundle 更新）
 │   ├── uikit/       @itc/uikit       基础 UI 控件库（Tamagui 封装：Button/Text/Input/表单/主题）
-│   ├── push/        @itc/push        推送（友盟/极光聚合）——占位骨架
-│   └── im/          @openim/rn-client-sdk-plus  即时 IM（OpenIM）——占位骨架
+│   ├── push/        @itc/push        推送（极光 JPush 三端封装）✅ 已实现
+│   ├── im/          @itc/rn-client-sdk-plus 即时 IM（OpenIM + 鸿蒙 HAR 封装）✅ 已实现
 │
 ├── apps/
 │   └── oa/          @itc-oa/app      钉钉克隆宿主 App
@@ -225,6 +225,248 @@ npx react-native bundle-harmony --dev false --config metro.config.harmony.js
 
 ---
 
+## 8.1 IM 模块使用指南（@itc/rn-client-sdk-plus）
+
+基于 OpenIM SDK 的即时通讯模块，支持三端（Android/iOS/Harmony）。
+
+### 核心 API
+
+```typescript
+import ItcOpenIMSDK from '@itc/rn-client-sdk-plus';
+import { eventBus } from '@itc/base';
+
+// 生成操作 ID（用于追踪）
+const operationID = `op_${Date.now()}`;
+
+// 初始化
+await ItcOpenIMSDK.initSDK(
+  JSON.stringify({
+    platformID: 1,
+    apiAddr: 'https://your-api.example.com',
+    wsAddr: 'wss://your-ws.example.com',
+    dataDir: '/data/your_app/im',  // 鸿蒙可选
+  }),
+  operationID
+);
+
+// 登录
+await ItcOpenIMSDK.login(
+  JSON.stringify({ userID: 'user123', token: 'your_token' }),
+  operationID
+);
+
+// 发送文本消息
+const textMsg = await ItcOpenIMSDK.createTextMessage('Hello!', operationID);
+const sendResult = await ItcOpenIMSDK.sendMessage(
+  JSON.stringify({ message: textMsg, conversationID: 'conversation_id' }),
+  operationID
+);
+
+// 从本地路径创建图片消息
+const imageMsg = await ItcOpenIMSDK.createImageMessageFromFullPath(
+  '/path/to/image.jpg',
+  operationID
+);
+
+// 创建群组
+const group = await ItcOpenIMSDK.createGroup(
+  JSON.stringify({
+    groupType: 2,  // GroupType.Work
+    groupName: '项目群',
+    memberList: [{ userID: 'user456', role: 2 }],
+  }),
+  operationID
+);
+
+// 获取会话列表
+const conversations = await ItcOpenIMSDK.getAllConversationList(operationID);
+
+// 获取好友列表
+const friends = await ItcOpenIMSDK.getFriendList(false, operationID);
+
+// 获取群成员
+const members = await ItcOpenIMSDK.getGroupMemberList(
+  JSON.stringify({ groupID: 'group_id', filter: 0 }),
+  operationID
+);
+```
+
+### 事件监听
+
+```typescript
+import { eventBus } from '@itc/base';
+
+// 连接状态变化
+eventBus.on('im:connectionChanged', (state) => {
+  console.log('连接状态:', state);
+});
+
+// 新消息
+eventBus.on('im:newMessage', (msg) => {
+  console.log('收到消息:', msg);
+});
+
+// 消息发送进度
+eventBus.on('im:sendMessageProgress', (data) => {
+  console.log(`发送进度: ${data.progress}%`);
+});
+
+// 收到新群邀请
+eventBus.on('im:receiveJoinApplication', (data) => {
+  console.log('新加群申请:', data);
+});
+
+// 被踢下线
+eventBus.on('im:kickedOffline', () => {
+  console.log('被踢下线');
+});
+
+// 用户信息更新
+eventBus.on('im:userInfoUpdated', (data) => {
+  console.log('用户信息更新:', data);
+});
+
+// 会话更新
+eventBus.on('im:conversationChanged', (conversations) => {
+  console.log('会话更新:', conversations);
+});
+
+// 好友申请
+eventBus.on('im:friendApplicationChanged', (application) => {
+  console.log('好友申请:', application);
+});
+
+// 群信息更新
+eventBus.on('im:groupInfoChanged', ({ groupId, info }) => {
+  console.log(`群 ${groupId} 信息更新:`, info);
+});
+
+// 文件上传进度
+eventBus.on('im:uploadProgress', (data) => {
+  console.log(`上传进度: ${data.progress}%`);
+});
+
+// 文件上传完成
+eventBus.on('im:uploadComplete', (result) => {
+  console.log('上传完成:', result);
+});
+```
+
+### 三端实现策略
+
+| 端 | 实现方案 | 状态 |
+|---|---|---|
+| Android | open-im-sdk-rn（gomobile 编译的 openim-sdk-core） | ✅ 已实现 |
+| iOS | open-im-sdk-rn（gomobile 编译的 openim-sdk-core） | ✅ 已实现 |
+| 鸿蒙 NEXT | imsdk.har（OpenIM 官方 ArkTS 封装）+ RNOH UITurboModule | ✅ 已实现 |
+
+### 鸿蒙特殊说明
+
+鸿蒙端使用 `imsdk.har` 包作为底层 SDK，通过 `ItcOpenIMTurboModule`（[packages/im/harmony/imsdk/src/main/ets/ItcOpenIMTurboModule.ets](packages/im/harmony/imsdk/src/main/ets/ItcOpenIMTurboModule.ets)）暴露给 RN 层。
+
+**目录结构：**
+```
+packages/im/
+├── src/                        # TS 统一 API 层
+│   ├── ItcOpenIMSDK.ts         # 主入口，封装三端调用
+│   ├── emitter.ts              # 事件发射器
+│   ├── types/                  # 类型定义（enum/entity/eventArgs/params）
+│   ├── errors/                 # 错误定义
+│   └── constants/              # 常量（事件名等）
+├── android/                    # Android 原生实现
+├── ios/                        # iOS 原生实现
+└── harmony/imsdk/              # 鸿蒙实现（RNOH TurboModule）
+    └── src/main/ets/
+        ├── ItcOpenIMTurboModule.ets  # TurboModule 实现
+        ├── ItcOpenIMPackage.ets      # 包注册
+        ├── generated/                # codegen 生成
+        └── types/                    # ArkTS 类型
+```
+
+---
+
+## 8.2 推送模块使用指南（@itc/push）
+
+基于极光推送（JPush）的统一推送模块，支持三端（Android/iOS/Harmony）。
+
+### 核心 API
+
+```typescript
+import { push } from '@itc/push';
+import { eventBus } from '@itc/base';
+
+// 初始化
+await push.init({
+  appKey: 'your_jpush_app_key',
+  secret: 'your_jpush_secret',
+  production: true,  // false = 开发环境
+});
+
+// 获取设备 Token
+const reg = await push.getToken();
+// { token: 'xxx', channel: 'fcm'|'apns'|'pushkit' }
+
+// 设置角标
+await push.setBadge(0);
+
+// 设置别名（用于定向推送）
+await push.setAlias('user_123');
+
+// 设置标签
+await push.setTags(['vip', 'android']);
+
+// 删除别名
+await push.deleteAlias();
+
+// 停止推送
+await push.stopPush();
+
+// 恢复推送
+await push.resumePush();
+```
+
+### 事件监听
+
+```typescript
+import { eventBus } from '@itc/base';
+
+// Token 刷新
+eventBus.on('push:token', (reg) => {
+  console.log('设备 Token:', reg.token);
+  console.log('通道类型:', reg.channel);  // fcm/apns/pushkit
+  // 上报后端
+});
+
+// 通知到达（前台收到通知）
+eventBus.on('push:message', (msg) => {
+  console.log('标题:', msg.title);
+  console.log('内容:', msg.body);
+  console.log('扩展数据:', msg.data);
+});
+
+// 通知点击（从通知栏打开 App）
+eventBus.on('push:opened', (msg) => {
+  console.log('点击的通知:', msg.messageId);
+  // 根据 msg.data 跳转页面
+});
+```
+
+### 三端实现策略
+
+| 端 | 实现方案 | 通道标识 |
+|---|---|---|
+| Android | jpush-react-native + jcore-react-native | `fcm`（自动适配厂商通道） |
+| iOS | jpush-react-native + jcore-react-native | `apns` |
+| 鸿蒙 NEXT | jpush-react-native + jcore-react-native（RNOH 适配） | `pushkit` |
+
+### 推送通道说明
+
+- **channel 字段**：回传实际命中的厂商通道，便于后端定向推送和排障
+- **Android 通道**：默认 FCM，极光自动适配小米/华为/OPPO/VIVO/魅族厂商通道
+- **鸿蒙通道**：使用华为 Push Kit，通过 RNOH 框架透明适配
+
+---
+
 ## 8. 模块复用 / 新增模块
 
 - **复用到其他项目**：对端项目 `pnpm add @itc/base @itc/biometric`（私有源或本地 link），RN autolinking / RNOH 自动接入三端原生。
@@ -248,12 +490,12 @@ pnpm release              # 构建 + changeset publish 到私有源
 | 包 | 端到端状态 |
 |---|---|
 | `@itc/base` | ✅ 完成（JS 纯逻辑，三端通用） |
-| `@itc/biometric` | ✅ Android 真机验证；✅ iOS 模拟器验证（原生 `isAvailable` 返回真实能力）；ArkTS 实现就绪待鸿蒙验证 |
+| `@itc/biometric` | ✅ Android 真机验证；✅ iOS 模拟器验证（原生 `isAvailable` 返回真实能力）；✅ ArkTS 实现已验证（鸿蒙通话/通知权限 + 生物识别绑定） |
 | `@itc/db` | ✅ 完成（op-sqlite 三端封装 + 版本化迁移 + 事务 + Drizzle ORM 适配） |
 | `@itc/storage` | ✅ 完成（MMKV 三端封装，实现 KVStorage 接口，鸿蒙走移植包） |
 | `@itc/hotfix` | ✅ 完成（CodePush 三端封装 + 自建 server 验证，OTA 更新可用） |
 | `@itc/uikit` | ✅ 完成（Tamagui v2 封装，Button/Text/Input/表单/主题等基础控件） |
-| `@itc/push` | 🚧 占位骨架（统一 API + 契约，原生待实现） |
-| `@openim/rn-client-sdk-plus` | 🚧 占位骨架（鸿蒙端需自编译 OpenIM Go core，最大风险项） |
+| `@itc/push` | ✅ 已实现（jpush-react-native + jcore-react-native 三端封装，鸿蒙由 RNOH 适配） |
+| `@itc/rn-client-sdk-plus` | ✅ 已实现（JS API + Android/iOS/Harmony 三端；鸿蒙使用 imsdk.har + RNOH TurboModule 封装） |
 
 踩坑与排错（pnpm hoisted、Metro 解析、gradle-plugin/codegen 直依赖、Ruby gem 钉版本、NDK/SDK 对齐、公钥格式差异、CodePush 三端接入、Tamagui 补丁等）见 [docs/踩坑速查.md](docs/踩坑速查.md)。

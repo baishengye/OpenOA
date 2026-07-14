@@ -214,5 +214,5 @@ adb -s <serial> shell am start -n <pkg>/.MainActivity
 | Android Studio 同步 `Missing ExternalProject for :` | pnpm symlink + node PATH，见 [运行-Android.md](./运行-Android.md) §3。 |
 
 ## 附录：本仓库样例
-- storage（MMKV，同步）：`packages/storage/android/src/main/java/com/itc/storage/`
-- biometric（Keystore + BiometricPrompt，Promise）：`packages/biometric/android/`
+- biometric（Keystore + BiometricPrompt，Promise）：`packages/biometric/android/src/main/java/com/itc/biometric/`
+- im（OpenIM SDK）：`packages/im/android/`
