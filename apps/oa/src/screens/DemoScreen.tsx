@@ -11,21 +11,23 @@ import { HotfixTab } from './demo/HotfixTab';
 import { UikitTab } from './demo/UikitTab';
 import { PushTab } from './demo/PushTab';
 import { ImTab } from './demo/ImTab';
+import { FlashListTab } from './demo/FlashListTab';
 import { describe, shared } from './demo/shared';
 import type { RunFn } from './demo/shared';
 
-type TabKey = 'caps' | 'auth' | 'key' | 'storage' | 'db' | 'hotfix' | 'uikit' | 'push' | 'im';
-const TAB_KEYS: TabKey[] = ['caps', 'auth', 'key', 'storage', 'db', 'hotfix', 'uikit', 'push', 'im'];
+type TabKey = 'caps' | 'auth' | 'key' | 'storage' | 'db' | 'hotfix' | 'uikit' | 'push' | 'im' | 'flashlist';
+const TAB_KEYS: TabKey[] = ['caps', 'auth', 'key', 'storage', 'db', 'hotfix', 'uikit', 'push', 'im', 'flashlist'];
 const TAB_LABELS: Record<TabKey, string> = {
-  caps:    '能力',
-  auth:    '认证',
-  key:     '免密',
-  storage: '存储',
-  db:      'DB',
-  hotfix:  '热更新',
-  uikit:   'UI',
-  push:    '推送',
-  im:      'IM',
+  caps:      '能力',
+  auth:      '认证',
+  key:       '免密',
+  storage:   '存储',
+  db:        'DB',
+  hotfix:    '热更新',
+  uikit:     'UI',
+  push:      '推送',
+  im:        'IM',
+  flashlist: '列表',
 };
 
 export function DemoScreen(): React.JSX.Element {
@@ -62,6 +64,11 @@ export function DemoScreen(): React.JSX.Element {
       return <UikitTab />;
     }
 
+    // FlashListTab 自身是 List 根，全屏滚动
+    if (key === 'flashlist') {
+      return <FlashListTab {...tabProps} />;
+    }
+
     // 其他 tab 用 ScrollView 包装
     return (
       <ScrollView contentContainerStyle={styles.container}>
@@ -72,7 +79,7 @@ export function DemoScreen(): React.JSX.Element {
         {key === 'db'      && <DbTab      {...tabProps} />}
         {key === 'hotfix'  && <HotfixTab  {...tabProps} />}
         {key === 'push'    && <PushTab    {...tabProps} />}
-        {key === 'im'     && <ImTab     {...tabProps} />}
+        {key === 'im'      && <ImTab      {...tabProps} />}
 
         {busy && <ActivityIndicator style={styles.spinner} />}
 

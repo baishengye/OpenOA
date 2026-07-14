@@ -1,0 +1,44 @@
+{
+  "name": "@itc/flash-list",
+  "version": "0.1.0",
+  "description": "高性能列表渲染层封装，基于 @shopify/flash-list 的三端适配（Android/iOS/HarmonyOS NEXT）",
+  "main": "lib/index.js",
+  "module": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    }
+  },
+  "files": [
+    "lib",
+    "src",
+    "harmony"
+  ],
+  "scripts": {
+    "build": "tsc --project tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf lib"
+  },
+  "keywords": [
+    "react-native",
+    "flash-list",
+    "virtualized-list",
+    "im",
+    "chat",
+    "harmonyos"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "react": ">=19.0.0",
+    "react-native": ">=0.82.0"
+  },
+  "dependencies": {
+    "@shopify/flash-list": "^2.1.0",
+    "@react-native-ohos/flash-list": "2.1.1-rc.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

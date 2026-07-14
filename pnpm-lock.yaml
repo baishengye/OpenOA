@@ -36,6 +36,9 @@ importers:
       '@itc/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@itc/flash-list':
+        specifier: workspace:*
+        version: link:../../packages/flash-list
       '@itc/hotfix':
         specifier: workspace:*
         version: link:../../packages/hotfix
@@ -178,6 +181,25 @@ importers:
       react-native-builder-bob:
         specifier: ^0.32.1
         version: 0.32.1(typescript@5.9.3)
+
+  packages/flash-list:
+    dependencies:
+      '@react-native-ohos/flash-list':
+        specifier: 2.1.1-rc.1
+        version: 2.1.1-rc.1(@babel/runtime@7.29.7)(react-native@0.82.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.82.1(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.1.1))(react@19.1.1)
+      '@shopify/flash-list':
+        specifier: ^2.1.0
+        version: 2.3.2(@babel/runtime@7.29.7)(react-native@0.82.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.82.1(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.1.1))(react@19.1.1)
+      react:
+        specifier: '>=19.0.0'
+        version: 19.1.1
+      react-native:
+        specifier: '>=0.82.0'
+        version: 0.82.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.82.1(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.1.1)
+    devDependencies:
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.3
 
   packages/hotfix:
     dependencies:
@@ -1410,6 +1432,13 @@ packages:
     peerDependencies:
       react-native: 0.82.1
 
+  '@react-native-ohos/flash-list@2.1.1-rc.1':
+    resolution: {integrity: sha512-AMx55MZmR/17Mu/ZThJqanJbY7rKLNVRGLsKG+SAH2BbGm8mzHBIFn2z/6HvE14shx+A+/ONFgo+hUIb6wr55g==}
+    peerDependencies:
+      '@babel/runtime': '*'
+      react: '*'
+      react-native: '*'
+
   '@react-native-ohos/op-sqlite@14.0.1':
     resolution: {integrity: sha512-4U2ZrB9jCvRscyhv2tEkbRmPPDDaRaTJW88i1wSmnxzmJWCWwMZD9UeaEnG/YWS7rlCUPjKo2Rtao3FxOLxqzA==}
     peerDependencies:
@@ -1506,6 +1535,20 @@ packages:
     peerDependenciesMeta:
       '@types/react':
         optional: true
+
+  '@shopify/flash-list@2.1.0':
+    resolution: {integrity: sha512-/EIQlptG456yM5o9qNmNsmaZEFEOGvG3WGyb6GUAxSLlcKUGlPUkPI2NLW5wQSDEY4xSRa5zocUI+9xwmsM4Kg==}
+    peerDependencies:
+      '@babel/runtime': '*'
+      react: '*'
+      react-native: '*'
+
+  '@shopify/flash-list@2.3.2':
+    resolution: {integrity: sha512-vQnd0y0Ag11yzS30llaeCrtIU3xYTMe7KEOP3dveLImnVjQEUw6BEg1+Ztja6aODlVNz1BpvxtlQ5eZGxiLwKw==}
+    peerDependencies:
+      '@babel/runtime': '*'
+      react: '*'
+      react-native: '*'
 
   '@sideway/address@4.1.5':
     resolution: {integrity: sha512-IqO/DUQHUkPeixNQ8n0JA6102hT9CmaljNTPmQ1u8MEhBo/R4Q8eKLN/vGZxuebwOroDB4cbpjheD4+/sKFK4Q==}
@@ -6543,6 +6586,13 @@ snapshots:
       - react
       - utf-8-validate
 
+  '@react-native-ohos/flash-list@2.1.1-rc.1(@babel/runtime@7.29.7)(react-native@0.82.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.82.1(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.1.1))(react@19.1.1)':
+    dependencies:
+      '@babel/runtime': 7.29.7
+      '@shopify/flash-list': 2.1.0(@babel/runtime@7.29.7)(react-native@0.82.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.82.1(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.1.1))(react@19.1.1)
+      react: 19.1.1
+      react-native: 0.82.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.82.1(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.1.1)
+
   '@react-native-ohos/op-sqlite@14.0.1(react-native@0.82.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.82.1(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.1.1))(react@19.1.1)':
     dependencies:
       '@op-engineering/op-sqlite': 14.0.0(react-native@0.82.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.82.1(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.1.1))(react@19.1.1)
@@ -6720,6 +6770,18 @@ snapshots:
       react-native: 0.82.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.82.1(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.1.1)
     optionalDependencies:
       '@types/react': 19.2.17
+
+  '@shopify/flash-list@2.1.0(@babel/runtime@7.29.7)(react-native@0.82.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.82.1(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.1.1))(react@19.1.1)':
+    dependencies:
+      '@babel/runtime': 7.29.7
+      react: 19.1.1
+      react-native: 0.82.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.82.1(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.1.1)
+
+  '@shopify/flash-list@2.3.2(@babel/runtime@7.29.7)(react-native@0.82.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.82.1(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.1.1))(react@19.1.1)':
+    dependencies:
+      '@babel/runtime': 7.29.7
+      react: 19.1.1
+      react-native: 0.82.1(@babel/core@7.29.7)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.82.1(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.1.1)
 
   '@sideway/address@4.1.5':
     dependencies:

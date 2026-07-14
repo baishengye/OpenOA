@@ -20,6 +20,7 @@
     "@itc/base": "workspace:*",
     "@itc/biometric": "workspace:*",
     "@itc/db": "workspace:*",
+    "@itc/flash-list": "workspace:*",
     "@itc/hotfix": "workspace:*",
     "@itc/rn-client-sdk-plus": "workspace:*",
     "@itc/push": "workspace:*",
