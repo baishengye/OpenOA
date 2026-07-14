@@ -10,6 +10,7 @@
 - 提供表单组件（Switch / Checkbox / RadioGroup）
 - 提供对话框（Dialog）
 - 提供列表组件（List，支持下拉刷新 + 上拉加载）
+- 提供 Tab 组件（TabLayout + Tab，分段控制器布局容器）
 - 提供主题系统（light/dark 切换 + 语义色）
 
 **设计原则：**
@@ -17,6 +18,15 @@
 - 组件受控优先：表单组件强制受控（value + onChange）
 - 平台兼容：使用 RN 原生 Modal 确保鸿蒙兼容性
 - 样式统一：基于 tamagui token 系统
+
+---
+
+## 0. 变更记录
+
+| 日期 | 版本 | 变更 | 备注 |
+|------|------|------|------|
+| 2026-07-14 | 0.2 | 新增 TabLayout + Tab（分段控制器布局容器） | 支持横向/纵向布局 |
+| 2026-07-14 | 0.1 | 初版（List/Button/Input/Dialog 等） | 基线版本 |
 
 ---
 
@@ -351,6 +361,151 @@ interface ListProps<T> {
 export function List<T>(props: ListProps<T>): JSX.Element;
 ```
 
+### 8.2 TabLayout
+
+TabLayout 是一个分段控制器布局容器，将「标签列表」和「内容区域」组合在一起。
+
+#### 8.2.1 TabLayoutProps
+
+```typescript
+type TabLayoutDirection = 'horizontal' | 'vertical';
+type TabLayoutTabPosition = 'start' | 'end';
+
+interface TabLayoutProps {
+  children?: ReactNode;
+
+  /** 布局方向：横向（标签在上/下）或纵向（标签在左/右）。默认 'horizontal' */
+  direction?: TabLayoutDirection;
+
+  /** 标签列表位于内容区的哪一侧。默认 'start' */
+  tabPosition?: TabLayoutTabPosition;
+
+  /** 标签列表的宽度（纵向布局时）或高度（横向布局时）。默认 80 */
+  tabSize?: number;
+
+  /** 当前选中标签的索引。受控模式 */
+  value?: number;
+
+  /** 默认选中的标签索引。非受控模式 */
+  defaultValue?: number;
+
+  /** 选中变化时的回调。受控模式必需 */
+  onChange?: (index: number) => void;
+
+  /** 标签列表的渲染函数。接收 isActive（是否选中）用于高亮状态 */
+  renderTabList: (tab: {
+    isActive: boolean;
+    index: number;
+    label: string;
+  }) => ReactElement;
+
+  /** 内容区域的渲染函数 */
+  renderTabContent: (tab: {
+    index: number;
+    label: string;
+  }) => ReactElement;
+}
+```
+
+#### 8.2.2 Tab 组件
+
+`Tab` 是配合 `TabLayout` 使用的子组件，用于自定义标签列表的渲染。
+
+```typescript
+interface TabProps {
+  /** 标签文本 */
+  label: string;
+
+  /** 标签内容自定义渲染（优先级高于 label） */
+  children?: ReactNode;
+
+  /** 是否禁用 */
+  disabled?: boolean;
+}
+
+/** Tab 标签组件 */
+export function Tab(props: TabProps): JSX.Element;
+```
+
+#### 8.2.3 使用方式
+
+**基础用法（横向 + 标签在上）：**
+
+```tsx
+<TabLayout
+  defaultValue={0}
+  onChange={(index) => console.log('切换到', index)}
+  renderTabList={({ isActive, label }) => (
+    <XStack
+      padding={8}
+      backgroundColor={isActive ? '$primary' : 'transparent'}
+      borderRadius={4}
+    >
+      <Text color={isActive ? 'white' : '$gray11'}>{label}</Text>
+    </XStack>
+  )}
+  renderTabContent={({ index, label }) => (
+    <YStack flex={1} padding={16}>
+      <Text>内容区域: {label}</Text>
+    </YStack>
+  )}
+/>
+```
+
+**纵向布局（标签在左侧）：**
+
+```tsx
+<TabLayout
+  direction="vertical"
+  tabPosition="start"
+  tabSize={120}
+  defaultValue={0}
+  renderTabList={({ isActive, label }) => (
+    <YStack
+      padding={12}
+      backgroundColor={isActive ? '$primary' : 'transparent'}
+    >
+      <Text color={isActive ? 'white' : '$gray11'}>{label}</Text>
+    </YStack>
+  )}
+  renderTabContent={({ index }) => (
+    <YStack flex={1} padding={16}>
+      <Text>这是第 {index + 1} 个面板的内容</Text>
+    </YStack>
+  )}
+/>
+```
+
+**配合 Tab 子组件使用：**
+
+```tsx
+<TabLayout
+  defaultValue={0}
+  renderTabList={({ isActive, label }) => (
+    <Button variant={isActive ? 'solid' : 'ghost'}>{label}</Button>
+  )}
+>
+  <Tab label="首页" />
+  <Tab label="消息" />
+  <Tab label="我的" />
+</TabLayout>
+```
+
+**目录结构：**
+
+```
+src/components/
+├── ...
+└── TabLayout.tsx   # TabLayout + Tab 组件（可合并或拆分）
+```
+
+**设计说明：**
+
+- `renderTabList` 和 `renderTabContent` 接收当前标签信息，支持自由定制渲染
+- 内部维护 `tabs` 数组：通过 React.Children 收集所有 `Tab` 子组件的 label
+- 布局通过 `flexDirection` 控制（横向 `row`，纵向 `column`）
+- 选中状态通过 `value`（受控）或内部 state（非受控）管理
+
 ---
 
 ## 9. 目录结构
@@ -374,7 +529,8 @@ packages/uikit/
     │   ├── Input.tsx        # Input
     │   ├── Dialog.tsx       # Dialog
     │   ├── form.tsx         # Switch / Checkbox / RadioGroup
-    │   └── display.tsx     # Card / Badge / Avatar / Spinner
+    │   ├── display.tsx     # Card / Badge / Avatar / Spinner
+    │   └── TabLayout.tsx   # TabLayout / Tab
     ├── list/
     │   └── List.tsx         # List
     └── harmony/
@@ -566,6 +722,10 @@ export type { DialogProps };
 // 列表
 export { List };
 export type { ListProps };
+
+// Tab 布局
+export { TabLayout, Tab };
+export type { TabLayoutProps, TabProps, TabLayoutDirection, TabLayoutTabPosition };
 ```
 
 ---
@@ -582,3 +742,4 @@ export type { ListProps };
 8. **Avatar fallback**：当 `src` 不存在或加载失败时显示 fallback 文字
 9. **Button loading**：设置 `loading` 时自动禁用按钮并显示 Spinner
 10. **零依赖**：@itc/uikit 不依赖 @itc/base，保持独立
+11. **TabLayout 组件独立性**：TabLayout 不依赖具体平台 API，可在任意 RN 平台运行

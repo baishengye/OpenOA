@@ -46,3 +46,7 @@ export type { DialogProps } from './components/Dialog';
 // ── 列表 ────────────────────────────────────────────────────────────────────
 export { List } from './list/List';
 export type { ListProps } from './list/List';
+
+// ── Tab 布局 ─────────────────────────────────────────────────────────────────────
+export { TabLayout, Tab } from './components/TabLayout';
+export type { TabLayoutProps, TabProps, TabLayoutDirection, TabLayoutTabPosition } from './components/TabLayout';

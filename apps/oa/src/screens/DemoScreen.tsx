@@ -1,13 +1,7 @@
 import React, { useCallback, useState } from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, ScrollView, Text, View, StyleSheet } from 'react-native';
 import { currentPlatform } from '@itc/base';
+import { TabLayout, Tab } from '@itc/uikit';
 import { CapsTab } from './demo/CapsTab';
 import { AuthTab } from './demo/AuthTab';
 import { KeyTab } from './demo/KeyTab';
@@ -21,17 +15,18 @@ import { describe, shared } from './demo/shared';
 import type { RunFn } from './demo/shared';
 
 type TabKey = 'caps' | 'auth' | 'key' | 'storage' | 'db' | 'hotfix' | 'uikit' | 'push' | 'im';
-const TABS: { key: TabKey; label: string }[] = [
-  { key: 'caps',    label: '能力'   },
-  { key: 'auth',    label: '认证'   },
-  { key: 'key',     label: '免密'   },
-  { key: 'storage', label: '存储'   },
-  { key: 'db',      label: 'DB'     },
-  { key: 'hotfix',  label: '热更新' },
-  { key: 'uikit',   label: 'UI'     },
-  { key: 'push',    label: '推送'   },
-  { key: 'im',      label: 'IM'     },
-];
+const TAB_KEYS: TabKey[] = ['caps', 'auth', 'key', 'storage', 'db', 'hotfix', 'uikit', 'push', 'im'];
+const TAB_LABELS: Record<TabKey, string> = {
+  caps:    '能力',
+  auth:    '认证',
+  key:     '免密',
+  storage: '存储',
+  db:      'DB',
+  hotfix:  '热更新',
+  uikit:   'UI',
+  push:    '推送',
+  im:      'IM',
+};
 
 export function DemoScreen(): React.JSX.Element {
   const [tab, setTab] = useState<TabKey>('uikit');
@@ -57,76 +52,93 @@ export function DemoScreen(): React.JSX.Element {
   );
 
   const tabProps = { run, append, busy };
+  const currentIndex = TAB_KEYS.indexOf(tab);
 
-  const tabBar = (
-    <View style={styles.tabBar}>
-      {TABS.map((t) => (
-        <Pressable
-          key={t.key}
-          onPress={() => setTab(t.key)}
-          style={[styles.tab, tab === t.key && styles.tabActive]}
-        >
-          <Text style={[styles.tabText, tab === t.key && styles.tabTextActive]}>
-            {t.label}
-          </Text>
-        </Pressable>
-      ))}
-    </View>
-  );
+  const renderTabContent = ({ index }: { index: number }) => {
+    const key = TAB_KEYS[index];
+
+    // UikitTab 自身是 List 根，全屏滚动
+    if (key === 'uikit') {
+      return <UikitTab />;
+    }
+
+    // 其他 tab 用 ScrollView 包装
+    return (
+      <ScrollView contentContainerStyle={styles.container}>
+        {key === 'caps'    && <CapsTab    {...tabProps} />}
+        {key === 'auth'    && <AuthTab    {...tabProps} />}
+        {key === 'key'     && <KeyTab     {...tabProps} />}
+        {key === 'storage' && <StorageTab busy={busy} />}
+        {key === 'db'      && <DbTab      {...tabProps} />}
+        {key === 'hotfix'  && <HotfixTab  {...tabProps} />}
+        {key === 'push'    && <PushTab    {...tabProps} />}
+        {key === 'im'     && <ImTab     {...tabProps} />}
+
+        {busy && <ActivityIndicator style={styles.spinner} />}
+
+        <View style={shared.card}>
+          <Text style={shared.cardTitle}>日志</Text>
+          {log.length === 0 ? (
+            <Text style={shared.mono}>—</Text>
+          ) : (
+            log.map((l, i) => (
+              <Text key={`${i}-${l}`} style={shared.mono}>{l}</Text>
+            ))
+          )}
+        </View>
+      </ScrollView>
+    );
+  };
 
   return (
     <View style={styles.root}>
-      {/* 固定头部（标题 + tab 栏），不随内容滚动 */}
+      {/* 固定头部（标题 + 平台信息） */}
       <View style={styles.header}>
         <Text style={styles.h1}>OA Demo v2 @172.16.80.101</Text>
         <Text style={styles.platform}>当前平台：{currentPlatform}</Text>
-        {tabBar}
       </View>
 
-      {/* uikit tab 自身是 List 根、全屏滚动（不能再嵌 ScrollView）；其它 tab 用 ScrollView */}
-      {tab === 'uikit' ? (
-        <View style={styles.uikitArea}>
-          <UikitTab />
-        </View>
-      ) : (
-        <ScrollView contentContainerStyle={styles.container}>
-          {tab === 'caps'    && <CapsTab    {...tabProps} />}
-          {tab === 'auth'    && <AuthTab    {...tabProps} />}
-          {tab === 'key'     && <KeyTab     {...tabProps} />}
-          {tab === 'storage' && <StorageTab busy={busy}  />}
-          {tab === 'db'      && <DbTab      {...tabProps} />}
-          {tab === 'hotfix'  && <HotfixTab  {...tabProps} />}
-          {tab === 'push'    && <PushTab    {...tabProps} />}
-          {tab === 'im'     && <ImTab     {...tabProps} />}
-
-          {busy && <ActivityIndicator style={styles.spinner} />}
-
-          <View style={shared.card}>
-            <Text style={shared.cardTitle}>日志</Text>
-            {log.length === 0 ? (
-              <Text style={shared.mono}>—</Text>
-            ) : (
-              log.map((l, i) => (
-                <Text key={`${i}-${l}`} style={shared.mono}>{l}</Text>
-              ))
-            )}
+      {/* TabLayout 标签列表 */}
+      <TabLayout
+        value={currentIndex}
+        onChange={(index) => setTab(TAB_KEYS[index] ?? 'uikit')}
+        tabSize={52}
+        tabPosition="start"
+        renderTabList={({ isActive, label }) => (
+          <View
+            style={[
+              styles.tabItem,
+              isActive && styles.tabItemActive,
+            ]}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                isActive && styles.tabTextActive,
+              ]}
+            >
+              {label}
+            </Text>
           </View>
-        </ScrollView>
-      )}
+        )}
+        renderTabContent={({ index }) => renderTabContent({ index })}
+      >
+        {TAB_KEYS.map((key) => (
+          <Tab key={key} label={TAB_LABELS[key]} />
+        ))}
+      </TabLayout>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   root:          { flex: 1 },
-  header:        { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 8, gap: 12 },
-  uikitArea:     { flex: 1 },
-  container:     { padding: 20, gap: 12 },
+  header:        { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 8 },
   h1:            { fontSize: 22, fontWeight: '700', color: '#1f2329' },
-  platform:      { fontSize: 13, color: '#646a73' },
-  tabBar:        { flexDirection: 'row', backgroundColor: '#eef1f5', borderRadius: 10, padding: 4, flexWrap: 'wrap' },
-  tab:           { paddingVertical: 8, paddingHorizontal: 10, alignItems: 'center', borderRadius: 8 },
-  tabActive:     { backgroundColor: '#fff' },
+  platform:      { fontSize: 13, color: '#646a73', marginBottom: 8 },
+  container:     { padding: 20, gap: 12 },
+  tabItem:       { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 8 },
+  tabItemActive: { borderBottomWidth: 2, borderBottomColor: '#1456f0' },
   tabText:       { fontSize: 13, color: '#646a73' },
   tabTextActive: { color: '#1456f0', fontWeight: '700' },
   spinner:       { marginVertical: 4 },
