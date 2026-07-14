@@ -509,11 +509,11 @@ export interface  SetMessageLocalExParams {
 /** 上传文件参数 */
 export interface  UploadFileParams {
   filePath: string;
-  name?: string;
-  contentType?: string;
-  uuid?: string;
-  cause?: string;
-  token?: string;
+  name: string;
+  contentType: string;
+  uuid: string;
+  cause: string;
+  token: string;
 }
 
 /** 上传日志参数 */
@@ -523,13 +523,13 @@ export interface  UploadLogsParams {
 }
 
 /** 日志参数 */
-export interface  LogsParams {
-  logLevel?: number;
-  file?: string;
-  line?: number;
-  msgs?: string;
-  err?: string;
-  keyAndValue?: string[];
+export interface LogsParams {
+  logLevel: number;
+  file: string;
+  line: number;
+  msgs: string;
+  err: string;
+  keyAndValue: string[];
 }
 
 /** 搜索群成员参数（简化版） */

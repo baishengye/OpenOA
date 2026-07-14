@@ -146,6 +146,7 @@ import type {
   FaceMessageParams,
   LogsParams,
   UploadFileParams,
+  UploadLogsParams
 } from './types/params.d';
 import Logger from './common/utils/Logger';
 import { fileIo } from '@kit.CoreFileKit';
@@ -625,9 +626,6 @@ export class ItcOpenIMTurboModule extends UITurboModule {
     sdk.on(CbEvents.OnGroupDismissed, (data: CbEventData) => {
       this.handleSdkEvent(CbEvents.OnGroupDismissed, this.safeSerializeEventData(data));
     });
-
-    // 启动原生监听器
-    sdk.startListener();
 
     this.isInitialized = true;
     Logger.info(TAG, 'Event listener initialized');
@@ -1884,10 +1882,15 @@ export class ItcOpenIMTurboModule extends UITurboModule {
     try {
       const p = this.safeParse<UploadFileParams>(params);
       if (p == undefined) { return '{}'; }
-      const filePath = p.filePath ?? '';
-      const csv = p.contentType ?? 'application/octet-stream';
-      const token = p.token ?? '';
-      return JSON.stringify({ url: filePath });
+
+      return await getSDK().uploadFile({
+        filepath: p.filePath,
+        name: p.name,
+        contentType: p.contentType,
+        uuid: p.uuid,
+        cause: p.cause,
+        token: p.token
+      },_operationID)
     } catch (e) {
       Logger.error(TAG, `uploadFile failed: ${e}`);
       return '{}';
@@ -1897,6 +1900,12 @@ export class ItcOpenIMTurboModule extends UITurboModule {
   async uploadLogs(params: string, _operationID: string): Promise<boolean> {
     try {
       Logger.info(TAG, `uploadLogs called with: ${params}`);
+      const p = this.safeParse<UploadLogsParams>(params);
+      if (p == undefined) { return false; }
+      await getSDK().uploadLogs({
+        line: p.line,
+        ex: p.ex
+      },_operationID);
       return true;
     } catch (e) {
       Logger.error(TAG, `uploadLogs failed: ${e}`);
@@ -2596,8 +2605,15 @@ export class ItcOpenIMTurboModule extends UITurboModule {
     try {
       const p = this.safeParse<LogsParams>(params);
       if (p == undefined) { return ; }
-      Logger.info(TAG, p.msgs ?? params);
-      // todo 查找log api
+      await getSDK().logs({
+        logLevel:p.logLevel,
+        file: p.file,
+        line: p.line,
+        msgs: p.msgs,
+        err: p.err,
+        keyAndValue: p.keyAndValue
+      },_operationID)
+      return;
     } catch {
       Logger.info(TAG, params);
     }
