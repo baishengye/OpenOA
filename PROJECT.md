@@ -1,8 +1,8 @@
-# OpenDingDing 项目说明文档
+# OpenOA 项目说明文档
 
 ## 一、项目概述
 
-**OpenDingDing** 是一个对标钉钉的**模块化 OA 移动应用**，基于 React Native 跨端框架构建，同时适配 **Android / iOS / 鸿蒙 NEXT** 三端。项目采用 pnpm monorepo 架构，将业务应用与端能力模块彻底解耦——生物识别、推送、即时通讯（IM）、本地数据库、KV 存储、热修复、UI 组件库等模块均可独立剥离，复用到其他 RN 项目中。
+**OpenOA** 是一个对标钉钉的**模块化 OA 移动应用**，基于 React Native 跨端框架构建，同时适配 **Android / iOS / 鸿蒙 NEXT** 三端。项目采用 pnpm monorepo 架构，将业务应用与端能力模块彻底解耦——生物识别、推送、即时通讯（IM）、本地数据库、KV 存储、热修复、UI 组件库等模块均可独立剥离，复用到其他 RN 项目中。
 
 ### 核心设计理念
 
@@ -34,7 +34,7 @@
 ## 三、项目目录结构
 
 ```
-OpenDingDing/
+OpenOA/
 ├── package.json                  # 根 monorepo 配置（workspace 脚本、changeset）
 ├── pnpm-workspace.yaml           # workspace 定义：packages/* + apps/*
 ├── pnpm-lock.yaml                # 依赖锁定
@@ -83,7 +83,7 @@ OpenDingDing/
 │   ├── push/                     # @itc/push —— 推送模块（占位骨架）
 │   │   └── src/                  # 统一推送抽象（友盟/极光聚合 + APNs + Push Kit）
 │   │
-│   ├── im/                       # @itc/im —— 即时通讯模块（占位骨架）
+│   ├── im/                       # @openim/rn-client-sdk-plus —— 即时通讯模块（占位骨架）
 │   │   └── src/                  # 封装 OpenIM SDK
 │   │
 │   ├── db/                       # @itc/db —— 本地 SQLite 基础设施
@@ -170,7 +170,7 @@ OpenDingDing/
 - **设计**：底层走第三方聚合平台（友盟/极光），自动适配各厂商通道（小米/华为/OPPO/VIVO/魅族）+ iOS APNs + 鸿蒙 Push Kit
 - **通信**：原生推送回调统一通过 `@itc/base` 事件总线（`push:message` / `push:opened` / `push:token`）下发给宿主
 
-### 4.4 `@itc/im` —— 即时通讯（占位骨架）
+### 4.4 `@openim/rn-client-sdk-plus` —— 即时通讯（占位骨架）
 
 封装 OpenIM SDK，结构已就绪，原生实现待填充：
 
@@ -231,7 +231,7 @@ graph TB
     subgraph Features["端能力模块（可剥离复用）"]
         BIO["@itc/biometric<br/>生物识别 ★"]
         PUSH["@itc/push<br/>推送（骨架）"]
-        IM["@itc/im<br/>即时通讯（骨架）"]
+        IM["@openim/rn-client-sdk-plus<br/>即时通讯（骨架）"]
         DB["@itc/db<br/>SQLite 基础设施"]
         STORE["@itc/storage<br/>KV 持久化"]
         HOTFIX["@itc/hotfix<br/>热修复"]

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
-import { ItcError } from '@itc/base';
+import { ItcError, logger } from '@itc/base';
 import { BIOMETRY_BIT, type AuthResult } from '@itc/biometric';
 
 // ── Props 共享类型 ────────────────────────────────────────────────────────────
@@ -11,6 +11,25 @@ export interface TabProps {
   run: RunFn;
   append: (line: string) => void;
   busy: boolean;
+}
+
+// ── 日志包装器 ────────────────────────────────────────────────────────────────
+
+const TAG = 'Demo';
+
+/** 包装 append 函数，同时输出到 logger */
+export function loggedAppend(append: (line: string) => void): (line: string) => void {
+  return (line: string) => {
+    // 判断日志级别
+    if (line.startsWith('❌')) {
+      logger.error(TAG, line);
+    } else if (line.startsWith('⚠️')) {
+      logger.warn(TAG, line);
+    } else {
+      logger.info(TAG, line);
+    }
+    append(line);
+  };
 }
 
 // ── 共享 Button ───────────────────────────────────────────────────────────────

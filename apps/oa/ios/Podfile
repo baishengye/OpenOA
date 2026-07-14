@@ -14,7 +14,7 @@ if linkage != nil
   use_frameworks! :linkage => linkage.to_sym
 end
 
-target 'OpenDingDing' do
+target 'OpenOA' do
   config = use_native_modules!
 
   use_react_native!(
@@ -22,6 +22,9 @@ target 'OpenDingDing' do
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
+
+  # OpenIM SDK TurboModule 本地 Pod
+  pod 'ItcOpenIM', :path => '../../../packages/im/ios'
 
   post_install do |installer|
     # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
@@ -43,7 +46,42 @@ target 'OpenDingDing' do
           "// OPENDINGDING_FMT_PATCH\n#undef FMT_USE_CONSTEVAL\n#define FMT_USE_CONSTEVAL 0\n#if FMT_USE_CONSTEVAL\n#  define FMT_CONSTEVAL consteval"
         )
         File.write(fmt_base, text)
-        Pod::UI.puts '[OpenDingDing] patched fmt/base.h: FMT_USE_CONSTEVAL=0'
+        Pod::UI.puts '[OpenOA] patched fmt/base.h: FMT_USE_CONSTEVAL=0'
+      end
+    end
+
+    # 修复 OpenIMCore XCFramework 头文件中的 @import 语法，替换为 #import 以支持非模块编译
+    xcframework_base = File.join(__dir__, 'Pods', 'OpenIMSDKCore', 'Framework', 'OpenIMCore.xcframework')
+    if File.exist?(xcframework_base)
+      # 遍历所有archs
+      Dir.glob(File.join(xcframework_base, '*')).each do |arch_dir|
+        headers_dir = File.join(arch_dir, 'OpenIMCore.framework', 'Versions', 'A', 'Headers')
+        if File.exist?(headers_dir)
+          ['Open_im_sdk.objc.h', 'Universe.objc.h', 'Open_im_sdk_callback.objc.h'].each do |header|
+            header_path = File.join(headers_dir, header)
+            if File.exist?(header_path)
+              text = File.read(header_path)
+              if text.include?('@import') && !text.include?('OPENDINGDING_PATCHED')
+                text = text.sub('@import Foundation;', '#import <Foundation/Foundation.h>')
+                text = "// OPENDINGDING_PATCHED\n" + text
+                File.write(header_path, text)
+                Pod::UI.puts "[OpenOA] patched #{header} in #{File.basename(arch_dir)}"
+              end
+            end
+          end
+        end
+      end
+    end
+
+    # 启用 CLANG_ENABLE_MODULES 以支持 @import 语法 (OpenIMSDK 内部使用 @import OpenIMCore)
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        config.build_settings['CLANG_ENABLE_MODULES'] = 'YES'
+        config.build_settings['CLANG_ENABLE_OBJC_ARC'] = 'YES'
+        config.build_settings['DEFINES_MODULE'] = 'YES'
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
+        config.build_settings['OTHER_CFLAGS'] ||= ['$(inherited)']
+        config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++20'
       end
     end
   end

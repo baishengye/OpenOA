@@ -16,10 +16,11 @@ import { DbTab } from './demo/DbTab';
 import { HotfixTab } from './demo/HotfixTab';
 import { UikitTab } from './demo/UikitTab';
 import { PushTab } from './demo/PushTab';
+import { ImTab } from './demo/ImTab';
 import { describe, shared } from './demo/shared';
 import type { RunFn } from './demo/shared';
 
-type TabKey = 'caps' | 'auth' | 'key' | 'storage' | 'db' | 'hotfix' | 'uikit' | 'push';
+type TabKey = 'caps' | 'auth' | 'key' | 'storage' | 'db' | 'hotfix' | 'uikit' | 'push' | 'im';
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'caps',    label: '能力'   },
   { key: 'auth',    label: '认证'   },
@@ -29,6 +30,7 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: 'hotfix',  label: '热更新' },
   { key: 'uikit',   label: 'UI'     },
   { key: 'push',    label: '推送'   },
+  { key: 'im',      label: 'IM'     },
 ];
 
 export function DemoScreen(): React.JSX.Element {
@@ -95,6 +97,7 @@ export function DemoScreen(): React.JSX.Element {
           {tab === 'db'      && <DbTab      {...tabProps} />}
           {tab === 'hotfix'  && <HotfixTab  {...tabProps} />}
           {tab === 'push'    && <PushTab    {...tabProps} />}
+          {tab === 'im'     && <ImTab     {...tabProps} />}
 
           {busy && <ActivityIndicator style={styles.spinner} />}
 

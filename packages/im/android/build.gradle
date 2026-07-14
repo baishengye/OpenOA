@@ -1,0 +1,65 @@
+// 库模块只声明 kotlin 插件 classpath（版本复用根工程），AGP 由宿主根工程提供，避免 classpath 版本冲突。
+buildscript {
+  def kotlinVersion = rootProject.ext.has("kotlinVersion") ? rootProject.ext.get("kotlinVersion") : "2.0.21"
+  repositories {
+    google()
+    mavenCentral()
+  }
+  dependencies {
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+  }
+}
+
+apply plugin: "com.android.library"
+apply plugin: "org.jetbrains.kotlin.android"
+
+// 引入 RN 提供的库 facebook 工具方法，自动接管 New Architecture / codegen 接入
+apply plugin: "com.facebook.react"
+
+def getExtOrDefault(name, defaultValue) {
+  return rootProject.ext.has(name) ? rootProject.ext.get(name) : defaultValue
+}
+
+android {
+  namespace "com.itc.openim"
+  compileSdk getExtOrDefault("compileSdkVersion", 34) as int
+
+  defaultConfig {
+    minSdk getExtOrDefault("minSdkVersion", 24) as int
+  }
+
+  buildFeatures {
+    buildConfig true
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+  }
+
+  kotlinOptions {
+    jvmTarget = "17"
+  }
+
+  lintOptions {
+    disable 'GradleCompatible'
+  }
+}
+
+repositories {
+  google()
+  mavenCentral()
+}
+
+dependencies {
+  implementation "com.facebook.react:react-android"
+
+  // OpenIM SDK 核心库
+  implementation "io.openim:core-sdk:3.8.3-patch12+1"
+
+  // FastJSON 用于 JSON 解析
+  implementation "com.alibaba:fastjson:1.1.72.android"
+
+  // AndroidX
+  implementation "androidx.collection:collection:1.1.0"
+}

@@ -1,4 +1,6 @@
 import type { RNPackageContext, RNPackage } from '@rnoh/react-native-openharmony/ts';
+// OpenIM SDK
+import { ItcOpenIMPackage } from '@itc/openim';
 // biometric 走自包含 .har 库（方式B）：ArkTS Package 从二进制库导入，C++ 桥也在库内。
 import { ItcBiometricPackage } from '@itc/biometric';
 // 第三方库 op-sqlite 的 ArkTS Package。
@@ -12,6 +14,7 @@ import { SafeAreaViewPackage } from '@react-native-ohos/react-native-safe-area-c
 
 export function createRNPackages(ctx: RNPackageContext): RNPackage[] {
   return [
+    new ItcOpenIMPackage(ctx),
     new ItcBiometricPackage(ctx),
     new RNMMKVStoragePackage(ctx),
     new RNOpSqlitePackage(ctx),

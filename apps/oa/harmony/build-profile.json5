@@ -56,5 +56,9 @@
       "name": "biometric",
       "srcPath": "../../../packages/biometric/harmony/biometric"
     },
+    {
+      "name": "openim",
+      "srcPath": "../../../packages/im/harmony/imsdk"
+    }
   ]
 }

@@ -8,11 +8,12 @@
     "node": ">=20"
   },
   "scripts": {
-    "postinstall": "node scripts/deref-rn-gradle-plugin.js && node scripts/harmony-postinstall.js",
+    "postinstall": "node scripts/deref-rn-gradle-plugin.js && node scripts/harmony-postinstall.js && pnpm codegen:harmony",
     "build": "pnpm -r --filter \"./packages/*\" build",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",
     "clean": "pnpm -r clean && rimraf node_modules",
+    "codegen:harmony": "node scripts/harmony-codegen.js",
     "oa:install": "pnpm --filter @itc-oa/app install",
     "oa:start": "pnpm --filter @itc-oa/app start",
     "oa:harmony": "pnpm --filter @itc-oa/app harmony",

@@ -39,12 +39,12 @@ importers:
       '@itc/hotfix':
         specifier: workspace:*
         version: link:../../packages/hotfix
-      '@itc/im':
-        specifier: workspace:*
-        version: link:../../packages/im
       '@itc/push':
         specifier: workspace:*
         version: link:../../packages/push
+      '@itc/rn-client-sdk-plus':
+        specifier: workspace:*
+        version: link:../../packages/im
       '@itc/storage':
         specifier: workspace:*
         version: link:../../packages/storage
