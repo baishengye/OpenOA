@@ -20,7 +20,7 @@
     "oa:android": "pnpm --filter @itc-oa/app android",
     "oa:ios": "pnpm --filter @itc-oa/app ios",
     "oa:clean": "pnpm --filter @itc-oa/app clean",
-    "oa:uninstall": "pnpm store prune && rm -rf node_modules apps/oa/node_modules packages/*/node_modules",
+    "oa:uninstall": "pnpm store prune && node scripts/clean-node-modules.js",
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "pnpm build && changeset publish"
