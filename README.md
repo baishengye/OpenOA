@@ -53,6 +53,7 @@ OpenOA/
 │   ├── base/        @itc/base        公共基座（契约/Result/平台/事件总线/日志/存储接口）
 │   ├── biometric/   @itc/biometric   生物识别（指纹/人脸 + 生物绑定密钥签名）★样板模块
 │   ├── db/          @itc/db          本地 SQLite 基础设施（三端 op-sqlite 封装 + 版本化迁移）
+│   ├── flash-list/  @itc/flash-list  高性能列表（@shopify/flash-list 三端封装）
 │   ├── storage/     @itc/storage     KV 持久化（MMKV 封装，实现 @itc/base 的 KVStorage 接口）
 │   ├── hotfix/      @itc/hotfix      热修复（CodePush 三端封装，OTA JS Bundle 更新）
 │   ├── uikit/       @itc/uikit       基础 UI 控件库（Tamagui 封装：Button/Text/Input/表单/主题）
@@ -385,6 +386,66 @@ packages/im/
 
 ---
 
+## 8.1 FlashList 模块使用指南（@itc/flash-list）
+
+基于 @shopify/flash-list 的高性能列表封装，支持三端（Android/iOS/Harmony）。
+
+### 核心 API
+
+```typescript
+import { FlashList, MessageList } from '@itc/flash-list';
+
+// 普通列表
+function App() {
+  return (
+    <FlashList
+      data={items}
+      renderItem={({ item }) => <Text>{item.name}</Text>}
+      keyExtractor={(item) => item.id}
+      estimatedItemSize={80}
+    />
+  );
+}
+
+// IM 消息列表（默认倒序）
+function ChatScreen() {
+  const [messages, setMessages] = useState<Message[]>([]);
+
+  return (
+    <MessageList<Message>
+      data={messages}
+      renderItem={({ item }) => <MessageBubble message={item} />}
+      onEndReached={loadMoreHistory}
+    />
+  );
+}
+```
+
+### 组件说明
+
+| 组件 | 用途 | 特性 |
+|------|------|------|
+| `FlashList<T>` | 通用高性能列表 | 支持 `getItemType`、`horizontal`、`onEndReached` 等优化特性 |
+| `MessageList<T>` | IM 场景消息列表 | 默认倒序排列，适合聊天界面 |
+
+### 三端实现策略
+
+| 端 | 底层实现 | 支持版本 |
+|---|---|---|
+| Android | @shopify/flash-list | RN 0.82+ |
+| iOS | @shopify/flash-list | RN 0.82+ |
+| 鸿蒙 NEXT | @react-native-ohos/flash-list | API 12+ / RN 0.82+ |
+
+### 特性
+
+- ✅ **API 隐藏**：完全隐藏底层实现，业务只依赖本包
+- ✅ **三端一致**：所有平台 API 和行为完全一致
+- ✅ **MessageList**：IM 场景专用组件（默认倒序排列）
+- ✅ **性能优化**：支持 `getItemType`、`horizontal`、`onEndReached` 等 FlashList 优化特性
+- ✅ **类型安全**：完整的 TypeScript 类型定义
+
+---
+
 ## 8.2 推送模块使用指南（@itc/push）
 
 基于极光推送（JPush）的统一推送模块，支持三端（Android/iOS/Harmony）。
@@ -467,7 +528,7 @@ eventBus.on('push:opened', (msg) => {
 
 ---
 
-## 8. 模块复用 / 新增模块
+## 8.3 模块复用 / 新增模块
 
 - **复用到其他项目**：对端项目 `pnpm add @itc/base @itc/biometric`（私有源或本地 link），RN autolinking / RNOH 自动接入三端原生。
 - **新增模块**：照搬 `@itc/biometric` 结构 —— TS 统一 API + codegen spec（`NativeXxx.ts`）+ `android/ios/harmony` 三端原生 + 实现 `@itc/base` 的 `ItcModule` 契约。详见 [docs/模块开发指南.md](docs/模块开发指南.md)。
@@ -492,6 +553,7 @@ pnpm release              # 构建 + changeset publish 到私有源
 | `@itc/base` | ✅ 完成（JS 纯逻辑，三端通用） |
 | `@itc/biometric` | ✅ Android 真机验证；✅ iOS 模拟器验证（原生 `isAvailable` 返回真实能力）；✅ ArkTS 实现已验证（鸿蒙通话/通知权限 + 生物识别绑定） |
 | `@itc/db` | ✅ 完成（op-sqlite 三端封装 + 版本化迁移 + 事务 + Drizzle ORM 适配） |
+| `@itc/flash-list` | ✅ 完成（@shopify/flash-list 三端封装 + MessageList IM 场景支持） |
 | `@itc/storage` | ✅ 完成（MMKV 三端封装，实现 KVStorage 接口，鸿蒙走移植包） |
 | `@itc/hotfix` | ✅ 完成（CodePush 三端封装 + 自建 server 验证，OTA 更新可用） |
 | `@itc/uikit` | ✅ 完成（Tamagui v2 封装，Button/Text/Input/表单/主题等基础控件） |

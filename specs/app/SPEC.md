@@ -39,6 +39,7 @@ apps/oa/
 │   │       ├── AuthTab.tsx       # 生物识别演示
 │   │       ├── CapsTab.tsx       # 能力探测演示
 │   │       ├── DbTab.tsx         # 数据库演示
+│       ├── FlashListTab.tsx  # 高性能列表演示
 │   │       ├── HotfixTab.tsx     # 热修复演示
 │   │       ├── ImTab.tsx         # IM 演示
 │   │       ├── KeyTab.tsx        # 生物密钥演示
@@ -141,6 +142,7 @@ export function usePush(): void {
   "@itc/base": "workspace:*",
   "@itc/biometric": "workspace:*",
   "@itc/db": "workspace:*",
+  "@itc/flash-list": "workspace:*",
   "@itc/hotfix": "workspace:*",
   "@itc/rn-client-sdk-plus": "workspace:*",
   "@itc/push": "workspace:*",
@@ -247,6 +249,7 @@ hdc install entry/build/.../entry-default-signed.hap
 | 热修复 | `HotfixTab.tsx` | 手动检查更新 |
 | IM | `ImTab.tsx` + `imDemo/` | 即时通讯功能 |
 | UI | `UikitTab.tsx` | UI 组件展示 |
+| 列表 | `FlashListTab.tsx` | 高性能列表/IM 消息列表 |
 
 ---
 
