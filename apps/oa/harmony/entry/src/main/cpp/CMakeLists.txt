@@ -23,6 +23,11 @@ add_subdirectory("${OH_MODULE_DIR}/@react-native-oh-tpl/react-native-mmkv-storag
 # 自带 CMake 子工程，产出 rnoh_safe_area 供链接。取代旧的纯 RN stub 降级。
 add_subdirectory("${OH_MODULE_DIR}/@react-native-ohos/react-native-safe-area-context/src/main/cpp" ./safe_area)
 
+# 第三方库 skia（@react-native-ohos 移植包 ，RNOH 0.82）。
+# 自带 CMake 子工程，产出 skia 供链接。取代旧的纯 RN stub 降级。
+add_subdirectory("${OH_MODULE_DIR}/@react-native-ohos/react-native-skia/src/main/cpp" ./skia)
+
+
 # 第三方库 react-native-code-push（@react-native-ohos 8.2.3，RNOH autolink 支持）。
 # 自带 CMake 子工程，产出 rnoh_code_push 供链接。
 add_subdirectory("${OH_MODULE_DIR}/@react-native-ohos/react-native-code-push/src/main/cpp" ./code_push)
@@ -47,4 +52,4 @@ add_library(rnoh_app SHARED
 )
 
 target_include_directories(rnoh_app PUBLIC "${BIOMETRIC_LIB_CPP}" "${OPENIM_LIB_CPP}")
-target_link_libraries(rnoh_app PUBLIC rnoh rnoh_rn_op_sqlite rnoh_mmkv_storage rnoh_safe_area rnoh_code_push)
+target_link_libraries(rnoh_app PUBLIC rnoh rnoh_rn_op_sqlite rnoh_mmkv_storage rnoh_safe_area rnoh_code_push rnoh_skia)

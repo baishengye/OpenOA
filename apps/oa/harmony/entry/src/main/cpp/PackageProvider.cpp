@@ -6,6 +6,7 @@
 #include "RNOpSqlitePackage.h"
 #include "MMKVNativePackage.h"
 #include "SafeAreaViewPackage.h"
+#include "SkiaPackage.h"
 
 using namespace rnoh;
 
@@ -18,5 +19,6 @@ std::vector<std::shared_ptr<Package>> PackageProvider::getPackages(Package::Cont
     std::make_shared<RNOpSqlitePackage>(ctx),
     std::make_shared<RNOHMMKVStoragePackage>(ctx),
     std::make_shared<SafeAreaViewPackage>(ctx),
+    std::make_shared<SkiaPackage>(ctx),
   };
 }
