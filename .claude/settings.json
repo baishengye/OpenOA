@@ -37,7 +37,9 @@
       "Bash(node node_modules/react-native/cli.js bundle-harmony --config metro.config.harmony.js --dev false)",
       "Bash(pnpm install *)",
       "Bash(gunzip -c imsdk.har)",
-      "Bash(tar -tf /tmp/imsdk_unpacked.tar)"
+      "Bash(tar -tf /tmp/imsdk_unpacked.tar)",
+      "Bash(/Volumes/MacExtend/Code/ReactNative/OpenOA/packages/skia/node_modules/.bin/bob build *)",
+      "Bash(pnpm build *)"
     ]
   }
 }

@@ -54,6 +54,7 @@ OpenOA/
 │   ├── biometric/   @itc/biometric   生物识别（指纹/人脸 + 生物绑定密钥签名）★样板模块
 │   ├── db/          @itc/db          本地 SQLite 基础设施（三端 op-sqlite 封装 + 版本化迁移）
 │   ├── flash-list/  @itc/flash-list  高性能列表（@shopify/flash-list 三端封装）
+│   ├── skia/        @itc/skia        2D 图形渲染（@shopify/react-native-skia 三端封装）
 │   ├── storage/     @itc/storage     KV 持久化（MMKV 封装，实现 @itc/base 的 KVStorage 接口）
 │   ├── hotfix/      @itc/hotfix      热修复（CodePush 三端封装，OTA JS Bundle 更新）
 │   ├── uikit/       @itc/uikit       基础 UI 控件库（Tamagui 封装：Button/Text/Input/表单/主题）
@@ -446,7 +447,97 @@ function ChatScreen() {
 
 ---
 
-## 8.2 推送模块使用指南（@itc/push）
+## 8.2 Skia 模块使用指南（@itc/skia）
+
+基于 @shopify/react-native-skia 的 2D 图形渲染封装，支持三端（Android/iOS/Harmony）。
+
+### 核心 API
+
+```typescript
+import {
+  Canvas,
+  Circle,
+  Group,
+  Rect,
+  Path,
+  LinearGradient,
+  RadialGradient,
+  BoxShadow,
+} from '@itc/skia';
+
+// 颜色混合示例
+function CMYKCanvas() {
+  return (
+    <Canvas style={{ width: 256, height: 256 }}>
+      <Group blendMode="multiply">
+        <Circle cx={64} cy={64} r={64} color="cyan" />
+        <Circle cx={192} cy={64} r={64} color="magenta" />
+        <Circle cx={128} cy={192} r={64} color="yellow" />
+      </Group>
+    </Canvas>
+  );
+}
+
+// 渐变填充示例
+function GradientCanvas() {
+  return (
+    <Canvas style={{ width: 200, height: 200 }}>
+      <Rect x={10} y={10} width={80} height={80}>
+        <LinearGradient
+          start={{ x: 0, y: 0 }}
+          end={{ x: 80, y: 80 }}
+          colors={['#667eea', '#764ba2']}
+        />
+      </Rect>
+    </Canvas>
+  );
+}
+
+// 带阴影的图形
+function ShadowCanvas() {
+  return (
+    <Canvas style={{ width: 200, height: 200 }}>
+      <Group>
+        <Circle cx={80} cy={80} r={50} color="#dee2e6">
+          <BoxShadow dx={4} dy={4} blur={8} color="#868e96" />
+        </Circle>
+      </Group>
+    </Canvas>
+  );
+}
+```
+
+### 组件分类
+
+| 分类 | 组件 | 说明 |
+|------|------|------|
+| 画布 | `Canvas` | Skia 绘图容器 |
+| 图形 | `Circle`, `Rect`, `RoundedRect`, `Oval`, `Line`, `Points`, `DiffRect` | 基础几何图形 |
+| 路径 | `Path`, `Patch`, `Atlas`, `Vertices` | 复杂路径和顶点绘制 |
+| 分组 | `Group` | 分组和混合模式 |
+| 效果 | `BoxShadow`, `Shadow` | 阴影效果 |
+| 渐变 | `LinearGradient`, `RadialGradient`, `TwoPointConicalGradient`, `SweepGradient` | 渐变填充 |
+| 着色器 | `FractalNoise`, `Turbulence`, `ColorShader`, `ImageShader` | 高级着色效果 |
+| 滤镜 | `Blur`, `ColorMatrix`, `DisplacementMap`, `Offset`, `Morphology` | 图像滤镜 |
+
+### 三端实现策略
+
+| 端 | 底层实现 | 支持版本 |
+|---|---|---|
+| Android | @shopify/react-native-skia | RN 0.82+ |
+| iOS | @shopify/react-native-skia | RN 0.82+ |
+| 鸿蒙 NEXT | @react-native-ohos/react-native-skia | API 12+ / RN 0.82+ |
+
+### 特性
+
+- ✅ **API 统一**：三端使用相同 API，无需条件导入
+- ✅ **完整类型**：所有组件和属性都有 TypeScript 类型定义
+- ✅ **ManualLink 支持**：提供完整的 HarmonyOS ManualLink 配置指南
+- ✅ **渐进增强**：部分高级特性在 HarmonyOS 可能有细微差异
+
+---
+
+## 8.3 推送模块使用指南（@itc/push）
 
 基于极光推送（JPush）的统一推送模块，支持三端（Android/iOS/Harmony）。
 
@@ -554,6 +645,7 @@ pnpm release              # 构建 + changeset publish 到私有源
 | `@itc/biometric` | ✅ Android 真机验证；✅ iOS 模拟器验证（原生 `isAvailable` 返回真实能力）；✅ ArkTS 实现已验证（鸿蒙通话/通知权限 + 生物识别绑定） |
 | `@itc/db` | ✅ 完成（op-sqlite 三端封装 + 版本化迁移 + 事务 + Drizzle ORM 适配） |
 | `@itc/flash-list` | ✅ 完成（@shopify/flash-list 三端封装 + MessageList IM 场景支持） |
+| `@itc/skia` | ✅ 完成（@shopify/react-native-skia 三端封装 + 完整类型定义） |
 | `@itc/storage` | ✅ 完成（MMKV 三端封装，实现 KVStorage 接口，鸿蒙走移植包） |
 | `@itc/hotfix` | ✅ 完成（CodePush 三端封装 + 自建 server 验证，OTA 更新可用） |
 | `@itc/uikit` | ✅ 完成（Tamagui v2 封装，Button/Text/Input/表单/主题等基础控件） |

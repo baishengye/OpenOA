@@ -143,6 +143,7 @@ export function usePush(): void {
   "@itc/biometric": "workspace:*",
   "@itc/db": "workspace:*",
   "@itc/flash-list": "workspace:*",
+  "@itc/skia": "workspace:*",
   "@itc/hotfix": "workspace:*",
   "@itc/rn-client-sdk-plus": "workspace:*",
   "@itc/push": "workspace:*",
@@ -250,6 +251,7 @@ hdc install entry/build/.../entry-default-signed.hap
 | IM | `ImTab.tsx` + `imDemo/` | 即时通讯功能 |
 | UI | `UikitTab.tsx` | UI 组件展示 |
 | 列表 | `FlashListTab.tsx` | 高性能列表/IM 消息列表 |
+| Skia | `SkiaTab.tsx` | 2D 图形渲染（Canvas/Circle/Rect/渐变/阴影等） |
 
 ---
 

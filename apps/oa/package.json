@@ -17,6 +17,7 @@
     "clean": "rimraf android/app/build ios/build"
   },
   "dependencies": {
+    "@itc/skia": "workspace:*",
     "@itc/base": "workspace:*",
     "@itc/biometric": "workspace:*",
     "@itc/db": "workspace:*",

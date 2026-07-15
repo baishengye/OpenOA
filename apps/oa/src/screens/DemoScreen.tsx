@@ -12,11 +12,12 @@ import { UikitTab } from './demo/UikitTab';
 import { PushTab } from './demo/PushTab';
 import { ImTab } from './demo/ImTab';
 import { FlashListTab } from './demo/FlashListTab';
+import { SkiaTab } from './demo/SkiaTab';
 import { describe, shared } from './demo/shared';
 import type { RunFn } from './demo/shared';
 
-type TabKey = 'caps' | 'auth' | 'key' | 'storage' | 'db' | 'hotfix' | 'uikit' | 'push' | 'im' | 'flashlist';
-const TAB_KEYS: TabKey[] = ['caps', 'auth', 'key', 'storage', 'db', 'hotfix', 'uikit', 'push', 'im', 'flashlist'];
+type TabKey = 'caps' | 'auth' | 'key' | 'storage' | 'db' | 'hotfix' | 'uikit' | 'push' | 'im' | 'flashlist' | 'skia';
+const TAB_KEYS: TabKey[] = ['caps', 'auth', 'key', 'storage', 'db', 'hotfix', 'uikit', 'push', 'im', 'flashlist', 'skia'];
 const TAB_LABELS: Record<TabKey, string> = {
   caps:      '能力',
   auth:      '认证',
@@ -28,6 +29,7 @@ const TAB_LABELS: Record<TabKey, string> = {
   push:      '推送',
   im:        'IM',
   flashlist: '列表',
+  skia:      'Skia',
 };
 
 export function DemoScreen(): React.JSX.Element {
@@ -80,6 +82,7 @@ export function DemoScreen(): React.JSX.Element {
         {key === 'hotfix'  && <HotfixTab  {...tabProps} />}
         {key === 'push'    && <PushTab    {...tabProps} />}
         {key === 'im'      && <ImTab      {...tabProps} />}
+        {key === 'skia'    && <SkiaTab    {...tabProps} />}
 
         {busy && <ActivityIndicator style={styles.spinner} />}
 

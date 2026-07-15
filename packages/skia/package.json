@@ -1,0 +1,43 @@
+{
+  "name": "@itc/skia",
+  "version": "0.1.0",
+  "description": "2D 图形渲染封装，基于 @shopify/react-native-skia 的三端适配（Android/iOS/HarmonyOS NEXT）",
+  "main": "lib/index.js",
+  "module": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    }
+  },
+  "files": [
+    "lib",
+    "src",
+    "harmony"
+  ],
+  "scripts": {
+    "build": "tsc --project tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf lib"
+  },
+  "keywords": [
+    "react-native",
+    "skia",
+    "canvas",
+    "2d-graphics",
+    "harmonyos"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "react": ">=19.0.0",
+    "react-native": ">=0.82.0"
+  },
+  "dependencies": {
+    "@shopify/react-native-skia": "2.4.14",
+    "@react-native-ohos/react-native-skia": "~2.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

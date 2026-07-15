@@ -1,6 +1,8 @@
 packages:
   - 'packages/*'
   - 'apps/*'
+allowBuilds:
+  '@shopify/react-native-skia': false
 # 补丁文件随「拥有该依赖的模块」就近存放（packages/<模块>/patches/），但 pnpm 只读
 # 根这里的 patchedDependencies 注册（子包的 pnpm 配置不生效），路径相对仓库根。各补丁
 # 的用途/验证/重建见对应模块 README。
