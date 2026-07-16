@@ -1,10 +1,8 @@
 /**
  * Path 路径组件封装
- * 直接转发所有属性到基础组件
  */
-
 import React from 'react';
-import { Path as PathBase } from '@shopify/react-native-skia';
+import { Path as PathImpl } from '../platform';
 
-export const Path = (props: React.ComponentProps<typeof PathBase>) =>
-  React.createElement(PathBase, props);
+export const Path = (props: React.ComponentProps<typeof PathImpl>) =>
+  React.createElement(PathImpl, props);

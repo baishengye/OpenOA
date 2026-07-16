@@ -1,10 +1,8 @@
 /**
  * DiscretePathEffect 离散路径效果封装
- * 直接转发所有属性到基础组件
  */
-
 import React from 'react';
-import { DiscretePathEffect as DiscretePathEffectBase } from '@shopify/react-native-skia';
+import { DiscretePathEffect as DiscretePathEffectImpl } from '../platform';
 
-export const DiscretePathEffect = (props: React.ComponentProps<typeof DiscretePathEffectBase>) =>
-  React.createElement(DiscretePathEffectBase, props);
+export const DiscretePathEffect = (props: React.ComponentProps<typeof DiscretePathEffectImpl>) =>
+  React.createElement(DiscretePathEffectImpl, props);

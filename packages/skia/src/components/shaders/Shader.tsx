@@ -1,10 +1,8 @@
 /**
- * Shader 着色器组件封装
- * 直接转发所有属性到基础组件
+ * Shader 着色器封装
  */
-
 import React from 'react';
-import { Shader as ShaderBase } from '@shopify/react-native-skia';
+import { Shader as ShaderImpl } from '../platform';
 
-export const Shader = (props: React.ComponentProps<typeof ShaderBase>) =>
-  React.createElement(ShaderBase, props);
+export const Shader = (props: React.ComponentProps<typeof ShaderImpl>) =>
+  React.createElement(ShaderImpl, props);

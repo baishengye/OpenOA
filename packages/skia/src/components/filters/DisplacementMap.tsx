@@ -1,10 +1,8 @@
 /**
- * DisplacementMap 位移映射滤镜封装
- * 直接转发所有属性到基础组件
+ * DisplacementMap 置换图组件封装
  */
-
 import React from 'react';
-import { DisplacementMap as DisplacementMapBase } from '@shopify/react-native-skia';
+import { DisplacementMap as DisplacementMapImpl } from '../platform';
 
-export const DisplacementMap = (props: React.ComponentProps<typeof DisplacementMapBase>) =>
-  React.createElement(DisplacementMapBase, props);
+export const DisplacementMap = (props: React.ComponentProps<typeof DisplacementMapImpl>) =>
+  React.createElement(DisplacementMapImpl, props);

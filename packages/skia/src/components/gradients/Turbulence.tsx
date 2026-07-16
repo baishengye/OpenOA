@@ -1,10 +1,8 @@
 /**
- * Turbulence 湍流封装
- * 直接转发所有属性到基础组件
+ * Turbulence 湍流组件封装
  */
-
 import React from 'react';
-import { Turbulence as TurbulenceBase } from '@shopify/react-native-skia';
+import { Turbulence as TurbulenceImpl } from '../platform';
 
-export const Turbulence = (props: React.ComponentProps<typeof TurbulenceBase>) =>
-  React.createElement(TurbulenceBase, props);
+export const Turbulence = (props: React.ComponentProps<typeof TurbulenceImpl>) =>
+  React.createElement(TurbulenceImpl, props);

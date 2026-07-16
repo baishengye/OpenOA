@@ -1,10 +1,8 @@
 /**
- * Offset 偏移滤镜封装
- * 直接转发所有属性到基础组件
+ * Offset 偏移滤镜组件封装
  */
-
 import React from 'react';
-import { Offset as OffsetBase } from '@shopify/react-native-skia';
+import { Offset as OffsetImpl } from '../platform';
 
-export const Offset = (props: React.ComponentProps<typeof OffsetBase>) =>
-  React.createElement(OffsetBase, props);
+export const Offset = (props: React.ComponentProps<typeof OffsetImpl>) =>
+  React.createElement(OffsetImpl, props);

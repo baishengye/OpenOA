@@ -1,10 +1,8 @@
 /**
- * ImageShader 图像着色器封装
- * 直接转发所有属性到基础组件
+ * ImageShader 图片着色器封装
  */
-
 import React from 'react';
-import { ImageShader as ImageShaderBase } from '@shopify/react-native-skia';
+import { ImageShader as ImageShaderImpl } from '../platform';
 
-export const ImageShader = (props: React.ComponentProps<typeof ImageShaderBase>) =>
-  React.createElement(ImageShaderBase, props);
+export const ImageShader = (props: React.ComponentProps<typeof ImageShaderImpl>) =>
+  React.createElement(ImageShaderImpl, props);

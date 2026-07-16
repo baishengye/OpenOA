@@ -1,10 +1,8 @@
 /**
- * LinearGradient 线性渐变封装
- * 直接转发所有属性到基础组件
+ * LinearGradient 线性渐变组件封装
  */
-
 import React from 'react';
-import { LinearGradient as LinearGradientBase } from '@shopify/react-native-skia';
+import { LinearGradient as LinearGradientImpl } from '../platform';
 
-export const LinearGradient = (props: React.ComponentProps<typeof LinearGradientBase>) =>
-  React.createElement(LinearGradientBase, props);
+export const LinearGradient = (props: React.ComponentProps<typeof LinearGradientImpl>) =>
+  React.createElement(LinearGradientImpl, props);

@@ -1,10 +1,8 @@
 /**
- * SweepGradient 扫描渐变封装
- * 直接转发所有属性到基础组件
+ * SweepGradient 扫描渐变组件封装
  */
-
 import React from 'react';
-import { SweepGradient as SweepGradientBase } from '@shopify/react-native-skia';
+import { SweepGradient as SweepGradientImpl } from '../platform';
 
-export const SweepGradient = (props: React.ComponentProps<typeof SweepGradientBase>) =>
-  React.createElement(SweepGradientBase, props);
+export const SweepGradient = (props: React.ComponentProps<typeof SweepGradientImpl>) =>
+  React.createElement(SweepGradientImpl, props);

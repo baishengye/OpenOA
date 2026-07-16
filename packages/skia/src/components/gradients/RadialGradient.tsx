@@ -1,10 +1,8 @@
 /**
- * RadialGradient 径向渐变封装
- * 直接转发所有属性到基础组件
+ * RadialGradient 径向渐变组件封装
  */
-
 import React from 'react';
-import { RadialGradient as RadialGradientBase } from '@shopify/react-native-skia';
+import { RadialGradient as RadialGradientImpl } from '../platform';
 
-export const RadialGradient = (props: React.ComponentProps<typeof RadialGradientBase>) =>
-  React.createElement(RadialGradientBase, props);
+export const RadialGradient = (props: React.ComponentProps<typeof RadialGradientImpl>) =>
+  React.createElement(RadialGradientImpl, props);

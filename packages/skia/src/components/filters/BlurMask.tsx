@@ -1,10 +1,8 @@
 /**
- * BlurMask 模糊蒙版封装
- * 直接转发所有属性到基础组件
+ * BlurMask 模糊遮罩组件封装
  */
-
 import React from 'react';
-import { BlurMask as BlurMaskBase } from '@shopify/react-native-skia';
+import { BlurMask as BlurMaskImpl } from '../platform';
 
-export const BlurMask = (props: React.ComponentProps<typeof BlurMaskBase>) =>
-  React.createElement(BlurMaskBase, props);
+export const BlurMask = (props: React.ComponentProps<typeof BlurMaskImpl>) =>
+  React.createElement(BlurMaskImpl, props);

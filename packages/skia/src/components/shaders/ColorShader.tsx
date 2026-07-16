@@ -1,10 +1,8 @@
 /**
- * ColorShader 纯色着色器封装
- * 直接转发所有属性到基础组件
+ * ColorShader 颜色着色器封装
  */
-
 import React from 'react';
-import { ColorShader as ColorShaderBase } from '@shopify/react-native-skia';
+import { ColorShader as ColorShaderImpl } from '../platform';
 
-export const ColorShader = (props: React.ComponentProps<typeof ColorShaderBase>) =>
-  React.createElement(ColorShaderBase, props);
+export const ColorShader = (props: React.ComponentProps<typeof ColorShaderImpl>) =>
+  React.createElement(ColorShaderImpl, props);

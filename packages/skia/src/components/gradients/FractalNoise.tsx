@@ -1,10 +1,8 @@
 /**
- * FractalNoise 分形噪声封装
- * 直接转发所有属性到基础组件
+ * FractalNoise 分形噪点组件封装
  */
-
 import React from 'react';
-import { FractalNoise as FractalNoiseBase } from '@shopify/react-native-skia';
+import { FractalNoise as FractalNoiseImpl } from '../platform';
 
-export const FractalNoise = (props: React.ComponentProps<typeof FractalNoiseBase>) =>
-  React.createElement(FractalNoiseBase, props);
+export const FractalNoise = (props: React.ComponentProps<typeof FractalNoiseImpl>) =>
+  React.createElement(FractalNoiseImpl, props);

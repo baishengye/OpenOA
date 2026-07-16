@@ -1,10 +1,8 @@
 /**
- * Blur 模糊滤镜封装
- * 直接转发所有属性到基础组件
+ * Blur 模糊滤镜组件封装
  */
-
 import React from 'react';
-import { Blur as BlurBase } from '@shopify/react-native-skia';
+import { Blur as BlurImpl } from '../platform';
 
-export const Blur = (props: React.ComponentProps<typeof BlurBase>) =>
-  React.createElement(BlurBase, props);
+export const Blur = (props: React.ComponentProps<typeof BlurImpl>) =>
+  React.createElement(BlurImpl, props);

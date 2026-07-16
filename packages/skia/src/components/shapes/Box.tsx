@@ -1,10 +1,8 @@
 /**
- * Box 盒模型组件封装
- * 直接转发所有属性到基础组件
+ * Box 盒组件封装
  */
-
 import React from 'react';
-import { Box as BoxBase } from '@shopify/react-native-skia';
+import { Box as BoxImpl } from '../platform';
 
-export const Box = (props: React.ComponentProps<typeof BoxBase>) =>
-  React.createElement(BoxBase, props);
+export const Box = (props: React.ComponentProps<typeof BoxImpl>) =>
+  React.createElement(BoxImpl, props);

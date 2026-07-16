@@ -1,10 +1,8 @@
 /**
- * DiffRect 差集矩形组件封装
- * 直接转发所有属性到基础组件
+ * DiffRect 差异矩形组件封装
  */
-
 import React from 'react';
-import { DiffRect as DiffRectBase } from '@shopify/react-native-skia';
+import { DiffRect as DiffRectImpl } from '../platform';
 
-export const DiffRect = (props: React.ComponentProps<typeof DiffRectBase>) =>
-  React.createElement(DiffRectBase, props);
+export const DiffRect = (props: React.ComponentProps<typeof DiffRectImpl>) =>
+  React.createElement(DiffRectImpl, props);

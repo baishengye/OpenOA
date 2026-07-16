@@ -1,10 +1,8 @@
 /**
- * ColorMatrix 颜色矩阵滤镜封装
- * 直接转发所有属性到基础组件
+ * ColorMatrix 颜色矩阵组件封装
  */
-
 import React from 'react';
-import { ColorMatrix as ColorMatrixBase } from '@shopify/react-native-skia';
+import { ColorMatrix as ColorMatrixImpl } from '../platform';
 
-export const ColorMatrix = (props: React.ComponentProps<typeof ColorMatrixBase>) =>
-  React.createElement(ColorMatrixBase, props);
+export const ColorMatrix = (props: React.ComponentProps<typeof ColorMatrixImpl>) =>
+  React.createElement(ColorMatrixImpl, props);

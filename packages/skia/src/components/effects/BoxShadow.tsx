@@ -1,10 +1,8 @@
 /**
  * BoxShadow 盒阴影组件封装
- * 直接转发所有属性到基础组件
  */
-
 import React from 'react';
-import { BoxShadow as BoxShadowBase } from '@shopify/react-native-skia';
+import { BoxShadow as BoxShadowImpl } from '../platform';
 
-export const BoxShadow = (props: React.ComponentProps<typeof BoxShadowBase>) =>
-  React.createElement(BoxShadowBase, props);
+export const BoxShadow = (props: React.ComponentProps<typeof BoxShadowImpl>) =>
+  React.createElement(BoxShadowImpl, props);

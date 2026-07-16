@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Atlas as AtlasBase } from '@shopify/react-native-skia';
+import { Atlas as AtlasImpl } from '../platform';
 
-export const Atlas = (props: React.ComponentProps<typeof AtlasBase>) =>
-  React.createElement(AtlasBase, props);
+export const Atlas = (props: React.ComponentProps<typeof AtlasImpl>) =>
+  React.createElement(AtlasImpl, props);

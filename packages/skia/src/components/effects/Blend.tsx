@@ -1,10 +1,8 @@
 /**
- * Blend 混合组件封装
- * 直接转发所有属性到基础组件
+ * Blend 混合模式组件封装
  */
-
 import React from 'react';
-import { Blend as BlendBase } from '@shopify/react-native-skia';
+import { Blend as BlendImpl } from '../platform';
 
-export const Blend = (props: React.ComponentProps<typeof BlendBase>) =>
-  React.createElement(BlendBase, props);
+export const Blend = (props: React.ComponentProps<typeof BlendImpl>) =>
+  React.createElement(BlendImpl, props);

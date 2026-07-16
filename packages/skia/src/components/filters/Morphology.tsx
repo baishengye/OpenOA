@@ -1,10 +1,8 @@
 /**
- * Morphology 形态学滤镜封装
- * 直接转发所有属性到基础组件
+ * Morphology 形态学滤镜组件封装
  */
-
 import React from 'react';
-import { Morphology as MorphologyBase } from '@shopify/react-native-skia';
+import { Morphology as MorphologyImpl } from '../platform';
 
-export const Morphology = (props: React.ComponentProps<typeof MorphologyBase>) =>
-  React.createElement(MorphologyBase, props);
+export const Morphology = (props: React.ComponentProps<typeof MorphologyImpl>) =>
+  React.createElement(MorphologyImpl, props);

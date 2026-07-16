@@ -1,10 +1,8 @@
 /**
  * Circle 圆形组件封装
- * 直接转发所有属性到基础组件
  */
-
 import React from 'react';
-import { Circle as CircleBase } from '@shopify/react-native-skia';
+import { Circle as CircleImpl } from '../platform';
 
-export const Circle = (props: React.ComponentProps<typeof CircleBase>) =>
-  React.createElement(CircleBase, props);
+export const Circle = (props: React.ComponentProps<typeof CircleImpl>) =>
+  React.createElement(CircleImpl, props);

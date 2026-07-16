@@ -1,10 +1,8 @@
 /**
- * TwoPointConicalGradient 双点圆锥渐变封装
- * 直接转发所有属性到基础组件
+ * TwoPointConicalGradient 双点锥形渐变组件封装
  */
-
 import React from 'react';
-import { TwoPointConicalGradient as TwoPointConicalGradientBase } from '@shopify/react-native-skia';
+import { TwoPointConicalGradient as TwoPointConicalGradientImpl } from '../platform';
 
-export const TwoPointConicalGradient = (props: React.ComponentProps<typeof TwoPointConicalGradientBase>) =>
-  React.createElement(TwoPointConicalGradientBase, props);
+export const TwoPointConicalGradient = (props: React.ComponentProps<typeof TwoPointConicalGradientImpl>) =>
+  React.createElement(TwoPointConicalGradientImpl, props);
