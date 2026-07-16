@@ -11,12 +11,25 @@ import {
   RNOHCoreContext,
 } from '@rnoh/react-native-openharmony';
 import common from '@ohos.app.ability.common';
-import { comparingVersion } from '@react-native-ohos/react-native-code-push/ts';
+import { comparingVersion } from '@react-native-ohos/react-native-code-push';
 import { createRNPackages } from '../RNPackagesFactory';
+import { RNCSkiaDomView, SKIA_DOM_VIEW_TYPE } from '@react-native-ohos/react-native-skia';
+
+
+const arkTsComponentNames: Array<string> = [
+  SKIA_DOM_VIEW_TYPE
+];
 
 // 自定义 Fabric 组件构建器（本演示无自定义原生组件，留空）
 @Builder
-function buildCustomRNComponent(_ctx: ComponentBuilderContext) {}
+export function buildCustomRNComponent(ctx: ComponentBuilderContext) {
+  if (ctx.componentName === SKIA_DOM_VIEW_TYPE) {
+    RNCSkiaDomView({
+      ctx: ctx.rnComponentContext,
+      tag: ctx.tag
+      })
+  }
+}
 
 const wrappedCustomRNComponentBuilder: WrappedBuilder<[ComponentBuilderContext]> =
   wrapBuilder(buildCustomRNComponent);
@@ -50,7 +63,7 @@ struct Index {
             enableNDKTextMeasuring: true,
             enableBackgroundExecutor: false,
             enableCAPIArchitecture: true,
-            arkTsComponentNames: [],
+            arkTsComponentNames: arkTsComponentNames,
           },
           // 必须与 JS 端 AppRegistry.registerComponent 的名字一致（app.json: OpenOA）
           appKey: 'OpenOA',

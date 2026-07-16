@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "@shopify/react-native-skia": "2.4.14",
-    "@react-native-ohos/react-native-skia": "~2.0.0"
+    "@react-native-ohos/react-native-skia": "github:yuangerep/react-native-skia#2.0.0-rc.2"
   },
   "devDependencies": {
     "typescript": "^5.0.0"
