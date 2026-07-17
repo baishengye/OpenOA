@@ -81,7 +81,7 @@ interface NotificationOptions {
   badge?: boolean;
   carPlay?: boolean;
   criticalAlert?: boolean;
-  Provisional?: boolean;
+  provisional?: boolean;
 }
 ```
 
@@ -229,14 +229,14 @@ const STORAGE_PERMISSIONS = {
   /** 读图片/视频 - 三端 */
   READ_IMAGEVIDEO_AIH: 'readImageVideo',
 
-  /** 写图片/视频 - 三端 */
-  WRITE_IMAGEVIDEO_AIH: 'writeImageVideo',
+  /** 写图片/视频 - Harmony */
+  WRITE_IMAGEVIDEO_H: 'writeImageVideo',
 
   /** 读音频 - 三端 */
   READ_AUDIO_AIH: 'readAudio',
 
-  /** 写音频 - 三端 */
-  WRITE_AUDIO_AIH: 'writeAudio',
+  /** 写音频 - Harmony */
+  WRITE_AUDIO_H: 'writeAudio',
 } as const;
 ```
 
@@ -309,120 +309,254 @@ const HARMONY_PERMISSIONS = {
 
 ### 4.1 Android 映射
 
-| 逻辑权限 ID | Android 字符串 | 说明 |
-|------------|---------------|------|
-| `camera` | `android.permission.CAMERA` | 相机 |
-| `microphone` | `android.permission.RECORD_AUDIO` | 麦克风 |
-| `location` | `android.permission.ACCESS_FINE_LOCATION` | 精确位置 |
-| `approximatelyLocation` | `android.permission.ACCESS_COARSE_LOCATION` | 模糊位置 |
-| `locationBackground` | `android.permission.ACCESS_BACKGROUND_LOCATION` | 后台位置 |
-| `readCalendar` | `android.permission.READ_CALENDAR` | 读日历 |
-| `writeCalendar` | `android.permission.WRITE_CALENDAR` | 写日历 |
-| `activityMotion` | `android.permission.ACTIVITY_RECOGNITION` | 活动识别 |
-| `readHealthData` | `android.permission.BODY_SENSORS` | 健康数据 |
-| `readMedia` | `android.permission.READ_MEDIA_IMAGES` | 读图片 |
-| `mediaLocation` | `android.permission.READ_MEDIA_VISUAL_USER_SELECTED` | 媒体位置 |
-| `accessBluetooth` | `android.permission.BLUETOOTH_CONNECT` | 蓝牙连接 |
-| `distributedDataSync` | `android.permission.BLUETOOTH_SCAN` | 蓝牙扫描 |
-| `readContacts` | `android.permission.READ_CONTACTS` | 读联系人 |
-| `writeContacts` | `android.permission.WRITE_CONTACTS` | 写联系人 |
-| `readCallLog` | `android.permission.READ_CALL_LOG` | 读通话记录 |
-| `writeCallLog` | `android.permission.WRITE_CALL_LOG` | 写通话记录 |
-| `answerCall` | `android.permission.ANSWER_PHONE_CALLS` | 接听电话 |
-| `readMessages` | `android.permission.READ_SMS` | 读短信 |
-| `sendMessages` | `android.permission.SEND_SMS` | 发短信 |
-| `receiveSms` | `android.permission.RECEIVE_SMS` | 收短信 |
-| `receiveMms` | `android.permission.RECEIVE_MMS` | 收彩信 |
-| `readAudio` | `android.permission.READ_MEDIA_AUDIO` | 读音频 |
-| `writeAudio` | `android.permission.WRITE_EXTERNAL_STORAGE` | 写音频 |
-| `readImageVideo` | `android.permission.READ_MEDIA_VIDEO` | 读视频 |
-| `writeImageVideo` | `android.permission.WRITE_EXTERNAL_STORAGE` | 写视频 |
-| `readDocument` | `android.permission.READ_EXTERNAL_STORAGE` | 读文档 |
-| `writeDocument` | `android.permission.WRITE_EXTERNAL_STORAGE` | 写文档 |
-| `getInstalledBundleList` | `android.permission.QUERY_ALL_PACKAGES` | 查询已安装应用 |
+> react-native-permissions 提供的 Android 权限字符串列表：
+
+| 逻辑权限 ID | Android 字符串 |
+|------------|---------------|
+| `camera` | `android.permission.CAMERA` |
+| `microphone` | `android.permission.RECORD_AUDIO` |
+| `location` | `android.permission.ACCESS_FINE_LOCATION` |
+| `approximatelyLocation` | `android.permission.ACCESS_COARSE_LOCATION` |
+| `locationBackground` | `android.permission.ACCESS_BACKGROUND_LOCATION` |
+| `readCalendar` | `android.permission.READ_CALENDAR` |
+| `writeCalendar` | `android.permission.WRITE_CALENDAR` |
+| `activityMotion` | `android.permission.ACTIVITY_RECOGNITION` |
+| `readHealthData` | `android.permission.BODY_SENSORS` |
+| `readMedia` | `android.permission.READ_MEDIA_IMAGES` |
+| `mediaLocation` | `android.permission.ACCESS_MEDIA_LOCATION` |
+| `accessBluetooth` | `android.permission.BLUETOOTH_CONNECT` |
+| `distributedDataSync` | `android.permission.BLUETOOTH_SCAN` |
+| `readContacts` | `android.permission.READ_CONTACTS` |
+| `writeContacts` | `android.permission.WRITE_CONTACTS` |
+| `readCallLog` | `android.permission.READ_CALL_LOG` |
+| `writeCallLog` | `android.permission.WRITE_CALL_LOG` |
+| `answerCall` | `android.permission.ANSWER_PHONE_CALLS` |
+| `callPhone` | `android.permission.CALL_PHONE` |
+| `readPhoneNumbers` | `android.permission.READ_PHONE_NUMBERS` |
+| `readPhoneState` | `android.permission.READ_PHONE_STATE` |
+| `readMessages` | `android.permission.READ_SMS` |
+| `sendMessages` | `android.permission.SEND_SMS` |
+| `receiveSms` | `android.permission.RECEIVE_SMS` |
+| `receiveMms` | `android.permission.RECEIVE_MMS` |
+| `readAudio` | `android.permission.READ_MEDIA_AUDIO` |
+| `writeAudio` | `android.permission.WRITE_EXTERNAL_STORAGE` |
+| `readDocument` | `android.permission.READ_EXTERNAL_STORAGE` |
+| `writeDocument` | `android.permission.WRITE_EXTERNAL_STORAGE` |
+| `readImageVideo` | `android.permission.READ_MEDIA_VIDEO` |
+| `writeImageVideo` | `android.permission.WRITE_EXTERNAL_STORAGE` |
+| `getInstalledBundleList` | `android.permission.QUERY_ALL_PACKAGES` |
+
+**Android 完整权限列表（react-native-permissions）：**
+```
+ACCEPT_HANDOVER, 
+ACCESS_BACKGROUND_LOCATION, 
+ACCESS_COARSE_LOCATION,
+ACCESS_FINE_LOCATION,
+ACCESS_MEDIA_LOCATION, 
+ACTIVITY_RECOGNITION,
+ADD_VOICEMAIL, 
+ANSWER_PHONE_CALLS, 
+BLUETOOTH_ADVERTISE, 
+BLUETOOTH_CONNECT,
+BLUETOOTH_SCAN, 
+BODY_SENSORS, 
+BODY_SENSORS_BACKGROUND, 
+CALL_PHONE, 
+CAMERA,
+GET_ACCOUNTS, 
+NEARBY_WIFI_DEVICES, 
+POST_NOTIFICATIONS, 
+PROCESS_OUTGOING_CALLS,
+READ_CALENDAR, 
+READ_CALL_LOG, 
+READ_CONTACTS, 
+READ_EXTERNAL_STORAGE,
+READ_MEDIA_AUDIO, 
+READ_MEDIA_IMAGES, 
+READ_MEDIA_VIDEO,
+READ_MEDIA_VISUAL_USER_SELECTED, 
+READ_PHONE_NUMBERS, READ_PHONE_STATE,
+READ_SMS, 
+RECEIVE_MMS, 
+RECEIVE_SMS, 
+RECEIVE_WAP_PUSH, 
+RECORD_AUDIO,
+SEND_SMS, 
+USE_SIP, 
+UWB_RANGING, 
+WRITE_CALENDAR, 
+WRITE_CALL_LOG,
+WRITE_CONTACTS, 
+WRITE_EXTERNAL_STORAGE
+```
 
 ### 4.2 iOS 映射
 
-| 逻辑权限 ID | iOS 字符串 | 说明 |
-|------------|-----------|------|
-| `camera` | `ios.permission.CAMERA` | 相机 |
-| `microphone` | `ios.permission.MICROPHONE` | 麦克风 |
-| `location` | `ios.permission.LOCATION_WHEN_IN_USE` | 使用时位置 |
-| `approximatelyLocation` | `ios.permission.LOCATION_ALWAYS` | 始终位置 |
-| `locationBackground` | `ios.permission.LOCATION_ALWAYS` | 后台位置 |
-| `readCalendar` | `ios.permission.CALENDARS` | 读日历 |
-| `writeCalendar` | `ios.permission.EVENTS` | 写日历 |
-| `activityMotion` | `ios.permission.ACTIVITY_RECOGNITION` | 活动识别 |
-| `readMedia` | `ios.permission.PHOTO_LIBRARY` | 读相册 |
-| `mediaLocation` | `ios.permission.PHOTO_LIBRARY_ADD_ONLY` | 添加照片 |
-| `accessBluetooth` | `ios.permission.BLUETOOTH` | 蓝牙 |
-| `readContacts` | `ios.permission.CONTACTS` | 联系人 |
-| `writeContacts` | `ios.permission.CONTACTS_WRITE` | 写联系人 |
-| `readCallLog` | `ios.permission.CONTACTS` | 通话记录 |
-| `sendMessages` | `ios.permission.SMS` | 短信 |
-| `readAudio` | `ios.permission.MEDIA_LIBRARY` | 媒体库 |
-| `writeAudio` | `ios.permission.MEDIA_LIBRARY` | 写媒体 |
-| `readDocument` | `ios.permission.FILES` | 文件 |
-| `writeDocument` | `ios.permission.FILES` | 写文件 |
-| `readHealthData` | `ios.permission.HEALTH_SHARE` | 健康数据 |
-| `manageVoicemail` | `ios.permission.VOICEMAIL` | 语音邮件 |
+> react-native-permissions 提供的 iOS 权限字符串列表：
+
+| 逻辑权限 ID | iOS 字符串 |
+|------------|-----------|
+| `camera` | `ios.permission.CAMERA` |
+| `microphone` | `ios.permission.MICROPHONE` |
+| `location` | `ios.permission.LOCATION_WHEN_IN_USE` |
+| `approximatelyLocation` | `ios.permission.LOCATION_ALWAYS` |
+| `locationBackground` | `ios.permission.LOCATION_ALWAYS` |
+| `readCalendar` | `ios.permission.CALENDARS` |
+| `writeCalendar` | `ios.permission.CALENDARS` |
+| `activityMotion` | `ios.permission.MOTION` |
+| `readMedia` | `ios.permission.PHOTO_LIBRARY` |
+| `mediaLocation` | `ios.permission.PHOTO_LIBRARY_ADD_ONLY` |
+| `accessBluetooth` | `ios.permission.BLUETOOTH` |
+| `distributedDataSync` | `ios.permission.BLUETOOTH` |
+| `readContacts` | `ios.permission.CONTACTS` |
+| `writeContacts` | `ios.permission.CONTACTS` |
+| `readAudio` | `ios.permission.MEDIA_LIBRARY` |
+| `writeAudio` | `ios.permission.MEDIA_LIBRARY` |
+| `readDocument` | `ios.permission.FILES` |
+| `writeDocument` | `ios.permission.FILES` |
+| `readImageVideo` | `ios.permission.PHOTO_LIBRARY` |
+| `writeImageVideo` | `ios.permission.PHOTO_LIBRARY` |
+
+**iOS 完整权限列表（react-native-permissions）：**
+```
+APP_TRACKING_TRANSPARENCY, 
+BLUETOOTH, 
+CALENDARS, 
+CALENDARS_WRITE_ONLY,
+CAMERA, 
+CONTACTS, 
+FACE_ID, 
+LOCATION_ALWAYS, 
+LOCATION_WHEN_IN_USE,
+MEDIA_LIBRARY, 
+MICROPHONE, 
+MOTION, 
+PHOTO_LIBRARY, 
+PHOTO_LIBRARY_ADD_ONLY,
+REMINDERS, 
+SIRI, 
+SPEECH_RECOGNITION, 
+STOREKIT
+```
+
+**不支持的权限（iOS）：**
+
+| 权限 | 原因 |
+|------|------|
+| `readCallLog` | iOS 不允许第三方应用访问通话记录 |
+| `writeCallLog` | iOS 不允许第三方应用写入通话记录 |
+| `answerCall` | iOS 不允许第三方应用接听电话 |
+| `callPhone` | iOS 不允许第三方应用拨打电话 |
+| `readPhoneNumbers` | iOS 不允许第三方应用读取手机号 |
+| `readPhoneState` | iOS 不允许第三方应用读取手机状态 |
+| `readMessages` | iOS 不允许第三方应用读取短信 |
+| `sendMessages` | iOS 不允许第三方应用发送短信 |
+| `receiveSms` | iOS 不允许第三方应用接收短信 |
+| `receiveMms` | iOS 不允许第三方应用接收彩信 |
+| `receiveWapMessages` | iOS 不允许第三方应用接收 WAP 消息 |
+| `readCellMessages` | iOS 不允许第三方应用读取蜂窝消息 |
+| `readHealthData` | iOS 使用独立的 HealthKit，需单独集成 |
+| `manageVoicemail` | iOS 语音邮件是系统功能，不开放 API |
+| 所有 HarmonyOS 专属权限 | iOS 不支持 |
 
 ### 4.3 HarmonyOS 映射
 
-| 逻辑权限 ID | HarmonyOS 字符串 | 说明 |
-|------------|-----------------|------|
-| `camera` | `ohos.permission.CAMERA` | 相机 |
-| `microphone` | `ohos.permission.MICROPHONE` | 麦克风 |
-| `location` | `ohos.permission.LOCATION` | 精确位置 |
-| `approximatelyLocation` | `ohos.permission.APPROXIMATELY_LOCATION` | 模糊位置 |
-| `locationBackground` | `ohos.permission.LOCATION_IN_BACKGROUND` | 后台位置 |
-| `readCalendar` | `ohos.permission.READ_CALENDAR` | 读日历 |
-| `writeCalendar` | `ohos.permission.WRITE_CALENDAR` | 写日历 |
-| `readWholeCalendar` | `ohos.permission.READ_WHOLE_CALENDAR` | 读完整日历 |
-| `writeWholeCalendar` | `ohos.permission.WRITE_WHOLE_CALENDAR` | 写完整日历 |
-| `activityMotion` | `ohos.permission.ACTIVITY_MOTION` | 活动识别 |
-| `readHealthData` | `ohos.permission.READ_HEALTH_DATA` | 健康数据 |
-| `readMedia` | `ohos.permission.READ_MEDIA` | 读媒体 |
-| `mediaLocation` | `ohos.permission.MEDIA_LOCATION` | 媒体位置 |
-| `accessBluetooth` | `ohos.permission.ACCESS_BLUETOOTH` | 蓝牙 |
-| `distributedDataSync` | `ohos.permission.DISTRIBUTED_DATASYNC` | 分布式数据同步 |
-| `readContacts` | `ohos.permission.READ_CONTACTS` | 读联系人 |
-| `writeContacts` | `ohos.permission.WRITE_CONTACTS` | 写联系人 |
-| `readCallLog` | `ohos.permission.READ_CALL_LOG` | 读通话记录 |
-| `writeCallLog` | `ohos.permission.WRITE_CALL_LOG` | 写通话记录 |
-| `answerCall` | `ohos.permission.ANSWER_CALL` | 接听电话 |
-| `callPhone` | `ohos.permission.CALL_PHONE` | 拨打电话 |
-| `readPhoneNumbers` | `ohos.permission.READ_PHONE_NUMBERS` | 读取手机号 |
-| `readPhoneState` | `ohos.permission.READ_PHONE_STATE` | 读取手机状态 |
-| `readMessages` | `ohos.permission.READ_MESSAGES` | 读消息 |
-| `sendMessages` | `ohos.permission.SEND_MESSAGES` | 发消息 |
-| `receiveSms` | `ohos.permission.RECEIVE_SMS` | 收短信 |
-| `receiveMms` | `ohos.permission.RECEIVE_MMS` | 收彩信 |
-| `receiveWapMessages` | `ohos.permission.RECEIVE_WAP_MESSAGES` | 收WAP消息 |
-| `readCellMessages` | `ohos.permission.READ_CELL_MESSAGES` | 读蜂窝消息 |
-| `readAudio` | `ohos.permission.READ_AUDIO` | 读音频 |
-| `writeAudio` | `ohos.permission.WRITE_AUDIO` | 写音频 |
-| `readDocument` | `ohos.permission.READ_DOCUMENT` | 读文档 |
-| `writeDocument` | `ohos.permission.WRITE_DOCUMENT` | 写文档 |
-| `readImageVideo` | `ohos.permission.READ_IMAGEVIDEO` | 读图片视频 |
-| `writeImageVideo` | `ohos.permission.WRITE_IMAGEVIDEO` | 写图片视频 |
-| `getInstalledBundleList` | `ohos.permission.GET_INSTALLED_BUNDLE_LIST` | 查询已安装应用 |
-| `manageVoicemail` | `ohos.permission.MANAGE_VOICEMAIL` | 语音邮件 |
-| `getCurrentLocation` | `ohos.permission.GET_CURRENT_LOCATION` | 获取当前位置 |
-| `startBluetoothDiscovery` | `ohos.permission.START_BLUETOOTH_DISCOVERY` | 蓝牙发现 |
-| `bluetoothLogin` | `ohos.permission.BLUETOOTH_LOGIN` | 蓝牙登录 |
-| `nearlink` | `ohos.permission.ACCESS_NEARLINK` | 星闪 |
-| `wifiConnect` | `ohos.permission.WIFI_CONNECT` | WiFi连接 |
-| `wifiHotspot` | `ohos.permission.WIFI_HOTSPOT` | WiFi热点 |
-| `getWifiInfo` | `ohos.permission.GET_WIFI_INFO` | 获取WiFi信息 |
-| `nfcTag` | `ohos.permission.NFC_TAG` | NFC标签 |
-| `nfcCardEmulation` | `ohos.permission.NFC_CARD_EMULATION` | NFC卡模拟 |
-| `screenShare` | `ohos.permission.SCREEN_SHARE` | 屏幕共享 |
-| `appUsageStats` | `ohos.permission.APP_USAGE_STATS` | 应用使用统计 |
-| `notifications` | `ohos.permission.NOTIFICATION_CONTROLLER` | 通知控制 |
-| `subscribeNotifications` | `ohos.permission.SUBSCRIBE_NOTIFICATION` | 订阅通知 |
-| `deviceManager` | `ohos.permission.DEVICE_MANAGER` | 设备管理器 |
-| `vibrator` | `ohos.permission.VIBRATE` | 振动 |
+> @react-native-ohos/react-native-permissions 提供的 HarmonyOS 权限字符串列表：
+
+| 逻辑权限 ID | HarmonyOS 字符串 |
+|------------|-----------------|
+| `camera` | `ohos.permission.CAMERA` |
+| `microphone` | `ohos.permission.MICROPHONE` |
+| `location` | `ohos.permission.LOCATION` |
+| `approximatelyLocation` | `ohos.permission.APPROXIMATELY_LOCATION` |
+| `locationBackground` | `ohos.permission.LOCATION_IN_BACKGROUND` |
+| `readCalendar` | `ohos.permission.READ_CALENDAR` |
+| `writeCalendar` | `ohos.permission.WRITE_CALENDAR` |
+| `readWholeCalendar` | `ohos.permission.READ_WHOLE_CALENDAR` |
+| `writeWholeCalendar` | `ohos.permission.WRITE_WHOLE_CALENDAR` |
+| `activityMotion` | `ohos.permission.ACTIVITY_MOTION` |
+| `readHealthData` | `ohos.permission.READ_HEALTH_DATA` |
+| `readMedia` | `ohos.permission.READ_MEDIA` |
+| `mediaLocation` | `ohos.permission.MEDIA_LOCATION` |
+| `accessBluetooth` | `ohos.permission.ACCESS_BLUETOOTH` |
+| `distributedDataSync` | `ohos.permission.DISTRIBUTED_DATASYNC` |
+| `readContacts` | `ohos.permission.READ_CONTACTS` |
+| `writeContacts` | `ohos.permission.WRITE_CONTACTS` |
+| `readCallLog` | `ohos.permission.READ_CALL_LOG` |
+| `writeCallLog` | `ohos.permission.WRITE_CALL_LOG` |
+| `answerCall` | `ohos.permission.ANSWER_CALL` |
+| `callPhone` | `ohos.permission.CALL_PHONE` |
+| `readPhoneNumbers` | `ohos.permission.READ_PHONE_NUMBERS` |
+| `readPhoneState` | `ohos.permission.READ_PHONE_STATE` |
+| `readMessages` | `ohos.permission.READ_MESSAGES` |
+| `sendMessages` | `ohos.permission.SEND_MESSAGES` |
+| `receiveSms` | `ohos.permission.RECEIVE_SMS` |
+| `receiveMms` | `ohos.permission.RECEIVE_MMS` |
+| `receiveWapMessages` | `ohos.permission.RECEIVE_WAP_MESSAGES` |
+| `readCellMessages` | `ohos.permission.READ_CELL_MESSAGES` |
+| `readAudio` | `ohos.permission.READ_AUDIO` |
+| `writeAudio` | `ohos.permission.WRITE_AUDIO` |
+| `readDocument` | `ohos.permission.READ_DOCUMENT` |
+| `writeDocument` | `ohos.permission.WRITE_DOCUMENT` |
+| `readImageVideo` | `ohos.permission.READ_IMAGEVIDEO` |
+| `writeImageVideo` | `ohos.permission.WRITE_IMAGEVIDEO` |
+| `getInstalledBundleList` | `ohos.permission.GET_INSTALLED_BUNDLE_LIST` |
+| `manageVoicemail` | `ohos.permission.MANAGE_VOICEMAIL` |
+| `getCurrentLocation` | `ohos.permission.GET_CURRENT_LOCATION` |
+| `startBluetoothDiscovery` | `ohos.permission.START_BLUETOOTH_DISCOVERY` |
+| `bluetoothLogin` | `ohos.permission.BLUETOOTH_LOGIN` |
+| `nearlink` | `ohos.permission.ACCESS_NEARLINK` |
+| `wifiConnect` | `ohos.permission.WIFI_CONNECT` |
+| `wifiHotspot` | `ohos.permission.WIFI_HOTSPOT` |
+| `getWifiInfo` | `ohos.permission.GET_WIFI_INFO` |
+| `nfcTag` | `ohos.permission.NFC_TAG` |
+| `nfcCardEmulation` | `ohos.permission.NFC_CARD_EMULATION` |
+| `screenShare` | `ohos.permission.SCREEN_SHARE` |
+| `appUsageStats` | `ohos.permission.APP_USAGE_STATS` |
+| `notifications` | `ohos.permission.NOTIFICATION_CONTROLLER` |
+| `subscribeNotifications` | `ohos.permission.SUBSCRIBE_NOTIFICATION` |
+| `deviceManager` | `ohos.permission.DEVICE_MANAGER` |
+| `vibrator` | `ohos.permission.VIBRATE` |
+
+**HarmonyOS 完整权限列表（@react-native-ohos/react-native-permissions）：**
+```
+LOCATION_IN_BACKGROUND, 
+LOCATION, 
+APPROXIMATELY_LOCATION, 
+CAMERA,
+MICROPHONE, 
+READ_CALENDAR, 
+WRITE_CALENDAR, 
+READ_WHOLE_CALENDAR,
+WRITE_WHOLE_CALENDAR, 
+ACTIVITY_MOTION, 
+READ_HEALTH_DATA,
+DISTRIBUTED_DATASYNC, 
+ANSWER_CALL, 
+MANAGE_VOICEMAIL, 
+READ_CONTACTS,
+WRITE_CONTACTS, 
+READ_CALL_LOG, 
+WRITE_CALL_LOG, 
+READ_CELL_MESSAGES,
+READ_MESSAGES, 
+RECEIVE_MMS, 
+RECEIVE_SMS, 
+RECEIVE_WAP_MESSAGES,
+SEND_MESSAGES, 
+WRITE_AUDIO, 
+READ_AUDIO, 
+READ_DOCUMENT, 
+WRITE_DOCUMENT,
+READ_MEDIA, 
+WRITE_MEDIA, 
+WRITE_IMAGEVIDEO, 
+READ_IMAGEVIDEO,
+MEDIA_LOCATION, 
+APP_TRACKING_CONSENT, 
+GET_INSTALLED_BUNDLE_LIST,
+ACCESS_BLUETOOTH
+```
 
 ---
 
@@ -442,7 +576,7 @@ export const permission: PermissionProvider = {
 };
 ```
 
-### 4.2 后端注入
+### 5.2 后端注入
 
 ```typescript
 /**
@@ -453,9 +587,9 @@ export function installPermission(provider: PermissionProvider): void;
 
 ---
 
-## 5. 默认实现（@react-native-ohos/react-native-permissions）
+## 6. 默认实现（@react-native-ohos/react-native-permissions）
 
-### 5.1 实现类
+### 6.1 实现类
 
 ```typescript
 class ItcPermission implements PermissionProvider {
@@ -475,19 +609,19 @@ class ItcPermission implements PermissionProvider {
 }
 ```
 
-### 5.2 状态映射
+### 6.2 状态映射
 
-| HarmonyOS 状态 | @itc/permission 状态 |
-|---------------|---------------------|
-| `AUTHORIZED` | `'GRANTED'` |
+| react-native-permissions 状态 | @itc/permission 状态 |
+|------------------------------|---------------------|
+| `GRANTED` | `'GRANTED'` |
 | `DENIED` | `'DENIED'` |
-| `NOT_DETERMINED` | `'DENIED'` |
-| `RESTRICTED` | `'LIMITED'` |
-| `UNAUTHORIZED` | `'BLOCKED'` |
+| `UNAVAILABLE` | `'UNAVAILABLE'` |
+| `BLOCKED` | `'BLOCKED'` |
+| `LIMITED` | `'LIMITED'` |
 
 ---
 
-## 6. Noop 实现
+## 7. Noop 实现
 
 测试或特殊环境下使用：
 
@@ -511,7 +645,7 @@ class NoopPermissionProvider implements PermissionProvider {
 
 ---
 
-## 7. 平台差异
+## 8. 平台差异
 
 | 平台 | 实现包 | Autolink | API 版本 |
 |------|--------|----------|----------|
@@ -521,7 +655,7 @@ class NoopPermissionProvider implements PermissionProvider {
 
 > **注意**：具体权限可能需要更高的系统版本，例如 Android 13+ 所需的细粒度媒体权限（如 `READ_MEDIA_IMAGES`）、iOS 14+ 所需的本地网络权限等。
 
-### 7.1 HarmonyOS 特殊说明
+### 8.1 HarmonyOS 特殊说明
 
 1. **不支持 Autolink**：版本 ~5.4.3 需手动配置
 2. **权限需在 module.json5 中声明**：
@@ -555,7 +689,7 @@ class NoopPermissionProvider implements PermissionProvider {
    - 建议句式：`用于某事`
    - 示例：`用于扫码拍照`
 
-### 7.2 API 支持差异
+### 8.2 API 支持差异
 
 | API | Android | iOS | HarmonyOS |
 |-----|---------|-----|-----------|
@@ -568,7 +702,7 @@ class NoopPermissionProvider implements PermissionProvider {
 | `requestNotifications` | ✅ | ✅ | ✅ |
 | `openPhotoPicker` | ❌ | ✅ | ✅ |
 
-### 7.3 蓝牙权限变更（API 13+）
+### 8.3 蓝牙权限变更（API 13+）
 
 从 HarmonyOS API 13 开始，原有的蓝牙相关权限组不再使用，统一改为"设备发现和连接"权限组：
 
@@ -578,7 +712,7 @@ class NoopPermissionProvider implements PermissionProvider {
 
 ---
 
-## 8. 权限申请流程
+## 9. 权限申请流程
 
 ```
 check(permission)
@@ -620,7 +754,7 @@ check(permission)
 
 ---
 
-## 9. 依赖关系
+## 10. 依赖关系
 
 **dependencies：**
 - `react-native-permissions@^5.0.0`（iOS/Android）
@@ -634,9 +768,9 @@ check(permission)
 
 ---
 
-## 10. 使用示例
+## 11. 使用示例
 
-### 10.1 检查单个权限
+### 11.1 检查单个权限
 
 ```typescript
 import { permission, PERMISSIONS, type PermissionStatus } from '@itc/permission';
@@ -662,7 +796,7 @@ async function checkCameraPermission() {
 }
 ```
 
-### 10.2 请求单个权限
+### 11.2 请求单个权限
 
 ```typescript
 import { permission, PERMISSIONS } from '@itc/permission';
@@ -682,7 +816,7 @@ async function requestCameraPermission() {
 }
 ```
 
-### 10.3 批量检查权限
+### 11.3 批量检查权限
 
 ```typescript
 import { permission, PERMISSIONS } from '@itc/permission';
@@ -702,7 +836,7 @@ async function checkMultiplePermissions() {
 }
 ```
 
-### 10.4 批量请求权限
+### 11.4 批量请求权限
 
 ```typescript
 import { permission, PERMISSIONS } from '@itc/permission';
@@ -727,7 +861,7 @@ async function requestMultiplePermissions() {
 }
 ```
 
-### 10.5 请求通知权限
+### 11.5 请求通知权限
 
 ```typescript
 import { permission } from '@itc/permission';
@@ -752,7 +886,7 @@ async function requestNotificationPermission() {
 }
 ```
 
-### 10.6 引导用户开启权限
+### 11.6 引导用户开启权限
 
 ```typescript
 import { permission, PERMISSIONS, type PermissionStatus } from '@itc/permission';
@@ -801,7 +935,7 @@ async function takePhoto() {
 }
 ```
 
-### 10.7 切换权限后端（测试场景）
+### 11.7 切换权限后端（测试场景）
 
 ```typescript
 import { installPermission } from '@itc/permission';
@@ -813,7 +947,7 @@ installPermission(new NoopPermissionProvider());
 
 ---
 
-## 11. 导出清单
+## 12. 导出清单
 
 ```typescript
 // 权限代理
@@ -836,7 +970,7 @@ export { PERMISSIONS };
 
 ---
 
-## 12. 注意事项
+## 13. 注意事项
 
 1. **统一权限标识**：业务层使用 `PERMISSIONS` 中的常量（如 `CAMERA_AIH`），不要直接使用平台特定字符串（如 `ohos.permission.CAMERA`）
 2. **权限映射**：权限提供者在内部将逻辑标识转换为平台特定字符串，iOS/Android/HarmonyOS 三端字符串完全不同
@@ -849,9 +983,9 @@ export { PERMISSIONS };
 
 ---
 
-## 13. 附录：实现说明
+## 14. 附录：实现说明
 
-### 13.1 权限映射实现建议
+### 14.1 权限映射实现建议
 
 权限提供者在内部实现时，应根据当前平台将逻辑权限 ID 转换为平台特定字符串：
 
@@ -890,7 +1024,7 @@ async function check(permId: string): Promise<PermissionStatus> {
 }
 ```
 
-### 13.2 HarmonyOS 额外配置
+### 14.2 HarmonyOS 额外配置
 
 HarmonyOS 除了 JS 层调用外，还需要在原生配置文件中声明权限：
 
@@ -936,7 +1070,7 @@ HarmonyOS 除了 JS 层调用外，还需要在原生配置文件中声明权限
 }
 ```
 
-### 13.3 后台位置权限特殊说明
+### 14.3 后台位置权限特殊说明
 
 `locationBackground` 权限由于安全隐私要求，不能通过弹窗授予，必须引导用户手动在设置中开启：
 

@@ -2,15 +2,59 @@
   "string": [
     {
       "name": "module_desc",
-      "value": "module description"
+      "value": "OpenOA Demo Application"
     },
     {
       "name": "EntryAbility_desc",
-      "value": "description"
+      "value": "OpenOA Entry Ability"
     },
     {
       "name": "EntryAbility_label",
-      "value": "label"
+      "value": "OpenOA"
+    },
+    {
+      "name": "reason_approximately_location",
+      "value": "用于粗略定位"
+    },
+    {
+      "name": "reason_camera",
+      "value": "用于拍照和视频通话"
+    },
+    {
+      "name": "reason_microphone",
+      "value": "用于语音通话和录音"
+    },
+    {
+      "name": "reason_read_calendar",
+      "value": "用于读取日历事件"
+    },
+    {
+      "name": "reason_write_calendar",
+      "value": "用于创建和修改日历事件"
+    },
+    {
+      "name": "reason_activity_motion",
+      "value": "用于活动识别和运动记录"
+    },
+    {
+      "name": "reason_read_health_data",
+      "value": "用于访问健康数据"
+    },
+    {
+      "name": "reason_distributed_datasync",
+      "value": "用于分布式数据同步"
+    },
+    {
+      "name": "reason_read_media",
+      "value": "用于读取媒体文件"
+    },
+    {
+      "name": "reason_media_location",
+      "value": "用于读取媒体位置信息"
+    },
+    {
+      "name": "reason_access_bluetooth",
+      "value": "用于蓝牙连接"
     }
   ]
 }

@@ -11,7 +11,7 @@ import type {
 } from './types';
 
 // HarmonyOS 平台检测
-const isHarmony = Platform.OS === 'harmony';
+const isHarmony = (Platform.OS as string) === 'harmony';
 
 // CodePush 在 HarmonyOS 上可能不可用，添加兼容处理
 const hasCodePush = typeof codePush !== 'undefined' && codePush !== null;
