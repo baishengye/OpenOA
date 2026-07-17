@@ -20,17 +20,21 @@
  */
 
 import type {
+  LocationAccuracy,
+  LocationAccuracyOptions,
   PermissionProvider,
   PermissionStatus,
   NotificationPermissionResult,
   NotificationOptions,
 } from './types';
 import { ITC_PERMISSIONS, ITC_RESULTS } from './permissions';
-import { ItcPermission } from './ItcPermission';
+import { ItcPermission } from './platform';
 
 // ── 导出类型 ─────────────────────────────────────────────────────────────────
 
 export type {
+  LocationAccuracy,
+  LocationAccuracyOptions,
   PermissionProvider,
   PermissionStatus,
   NotificationPermissionResult,
@@ -82,5 +86,37 @@ export const permission: PermissionProvider = {
       });
     }
     return _provider.requestNotifications(options);
+  },
+  // ── Android 专用方法 ─────────────────────────────────────────────────────
+  canScheduleExactAlarms: () => {
+    if (!_provider.canScheduleExactAlarms) {
+      return Promise.resolve(false);
+    }
+    return _provider.canScheduleExactAlarms();
+  },
+  // ── iOS 专用方法 ─────────────────────────────────────────────────────────
+  checkLocationAccuracy: () => {
+    if (!_provider.checkLocationAccuracy) {
+      return Promise.resolve<LocationAccuracy>('reduced');
+    }
+    return _provider.checkLocationAccuracy();
+  },
+  requestLocationAccuracy: (options?: { purposeKey?: string }) => {
+    if (!_provider.requestLocationAccuracy) {
+      return Promise.resolve<LocationAccuracy>('reduced');
+    }
+    return _provider.requestLocationAccuracy(options);
+  },
+  openContactPicker: () => {
+    if (!_provider.openContactPicker) {
+      return Promise.resolve(false);
+    }
+    return _provider.openContactPicker();
+  },
+  openPhotoPicker: () => {
+    if (!_provider.openPhotoPicker) {
+      return Promise.resolve(false);
+    }
+    return _provider.openPhotoPicker();
   },
 };

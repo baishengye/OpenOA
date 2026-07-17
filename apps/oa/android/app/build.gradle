@@ -80,13 +80,13 @@ def jscFlavor = 'org.webkit:android-jsc:+'
 android {
     ndkVersion rootProject.ext.ndkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
-    compileSdk rootProject.ext.compileSdkVersion
+    compileSdk 36
 
     namespace "com.itc.oa"
     defaultConfig {
         applicationId "com.itc.oa"
-        minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
+        minSdkVersion 28
+        targetSdk 36
         versionCode 1
         versionName "1.0"
     }

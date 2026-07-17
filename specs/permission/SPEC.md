@@ -19,8 +19,8 @@
 
 | 平台 | npm 包 | 版本 | 说明 |
 |------|--------|------|------|
-| iOS | `react-native-permissions` | 5.0.0+ | 官方包 |
-| Android | `react-native-permissions` | 5.0.0+ | 官方包 |
+| iOS | `react-native-permissions` | 5.6.0+ | 官方包，支持 LocationAccuracy、Photo Picker 等新 API |
+| Android | `react-native-permissions` | 5.6.0+ | 官方包，支持精确闹钟等新 API |
 | HarmonyOS | `@react-native-ohos/react-native-permissions` | ~5.4.3 | RNOH 移植包 |
 
 ---
@@ -51,7 +51,38 @@ interface PermissionProvider {
 
   /** 请求通知权限（部分平台） */
   requestNotifications?(options?: NotificationOptions): Promise<NotificationPermissionResult>;
+
+  // ── Android 5.6.0+ 专用方法 ──────────────────────────────────────────────
+
+  /** 检查是否可以设置精确闹钟（Android 12+） */
+  canScheduleExactAlarms?(): Promise<boolean>;
+
+  // ── iOS 5.6.0+ 专用方法 ──────────────────────────────────────────────────
+
+  /** 检查位置精确度（iOS 14+） */
+  checkLocationAccuracy?(): Promise<LocationAccuracy>;
+
+  /** 请求位置精确度（iOS 14+） */
+  requestLocationAccuracy?(options?: { purposeKey?: string }): Promise<LocationAccuracy>;
+
+  /** 打开联系人选择器（iOS 18+） */
+  openContactPicker?(): Promise<boolean>;
+
+  /** 打开照片选择器（iOS 14+） */
+  openPhotoPicker?(): Promise<boolean>;
 }
+```
+
+### 2.1.1 位置精确度类型
+
+```typescript
+type LocationAccuracy = 'full' | 'reduced';
+```
+
+| 值 | 说明 |
+|----|------|
+| `full` | 完整精确位置 |
+| `reduced` | 降低精确度（节能模式） |
 ```
 
 ### 2.2 权限状态类型
@@ -700,7 +731,11 @@ class NoopPermissionProvider implements PermissionProvider {
 | `openSettings` | ✅ | ✅ | ✅ |
 | `checkNotifications` | ✅ | ✅ | ✅ |
 | `requestNotifications` | ✅ | ✅ | ✅ |
-| `openPhotoPicker` | ❌ | ✅ | ✅ |
+| `canScheduleExactAlarms` | ✅ (Android 12+) | ❌ | ❌ |
+| `checkLocationAccuracy` | ❌ | ✅ (iOS 14+) | ❌ |
+| `requestLocationAccuracy` | ❌ | ✅ (iOS 14+) | ❌ |
+| `openContactPicker` | ❌ | ✅ (iOS 18+) | ❌ |
+| `openPhotoPicker` | ❌ | ✅ (iOS 14+) | ❌ |
 
 ### 8.3 蓝牙权限变更（API 13+）
 
@@ -757,7 +792,7 @@ check(permission)
 ## 10. 依赖关系
 
 **dependencies：**
-- `react-native-permissions@^5.0.0`（iOS/Android）
+- `react-native-permissions@^5.6.0`（iOS/Android）
 - `@react-native-ohos/react-native-permissions@~5.4.3`（HarmonyOS）
 
 **peerDependencies：**
@@ -945,6 +980,74 @@ import { NoopPermissionProvider } from '@itc/permission';
 installPermission(new NoopPermissionProvider());
 ```
 
+### 11.8 检查位置精确度（iOS 14+）
+
+```typescript
+import { permission, type LocationAccuracy } from '@itc/permission';
+
+async function checkLocationAccuracyStatus() {
+  const accuracy = await permission.checkLocationAccuracy!();
+  console.log('位置精确度:', accuracy);
+  // 'full' - 完整精确位置
+  // 'reduced' - 降低精确度（节能模式）
+}
+```
+
+### 11.9 请求位置精确度（iOS 14+）
+
+```typescript
+import { permission } from '@itc/permission';
+
+async function requestFullLocationAccuracy() {
+  const accuracy = await permission.requestLocationAccuracy!({
+    purposeKey: '高精度定位用途说明',
+  });
+  console.log('位置精确度:', accuracy);
+}
+```
+
+### 11.10 打开照片选择器（iOS 14+）
+
+```typescript
+import { permission } from '@itc/permission';
+
+async function openPhotoPicker() {
+  // 无需权限，直接打开系统照片选择器
+  const success = await permission.openPhotoPicker!();
+  if (success) {
+    console.log('照片选择器已打开');
+  }
+}
+```
+
+### 11.11 打开联系人选择器（iOS 18+）
+
+```typescript
+import { permission } from '@itc/permission';
+
+async function openContactPicker() {
+  // 无需权限，直接打开系统联系人选择器
+  const success = await permission.openContactPicker!();
+  if (success) {
+    console.log('联系人选择器已打开');
+  }
+}
+```
+
+### 11.12 检查精确闹钟权限（Android 12+）
+
+```typescript
+import { permission } from '@itc/permission';
+
+async function checkExactAlarmPermission() {
+  const canSchedule = await permission.canScheduleExactAlarms!();
+  if (!canSchedule) {
+    console.log('无法设置精确闹钟，请前往设置开启');
+    // 引导用户打开设置
+    await permission.openSettings();
+  }
+}
+
 ---
 
 ## 12. 导出清单
@@ -962,24 +1065,27 @@ export type {
   PermissionStatus,
   NotificationPermissionResult,
   NotificationOptions,
+  LocationAccuracy,
+  LocationAccuracyOptions,
 };
 
 // 权限常量（跨平台统一标识）
-export { PERMISSIONS };
+export { ITC_PERMISSIONS, ITC_RESULTS };
 ```
 
 ---
 
 ## 13. 注意事项
 
-1. **统一权限标识**：业务层使用 `PERMISSIONS` 中的常量（如 `CAMERA_AIH`），不要直接使用平台特定字符串（如 `ohos.permission.CAMERA`）
+1. **统一权限标识**：业务层使用 `ITC_PERMISSIONS` 中的常量（如 `ITC_PERMISSIONS.ANDROID.CAMERA`），不要直接使用平台特定字符串
 2. **权限映射**：权限提供者在内部将逻辑标识转换为平台特定字符串，iOS/Android/HarmonyOS 三端字符串完全不同
 3. **HarmonyOS 原生配置**：必须在 `module.json5` 中声明所需权限，并配置 `reason` 字符串
 4. **BLOCKED 处理**：权限被永久拒绝时，必须引导用户跳转设置页面
 5. **批量请求**：使用 `requestMultiple` 可以一次请求多个权限，提升用户体验
 6. **状态检查**：在请求权限前先检查状态，避免重复弹窗
-7. **平台检测**：部分 API（如 `checkNotifications`）在某些平台可能不存在
+7. **平台检测**：部分 API（如 `checkNotifications`）在某些平台可能不存在，使用前需检查方法是否存在
 8. **零依赖**：@itc/permission 不依赖 @itc/base，保持轻量
+9. **新 API 兼容性**：5.6.0 新增的 `canScheduleExactAlarms`、`checkLocationAccuracy`、`requestLocationAccuracy`、`openContactPicker`、`openPhotoPicker` 方法在不支持的平台会返回默认值或 `false`，使用前建议检查方法是否存在
 
 ---
 
