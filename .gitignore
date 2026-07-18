@@ -55,6 +55,8 @@ harmony/local.properties
 *.log
 coverage/
 .vscode/
+.changeset/
+.claude/
 .idea/
 .artifacts/
 
