@@ -75,10 +75,8 @@ const IOS_PERMISSIONS = Object.freeze({
   CAMERA: 'ios.permission.CAMERA',
   CONTACTS: 'ios.permission.CONTACTS',
   FACE_ID: 'ios.permission.FACE_ID',
-  FILES: 'ios.permission.FILES',
   LOCATION_ALWAYS: 'ios.permission.LOCATION_ALWAYS',
   LOCATION_WHEN_IN_USE: 'ios.permission.LOCATION_WHEN_IN_USE',
-  LOCAL_NETWORK: 'ios.permission.LOCAL_NETWORK',
   MEDIA_LIBRARY: 'ios.permission.MEDIA_LIBRARY',
   MICROPHONE: 'ios.permission.MICROPHONE',
   MOTION: 'ios.permission.MOTION',
@@ -128,7 +126,7 @@ const HARMONY_PERMISSIONS = Object.freeze({
   MEDIA_LOCATION: 'ohos.permission.MEDIA_LOCATION',
   APP_TRACKING_CONSENT: 'ohos.permission.APP_TRACKING_CONSENT',
   GET_INSTALLED_BUNDLE_LIST: 'ohos.permission.GET_INSTALLED_BUNDLE_LIST',
-  ACCESS_BLUETOOTH: 'ohos.permission.ACCESS_BLUETOOTH',
+  ACCESS_BLUETOOTH: 'ohos.permission.ACCESS_BLUETOOTH'
 } as const);
 
 // ── 统一导出 ITC_PERMISSIONS ────────────────────────────────────────────────

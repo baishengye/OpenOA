@@ -80,11 +80,10 @@ const PLATFORM_PERMISSIONS = {
     { key: ITC_PERMISSIONS.IOS.MOTION, label: '运动与健身' },
     { key: ITC_PERMISSIONS.IOS.APP_TRACKING_TRANSPARENCY, label: '追踪透明化' },
     { key: ITC_PERMISSIONS.IOS.FACE_ID, label: 'Face ID' },
-    { key: ITC_PERMISSIONS.IOS.SIRI, label: 'Siri' },
+    // 注意：Siri 权限需要 com.apple.developer.siri entitlement，应用未配置会崩溃
+    // { key: ITC_PERMISSIONS.IOS.SIRI, label: 'Siri' },
     { key: ITC_PERMISSIONS.IOS.STOREKIT, label: 'StoreKit' },
     { key: ITC_PERMISSIONS.IOS.BLUETOOTH, label: '蓝牙' },
-    { key: ITC_PERMISSIONS.IOS.LOCAL_NETWORK, label: '本地网络' },
-    { key: ITC_PERMISSIONS.IOS.FILES, label: '文件访问' },
   ],
   HARMONY: [
     { key: ITC_PERMISSIONS.HARMONY.CAMERA, label: '相机' },

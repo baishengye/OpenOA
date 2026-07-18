@@ -24,6 +24,7 @@
     "oa:bundle-harmony": "pnpm --filter @itc-oa/app bundle-harmony",
     "oa:clean": "pnpm --filter @itc-oa/app clean",
     "oa:uninstall": "pnpm store prune && node scripts/clean-node-modules.js",
+    "ios-pod-install": "cd apps/oa/ios && bundle exec pod install",
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "pnpm build && changeset publish"

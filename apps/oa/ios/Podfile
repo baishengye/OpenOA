@@ -26,15 +26,21 @@ setup_permissions([
   'LocationAlways',
   'Contacts',
   'Calendars',
+  'CalendarsWriteOnly',
   'PhotoLibrary',
+  'PhotoLibraryAddOnly',
   'MediaLibrary',
   'Reminders',
   'SpeechRecognition',
   'Motion',
   'AppTrackingTransparency',
   'FaceID',
-  'Siri',
+  # 注意：Siri 权限需要 com.apple.developer.siri entitlement（需 Apple 审核批准），未配置会崩溃
+  # 'Siri',
   'StoreKit',
+  'Bluetooth',
+  "LocalNetwork",
+  "Files"
 ])
 
 linkage = ENV['USE_FRAMEWORKS']

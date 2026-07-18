@@ -73,10 +73,16 @@
 	<string>需要访问HomeKit</string>
 	<key>NSNearbyInteractionUsageDescription</key>
 	<string>需要使用近距离交互功能</string>
+	<key>NSRemindersUsageDescription</key>
+	<string>需要访问提醒事项</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>需要使用语音识别功能</string>
 	<key>NSSiriUsageDescription</key>
 	<string>需要使用 Siri 功能</string>
 	<key>NSUserTrackingUsageDescription</key>
 	<string>需要追踪您的活动以提供个性化广告体验</string>
+	<key>SKStoreProductUsageDescription</key>
+	<string>需要访问 App Store 功能</string>
 	<key>UISupportsDocumentBrowser</key>
 	<true/>
 	<key>NSFileProviderUsageDescription</key>
