@@ -5,8 +5,37 @@ require Pod::Executable.execute_command('node', ['-p',
     {paths: [process.argv[1]]},
   )', __dir__]).strip
 
+# react-native-permissions setup script
+def node_require(script)
+  require Pod::Executable.execute_command('node', ['-p',
+    "require.resolve(
+      '#{script}',
+      {paths: [process.argv[1]]},
+    )", __dir__]).strip
+end
+node_require('react-native-permissions/scripts/setup.rb')
+
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
+
+# react-native-permissions: 注册权限处理器
+setup_permissions([
+  'Camera',
+  'Microphone',
+  'LocationWhenInUse',
+  'LocationAlways',
+  'Contacts',
+  'Calendars',
+  'PhotoLibrary',
+  'MediaLibrary',
+  'Reminders',
+  'SpeechRecognition',
+  'Motion',
+  'AppTrackingTransparency',
+  'FaceID',
+  'Siri',
+  'StoreKit',
+])
 
 linkage = ENV['USE_FRAMEWORKS']
 if linkage != nil

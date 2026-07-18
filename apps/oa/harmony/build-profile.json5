@@ -5,13 +5,13 @@
         "name": "default",
         "type": "HarmonyOS",
         "material": {
-          "certpath": "/Users/baishengye/.ohos/config/default_harmony_H5O_laxgI9yj-9Okf8-ZMrgMh2gTig7HQfWUzWg0LGc=.cer",
+          "certpath": "/Users/baishengye/.ohos/config/default_harmony_QJlW0C1OurufEguwdamCsn7WyF2btVTjrdXqqVB4tQU=.cer",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001BE8C94509230D22E7B2CDDD306DAA6C258BE72E8608925743E9DDB3C83605A386516C3D9DAF9960",
-          "profile": "/Users/baishengye/.ohos/config/default_harmony_H5O_laxgI9yj-9Okf8-ZMrgMh2gTig7HQfWUzWg0LGc=.p7b",
+          "keyPassword": "0000001BD9DFE4D87C35871FBBAB93F128FFCD8BD3077E53E677C70CDD2E12D92E4246D6D4F59D5A1ECD7F",
+          "profile": "/Users/baishengye/.ohos/config/default_harmony_QJlW0C1OurufEguwdamCsn7WyF2btVTjrdXqqVB4tQU=.p7b",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "/Users/baishengye/.ohos/config/default_harmony_H5O_laxgI9yj-9Okf8-ZMrgMh2gTig7HQfWUzWg0LGc=.p12",
-          "storePassword": "0000001BCC849816DEE7AEA0A4C2E5A7265D9D27046C4B0DDF7F16018113FE7573D3CED3D3C9E448020194"
+          "storeFile": "/Users/baishengye/.ohos/config/default_harmony_QJlW0C1OurufEguwdamCsn7WyF2btVTjrdXqqVB4tQU=.p12",
+          "storePassword": "0000001B93CB994C8FAFABAF0101A116C975BF62CB143593D43A1236B22CDFB28906EF48E1EE708BCF9F8C"
         }
       }
     ],

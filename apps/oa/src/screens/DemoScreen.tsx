@@ -12,11 +12,12 @@ import { UikitTab } from './demo/UikitTab';
 import { PushTab } from './demo/PushTab';
 import { ImTab } from './demo/ImTab';
 import { FlashListTab } from './demo/FlashListTab';
+import { PermissionTab } from './demo/PermissionTab';
 import { describe, shared } from './demo/shared';
 import type { RunFn } from './demo/shared';
 
-type TabKey = 'caps' | 'auth' | 'key' | 'storage' | 'db' | 'hotfix' | 'uikit' | 'push' | 'im' | 'flashlist';
-const TAB_KEYS: TabKey[] = ['caps', 'auth', 'key', 'storage', 'db', 'hotfix', 'uikit', 'push', 'im', 'flashlist'];
+type TabKey = 'caps' | 'auth' | 'key' | 'storage' | 'db' | 'hotfix' | 'uikit' | 'push' | 'im' | 'flashlist' | 'permission';
+const TAB_KEYS: TabKey[] = ['caps', 'auth', 'key', 'storage', 'db', 'hotfix', 'uikit', 'push', 'im', 'flashlist', 'permission'];
 const TAB_LABELS: Record<TabKey, string> = {
   caps:      '能力',
   auth:      '认证',
@@ -28,6 +29,7 @@ const TAB_LABELS: Record<TabKey, string> = {
   push:      '推送',
   im:        'IM',
   flashlist: '列表',
+  permission:'权限',
 };
 
 export function DemoScreen(): React.JSX.Element {
@@ -72,25 +74,26 @@ export function DemoScreen(): React.JSX.Element {
     // 其他 tab 用 ScrollView 包装
     return (
       <ScrollView contentContainerStyle={styles.container}>
-        {key === 'caps'    && <CapsTab    {...tabProps} />}
-        {key === 'auth'    && <AuthTab    {...tabProps} />}
-        {key === 'key'     && <KeyTab     {...tabProps} />}
-        {key === 'storage' && <StorageTab busy={busy} />}
-        {key === 'db'      && <DbTab      {...tabProps} />}
-        {key === 'hotfix'  && <HotfixTab  {...tabProps} />}
-        {key === 'push'    && <PushTab    {...tabProps} />}
-        {key === 'im'      && <ImTab      {...tabProps} />}
+        {key === 'caps'       && <CapsTab       {...tabProps} />}
+        {key === 'auth'       && <AuthTab       {...tabProps} />}
+        {key === 'key'        && <KeyTab        {...tabProps} />}
+        {key === 'storage'    && <StorageTab    busy={busy} />}
+        {key === 'db'         && <DbTab         {...tabProps} />}
+        {key === 'hotfix'     && <HotfixTab     {...tabProps} />}
+        {key === 'push'       && <PushTab       {...tabProps} />}
+        {key === 'im'         && <ImTab         {...tabProps} />}
+        {key === 'permission' && <PermissionTab busy={busy} append={append} />}
 
         {busy && <ActivityIndicator style={styles.spinner} />}
 
         <View style={shared.card}>
-          <Text style={shared.cardTitle}>日志</Text>
+          <Text style={shared.cardTitle}>日志（可复制）</Text>
           {log.length === 0 ? (
-            <Text style={shared.mono}>—</Text>
+            <Text style={shared.mono} selectable>—</Text>
           ) : (
-            log.map((l, i) => (
-              <Text key={`${i}-${l}`} style={shared.mono}>{l}</Text>
-            ))
+            <Text style={shared.mono} selectable>
+              {log.join('\n')}
+            </Text>
           )}
         </View>
       </ScrollView>
