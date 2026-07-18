@@ -161,9 +161,42 @@ async function toResult<T>(promise: Promise<T>, module?: string): Promise<Result
 
 ```typescript
 type ItcPlatform = 'android' | 'ios' | 'harmony';
+
+/** 主版本号，如 17、18 */
+type MajorVersion = number;
+
+/** 次版本号，如 5 */
+type MinorVersion = number;
+
+/** 补丁版本号，如 0 */
+type PatchVersion = number;
+
+/** 平台版本信息 */
+interface PlatformVersion {
+  /** 版本号数字，如 170500（iOS 17.5.0）、3300（Android 13.0.0） */
+  readonly code: number;
+  /** 主版本号，如 17、13 */
+  readonly major: MajorVersion;
+  /** 次版本号，如 5 */
+  readonly minor: MinorVersion;
+  /** 补丁版本号，如 0 */
+  readonly patch: PatchVersion;
+  /** 版本字符串，如 "17.5.0"、"13.0.0"、"4.2.0" */
+  readonly string: string;
+  /** 是否为指定版本（精确匹配） */
+  is(version: string | number): boolean;
+  /** 是否大于等于指定版本 */
+  gte(version: string | number): boolean;
+  /** 是否大于指定版本 */
+  gt(version: string | number): boolean;
+  /** 是否小于等于指定版本 */
+  lte(version: string | number): boolean;
+  /** 是否小于指定版本 */
+  lt(version: string | number): boolean;
+}
 ```
 
-### 4.2 导出 API
+### 4.2 平台判定 API
 
 ```typescript
 const currentPlatform: ItcPlatform;
@@ -181,6 +214,53 @@ function select<T>(branches: {
 **`select()` 语义：**
 - 按 `currentPlatform` 返回对应分支值
 - 理论上永不回退（固定三端）
+
+### 4.3 版本检测 API
+
+```typescript
+/** iOS 版本信息（基于 Platform.Version） */
+const iosVersion: PlatformVersion;
+
+/** Android 版本信息（基于 Platform.Version） */
+const androidVersion: PlatformVersion;
+
+/** HarmonyOS 版本信息（RNOH Platform.Version） */
+const harmonyVersion: PlatformVersion;
+
+/** 当前平台的版本信息 */
+const currentVersion: PlatformVersion;
+```
+
+**版本号说明：**
+- iOS：`Platform.Version` 返回如 `17.5` → 内部存储为 `17500` 或 `170500`
+- Android：`Platform.Version` 返回如 `33` → 内部存储为 `3300`
+- HarmonyOS：`Platform.Version` 通常返回 `0`，回退到默认值
+
+**使用示例：**
+
+```typescript
+import { iosVersion, androidVersion, currentVersion, isIOS } from '@itc/base';
+
+// iOS 版本判断
+if (iosVersion.gte(17)) {
+  // 支持 iOS 17+ 特性
+}
+
+// Android 版本判断
+if (androidVersion.gte(33)) {
+  // 支持 Android 13+ 权限
+}
+
+// 当前平台版本（自动选择）
+if (currentVersion.gte(10)) {
+  // 当前平台版本 >= 10
+}
+
+// 精确匹配
+if (iosVersion.is(17.5)) {
+  // 恰好是 iOS 17.5
+}
+```
 
 ---
 
@@ -297,11 +377,19 @@ export { type ItcModule, type ModuleState, BaseModule };
 // 平台抽象
 export {
   type ItcPlatform,
+  type PlatformVersion,
+  type MajorVersion,
+  type MinorVersion,
+  type PatchVersion,
   currentPlatform,
+  currentVersion,
   isAndroid,
   isIOS,
   isHarmony,
   select,
+  iosVersion,
+  androidVersion,
+  harmonyVersion,
 };
 
 // 事件总线

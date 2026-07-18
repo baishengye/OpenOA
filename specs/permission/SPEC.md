@@ -745,6 +745,89 @@ class NoopPermissionProvider implements PermissionProvider {
 - `ohos.permission.ACCESS_NEARLINK`
 - `ohos.permission.DISTRIBUTED_DATASYNC`
 
+### 8.4 Android 存储权限版本兼容
+
+Android 存储权限根据系统版本有不同的实现方式，业务代码需要根据 `Platform.Version` 判断使用哪种权限。
+
+#### 分区存储 (Scoped Storage) - Android 10 (API 29) 起
+
+Android 10 引入了分区存储，App 只能访问自己的文件和媒体文件。需要使用细粒度媒体权限：
+
+| 权限常量 | Android 字符串 | Android 版本 |
+|---------|--------------|-------------|
+| `READ_MEDIA_IMAGES` | `android.permission.READ_MEDIA_IMAGES` | Android 13+ (API 33) |
+| `READ_MEDIA_VIDEO` | `android.permission.READ_MEDIA_VIDEO` | Android 13+ (API 33) |
+| `READ_MEDIA_AUDIO` | `android.permission.READ_MEDIA_AUDIO` | Android 13+ (API 33) |
+| `ACCESS_MEDIA_LOCATION` | `android.permission.ACCESS_MEDIA_LOCATION` | Android 10+ (API 29) |
+
+#### 传统存储权限 - Android 9 (API 28) 及以下
+
+如果需要兼容旧版本设备或访问共享存储，使用传统存储权限：
+
+| 权限常量 | Android 字符串 | Android 版本 |
+|---------|--------------|-------------|
+| `READ_EXTERNAL_STORAGE` | `android.permission.READ_EXTERNAL_STORAGE` | Android 4.4+ (API 19) |
+| `WRITE_EXTERNAL_STORAGE` | `android.permission.WRITE_EXTERNAL_STORAGE` | Android 4.4+ (API 19) |
+
+#### 版本兼容示例
+
+```typescript
+import { Platform } from 'react-native';
+import { permission, ITC_PERMISSIONS } from '@itc/permission';
+
+// 根据 Android 版本选择合适的存储权限
+function getStoragePermissions(): string[] {
+  if (Platform.OS !== 'android') {
+    return [];
+  }
+
+  const version = Number(Platform.Version);
+
+  // Android 13+ 使用媒体权限
+  if (version >= 33) {
+    return [
+      ITC_PERMISSIONS.ANDROID.READ_MEDIA_IMAGES,
+      ITC_PERMISSIONS.ANDROID.READ_MEDIA_VIDEO,
+      ITC_PERMISSIONS.ANDROID.READ_MEDIA_AUDIO,
+    ];
+  }
+
+  // Android 10-12
+  if (version >= 29) {
+    // 如果 targetSdkVersion < 30，仍然可以使用传统存储权限
+    // 这里返回传统权限以保持兼容性
+    return [ITC_PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE];
+  }
+
+  // Android 9 及以下
+  return [
+    ITC_PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE,
+    ITC_PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE,
+  ];
+}
+
+// 请求存储权限
+async function requestStoragePermission(): Promise<boolean> {
+  const permissions = getStoragePermissions();
+
+  // Android 10+ 额外请求媒体位置权限（读取照片位置信息）
+  if (Platform.OS === 'android' && Number(Platform.Version) >= 29) {
+    const locationStatus = await permission.request(
+      ITC_PERMISSIONS.ANDROID.ACCESS_MEDIA_LOCATION,
+    );
+    if (locationStatus !== 'granted') {
+      console.log('媒体位置权限未授权');
+    }
+  }
+
+  // 请求存储相关权限
+  const results = await permission.requestMultiple(permissions);
+
+  // 检查是否至少有一个权限授权
+  return Object.values(results).some(status => status === 'granted');
+}
+```
+
 ---
 
 ## 9. 权限申请流程

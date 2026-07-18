@@ -31,6 +31,99 @@ pnpm add @itc/permission
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 ```
 
+### Android 存储权限版本兼容
+
+Android 存储权限根据系统版本有不同的实现方式：
+
+#### 分区存储 (Scoped Storage) - Android 10 (API 29) 起
+
+Android 10 引入了分区存储，App 只能访问自己的文件和媒体文件。需要使用细粒度媒体权限：
+
+| 权限常量 | 说明 | Android 版本 |
+|---------|------|-------------|
+| `READ_MEDIA_IMAGES` | 读取图片 | Android 13+ (API 33) |
+| `READ_MEDIA_VIDEO` | 读取视频 | Android 13+ (API 33) |
+| `READ_MEDIA_AUDIO` | 读取音频 | Android 13+ (API 33) |
+| `ACCESS_MEDIA_LOCATION` | 读取媒体文件中的位置信息 | Android 10+ (API 29) |
+
+```xml
+<!-- Android 13+ -->
+<uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+<uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+<uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+```
+
+#### 传统存储权限 - Android 9 (API 28) 及以下
+
+如果需要兼容旧版本设备或访问共享存储，使用传统存储权限：
+
+| 权限常量 | 说明 | Android 版本 |
+|---------|------|-------------|
+| `READ_EXTERNAL_STORAGE` | 读取外部存储 | Android 4.4+ (API 19) |
+| `WRITE_EXTERNAL_STORAGE` | 写入外部存储 | Android 4.4+ (API 19) |
+
+```xml
+<!-- Android 9 及以下 -->
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+```
+
+#### 版本兼容建议
+
+```typescript
+import { Platform } from 'react-native';
+import { permission, ITC_PERMISSIONS } from '@itc/permission';
+
+// 根据 Android 版本选择合适的权限
+const getStoragePermissions = () => {
+  if (Platform.OS === 'android') {
+    const version = Platform.Version;
+    // Android 13+ 使用媒体权限
+    if (version >= 33) {
+      return [
+        ITC_PERMISSIONS.ANDROID.READ_MEDIA_IMAGES,
+        ITC_PERMISSIONS.ANDROID.READ_MEDIA_VIDEO,
+        ITC_PERMISSIONS.ANDROID.READ_MEDIA_AUDIO,
+      ];
+    }
+    // Android 10-12 可以选择使用传统存储权限或媒体权限
+    // 如果 targetSdkVersion < 30，仍然可以使用传统存储权限
+    if (version >= 29) {
+      return [ITC_PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE];
+    }
+    // Android 9 及以下
+    return [
+      ITC_PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE,
+      ITC_PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE,
+    ];
+  }
+  return [];
+};
+```
+
+#### 权限申请示例
+
+```typescript
+// 请求存储权限
+async function requestStoragePermission() {
+  // 根据版本获取对应权限
+  const permissions = getStoragePermissions();
+
+  // Android 10+ 需要额外请求媒体位置权限（如果需要读取照片位置信息）
+  if (Platform.OS === 'android' && Platform.Version >= 29) {
+    await permission.request(ITC_PERMISSIONS.ANDROID.ACCESS_MEDIA_LOCATION);
+  }
+
+  // 请求存储相关权限
+  const result = await permission.requestMultiple(permissions);
+
+  // 检查结果
+  if (result[ITC_PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE] === 'granted') {
+    // 有权限访问
+  }
+}
+```
+
 ### iOS
 
 在 `ios/Runner/Info.plist` 添加权限描述：

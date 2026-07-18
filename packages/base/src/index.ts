@@ -22,11 +22,19 @@ export {
 
 export {
   type ItcPlatform,
+  type PlatformVersion,
+  type MajorVersion,
+  type MinorVersion,
+  type PatchVersion,
   currentPlatform,
+  currentVersion,
   isAndroid,
   isIOS,
   isHarmony,
   select,
+  iosVersion,
+  androidVersion,
+  harmonyVersion,
 } from './platform';
 
 export {
