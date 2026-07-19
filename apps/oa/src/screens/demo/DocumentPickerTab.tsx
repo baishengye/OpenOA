@@ -113,6 +113,23 @@ export function DocumentPickerTab({ busy, append }: Props) {
     }
   };
 
+  // pick - 选择 PDF
+  const handlePickPdf = async () => {
+    try {
+      const results = await documentPicker.pick({
+        type: types.pdf,
+      });
+      setPickedFiles(results.map((r:any) => ({ uri: r.uri, name: r.name })));
+      log(`✅ 选择 PDF 成功: ${results.length} 个`);
+    } catch (e) {
+      if (documentPicker.isCancel(e)) {
+        log('ℹ️ 用户取消选择');
+      } else {
+        log(`❌ 选择 PDF 失败: ${describe(e)}`);
+      }
+    }
+  };
+
   // pick - 选择压缩包
   const handlePickZip = async () => {
     try {
@@ -363,6 +380,9 @@ export function DocumentPickerTab({ busy, append }: Props) {
           </Button>
           <Button size="sm" variant="outline" onPress={handlePickVideos} disabled={busy}>
             视频
+          </Button>
+          <Button size="sm" variant="outline" onPress={handlePickPdf} disabled={busy}>
+            PDF
           </Button>
           <Button size="sm" variant="outline" onPress={handlePickAudio} disabled={busy}>
             音频

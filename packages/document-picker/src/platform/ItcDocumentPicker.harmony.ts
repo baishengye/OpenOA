@@ -107,14 +107,25 @@ export class ItcDocumentPickerHarmony implements DocumentPickerProvider {
 
   /**
    * 选择目录
-   * HarmonyOS 版本存在已知问题：selectMode 设置选文件夹无效
-   * @see https://github.com/react-native-oh-library/document-picker/issues/1
    */
   async pickDirectory(): Promise<DocumentPickerResponse> {
-    logger.warn(TAG, 'pickDirectory has known issues on HarmonyOS');
-    return Promise.reject(
-      new Error('pickDirectory has known issues on HarmonyOS - see https://github.com/react-native-oh-library/document-picker/issues/1'),
-    );
+    try {
+      const result = await DocumentPicker.pickDirectory();
+      if (!result) {
+        return Promise.reject(new Error('No directory selected'));
+      }
+      logger.info(TAG, `Picked directory: ${result.uri}`);
+      // DirectoryPickerResponse 只包含 uri 属性
+      return {
+        uri: result.uri ?? '',
+        name: '',
+        size: 0,
+        type: 'directory',
+      };
+    } catch (error) {
+      logger.warn(TAG, 'pickDirectory failed', error);
+      throw error;
+    }
   }
 
   /**
