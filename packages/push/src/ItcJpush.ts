@@ -9,6 +9,9 @@
  * 然后改 installPush() 一行即可。
  */
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+declare const require: any;
+
 import { eventBus, logger, currentPlatform } from '@itc/base';
 import type {
   PushProvider,
@@ -18,7 +21,6 @@ import type {
 
 // 极光 SDK —— 内部 import，不暴露给业务层。
 // 三端统一：Android/iOS/鸿蒙均使用同一 npm 包，鸿蒙侧由 RNOH 框架透明适配。
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const JPush = require('jpush-react-native');
 const JCore = require('jcore-react-native');
 

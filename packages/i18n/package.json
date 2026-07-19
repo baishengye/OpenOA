@@ -1,0 +1,75 @@
+{
+  "name": "@itc/i18n",
+  "version": "0.1.0",
+  "description": "OpenOA 项目的国际化模块，基于 react-i18next 封装，提供跨平台一致的国际化能力，支持 iOS/Android/HarmonyOS。",
+  "keywords": [
+    "react-native",
+    "i18n",
+    "internationalization",
+    "localization",
+    "harmonyos"
+  ],
+  "license": "UNLICENSED",
+  "author": "OpenOA Team",
+  "main": "./lib/module/index.js",
+  "module": "./lib/module/index.js",
+  "types": "./lib/typescript/commonjs/index.d.ts",
+  "source": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/typescript/commonjs/index.d.ts",
+      "default": "./lib/module/index.js",
+      "source": "./src/index.ts",
+      "react-native": "./src/index.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "lib"
+  ],
+  "scripts": {
+    "build": "bob build",
+    "clean": "rimraf lib",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "date-fns": "^4.4.0",
+    "i18next": "^24.2.3",
+    "react-i18next": "^15.4.1"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-native": ">=0.82.0"
+  },
+  "devDependencies": {
+    "@itc/base": "workspace:*",
+    "react": "19.1.1",
+    "react-native": "0.82.1",
+    "react-native-builder-bob": "^0.32.1",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.3"
+  },
+  "react-native-builder-bob": {
+    "source": "src",
+    "output": "lib",
+    "targets": [
+      [
+        "module",
+        {
+          "esm": true
+        }
+      ],
+      [
+        "typescript",
+        {
+          "esm": true
+        }
+      ]
+    ]
+  },
+  "publishConfig": {
+    "access": "restricted"
+  },
+  "sideEffects": false
+}

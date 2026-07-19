@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { eventBus } from '@itc/base';
 import { push } from '@itc/push';
@@ -6,9 +6,11 @@ import type { PushRegistration, PushMessage } from '@itc/push';
 import { Text, Button, Card, YStack, XStack, Spinner } from '@itc/uikit';
 import { describe } from './shared';
 import type { TabProps } from './shared';
+import { useTranslation } from '@itc/i18n';
 
 /** 推送演示 Tab */
 export function PushTab({ run, append, busy }: TabProps) {
+  const { t } = useTranslation();
   const [ready, setReady] = useState(false);
   const [reg, setReg] = useState<PushRegistration | null>(null);
   const [lastMsg, setLastMsg] = useState<PushMessage | null>(null);
@@ -27,44 +29,44 @@ export function PushTab({ run, append, busy }: TabProps) {
         production: false,
       });
       setReady(true);
-      append('✅ 极光推送初始化成功');
+      append(`${t('common.success')} ${t('push.initSuccess')}`);
     } catch (e) {
-      append(`❌ 初始化失败: ${describe(e)}`);
+      append(`${t('common.error')} ${t('push.initFailed')}: ${describe(e)}`);
     }
-  }, [append]);
+  }, [append, t]);
 
   // 监听推送事件
   useEffect(() => {
     const offToken = eventBus.on('push:token', (r) => {
       setReg(r);
-      append(`📱 设备注册: ${r.channel} / ${r.token.substring(0, 20)}…`);
+      append(`${t('push.deviceRegSuccess')}: ${r.channel} / ${r.token.substring(0, 20)}…`);
     });
 
     const offMsg = eventBus.on('push:message', (msg) => {
       setLastMsg(msg);
-      append(`📩 收到推送: ${msg.title ?? '(无标题)'}`);
+      append(`${t('push.arrived')}: ${msg.title ?? '(no title)'}`);
     });
 
     const offOpen = eventBus.on('push:opened', (msg) => {
       setLastOpen(msg);
-      append(`👆 点击通知: ${msg.title ?? '(无标题)'}`);
+      append(`${t('push.clicked')}: ${msg.title ?? '(no title)'}`);
     });
 
     return () => { offToken(); offMsg(); offOpen(); };
-  }, [append]);
+  }, [append, t]);
 
   return (
     <YStack gap={16} padding={16}>
       {/* 初始化 */}
       <Card padding={16}>
         <YStack gap={12}>
-          <Text variant="h3">① 初始化推送</Text>
+          <Text variant="h3">{t('push.initPush')}</Text>
           {!ready ? (
-            <Button onPress={() => run('初始化推送', doInit)} disabled={busy}>
-              初始化极光 SDK
+            <Button onPress={() => run(t('push.initPush'), doInit)} disabled={busy}>
+              {t('push.initJiguang')}
             </Button>
           ) : (
-            <Text color="$green9">✅ 已初始化</Text>
+            <Text color="$green9">✅ {t('push.initialized')}</Text>
           )}
         </YStack>
       </Card>
@@ -72,16 +74,16 @@ export function PushTab({ run, append, busy }: TabProps) {
       {/* 设备信息 */}
       <Card padding={16}>
         <YStack gap={8}>
-          <Text variant="h3">② 设备注册</Text>
+          <Text variant="h3">{t('push.deviceReg')}</Text>
           {reg ? (
             <YStack gap={4}>
-              <Text>通道：{reg.channel}</Text>
-              <Text variant="caption" numberOfLines={2}>Token：{reg.token}</Text>
+              <Text>{t('push.channel')}：{reg.channel}</Text>
+              <Text variant="caption" numberOfLines={2}>{t('push.token')}：{reg.token}</Text>
             </YStack>
           ) : (
             <XStack align="center" gap={8}>
               <Spinner size="small" />
-              <Text>等待注册…</Text>
+              <Text>{t('push.waitingReg')}</Text>
             </XStack>
           )}
         </YStack>
@@ -90,25 +92,25 @@ export function PushTab({ run, append, busy }: TabProps) {
       {/* 别名/标签 */}
       <Card padding={16}>
         <YStack gap={12}>
-          <Text variant="h3">③ 别名 & 标签</Text>
+          <Text variant="h3">{t('push.aliasTag')}</Text>
           <XStack gap={8}>
             <Button
               onPress={() => run('setAlias', () => push.setAlias('test_user'))}
               disabled={busy || !ready}
             >
-              设别名 test_user
+              {t('push.setAlias')}
             </Button>
             <Button
               onPress={() => run('deleteAlias', () => push.deleteAlias())}
               disabled={busy || !ready}
             >
-              删别名
+              {t('push.delAlias')}
             </Button>
             <Button
               onPress={() => run('setTags', () => push.setTags(['vip', 'active']))}
               disabled={busy || !ready}
             >
-              设标签
+              {t('push.setTag')}
             </Button>
           </XStack>
         </YStack>
@@ -117,16 +119,16 @@ export function PushTab({ run, append, busy }: TabProps) {
       {/* 角标 */}
       <Card padding={16}>
         <YStack gap={12}>
-          <Text variant="h3">④ 角标控制</Text>
+          <Text variant="h3">{t('push.badge')}</Text>
           <XStack gap={8}>
             <Button onPress={() => run('setBadge 0', () => push.setBadge(0))} disabled={busy || !ready}>
-              清零
+              {t('push.clear')}
             </Button>
             <Button onPress={() => run('setBadge 5', () => push.setBadge(5))} disabled={busy || !ready}>
-              设 5
+              {t('push.setBadge').replace('{{count}}', '5')}
             </Button>
             <Button onPress={() => run('setBadge 99', () => push.setBadge(99))} disabled={busy || !ready}>
-              设 99
+              {t('push.setBadge').replace('{{count}}', '99')}
             </Button>
           </XStack>
         </YStack>
@@ -135,19 +137,19 @@ export function PushTab({ run, append, busy }: TabProps) {
       {/* 停止/恢复 */}
       <Card padding={16}>
         <YStack gap={12}>
-          <Text variant="h3">⑤ 停止 / 恢复</Text>
+          <Text variant="h3">{t('push.stopResume')}</Text>
           <XStack gap={8}>
             <Button
               onPress={() => run('stopPush', () => push.stopPush())}
               disabled={busy || !ready}
             >
-              停止推送
+              {t('push.stopPush')}
             </Button>
             <Button
               onPress={() => run('resumePush', () => push.resumePush())}
               disabled={busy || !ready}
             >
-              恢复推送
+              {t('push.resumePush')}
             </Button>
           </XStack>
         </YStack>
@@ -156,17 +158,17 @@ export function PushTab({ run, append, busy }: TabProps) {
       {/* 最近消息 */}
       <Card padding={16}>
         <YStack gap={8}>
-          <Text variant="h3">⑥ 最近推送消息</Text>
+          <Text variant="h3">{t('push.recentPush')}</Text>
           <Text variant="caption">
-            通过极光控制台 → 推送 → 发送通知 来测试
+            {t('push.testNote')}
           </Text>
           {lastMsg ? (
-            <MsgCard label="📩 到达" msg={lastMsg} />
+            <MsgCard label={`📩 ${t('push.arrived')}`} msg={lastMsg} />
           ) : (
-            <Text>等待推送…</Text>
+            <Text>{t('push.waiting')}</Text>
           )}
           {lastOpen ? (
-            <MsgCard label="👆 点击" msg={lastOpen} />
+            <MsgCard label={`👆 ${t('push.clicked')}`} msg={lastOpen} />
           ) : null}
         </YStack>
       </Card>

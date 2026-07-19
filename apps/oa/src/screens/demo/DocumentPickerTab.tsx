@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { documentPicker, types } from '@itc/document-picker';
 import type { DocumentPickerResponse } from '@itc/document-picker';
 import { Button } from '@itc/uikit';
+import { useTranslation } from '@itc/i18n';
 import { describe, shared } from './shared';
 
 interface Props {
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export function DocumentPickerTab({ busy, append }: Props) {
+  const { t } = useTranslation();
   const [pickedFiles, setPickedFiles] = useState<{ uri: string; name: string }[]>([]);
 
   const log = useCallback((line: string) => {
@@ -22,18 +24,18 @@ export function DocumentPickerTab({ busy, append }: Props) {
     try {
       const results = await documentPicker.pick({
         allowMultiSelection: true,
-        type: types.allFiles, 
+        type: types.allFiles,
       });
       setPickedFiles(results.map((r:any) => ({ uri: r.uri, name: r.name })));
-      log(`✅ pick 成功: 选中 ${results.length} 个文件`);
+      log(`✅ pick ${t('documentPicker.success')}: ${t('documentPicker.selected')} ${results.length} ${t('documentPicker.files')}`);
       results.forEach((r: DocumentPickerResponse) => {
         log(`   - ${r.name} (${formatSize(r.size)}, ${r.type})`);
       });
     } catch (e) {
       if (documentPicker.isCancel(e)) {
-        log('ℹ️ 用户取消选择');
+        log(`ℹ️ ${t('documentPicker.userCancelledInfo')}`);
       } else {
-        log(`❌ pick 失败: ${describe(e)}`);
+        log(`❌ pick ${t('documentPicker.failed')}: ${describe(e)}`);
       }
     }
   };
@@ -42,17 +44,17 @@ export function DocumentPickerTab({ busy, append }: Props) {
   const handlePickSingle = async () => {
     try {
       const result = await documentPicker.pickSingle({
-        type: types.allFiles, // 使用跨平台支持的 PDF 类型
+        type: types.allFiles,
       });
       setPickedFiles([{ uri: result.uri, name: result.name }]);
-      log(`✅ pickSingle 成功: ${result.name}`);
+      log(`✅ pickSingle ${t('documentPicker.success')}: ${result.name}`);
       log(`   URI: ${result.uri}`);
-      log(`   类型: ${result.type}, 大小: ${formatSize(result.size)}`);
+      log(`   ${t('documentPicker.type')}: ${result.type}, ${t('documentPicker.size')}: ${formatSize(result.size)}`);
     } catch (e) {
       if (documentPicker.isCancel(e)) {
-        log('ℹ️ 用户取消选择');
+        log(`ℹ️ ${t('documentPicker.userCancelledInfo')}`);
       } else {
-        log(`❌ pickSingle 失败: ${describe(e)}`);
+        log(`❌ pickSingle ${t('documentPicker.failed')}: ${describe(e)}`);
       }
     }
   };
@@ -65,15 +67,15 @@ export function DocumentPickerTab({ busy, append }: Props) {
         allowMultiSelection: true,
       });
       setPickedFiles(results.map((r:any) => ({ uri: r.uri, name: r.name })));
-      log(`✅ 选择图片成功: ${results.length} 张`);
+      log(`✅ ${t('documentPicker.images')} ${t('documentPicker.success')}: ${results.length} 张`);
       results.forEach((r: DocumentPickerResponse) => {
         log(`   - ${r.name}`);
       });
     } catch (e) {
       if (documentPicker.isCancel(e)) {
-        log('ℹ️ 用户取消选择');
+        log(`ℹ️ ${t('documentPicker.userCancelledInfo')}`);
       } else {
-        log(`❌ 选择图片失败: ${describe(e)}`);
+        log(`❌ ${t('documentPicker.images')} ${t('documentPicker.failed')}: ${describe(e)}`);
       }
     }
   };
@@ -86,12 +88,12 @@ export function DocumentPickerTab({ busy, append }: Props) {
         allowMultiSelection: false,
       });
       setPickedFiles(results.map((r:any) => ({ uri: r.uri, name: r.name })));
-      log(`✅ 选择视频成功: ${results.length} 个`);
+      log(`✅ ${t('documentPicker.video')} ${t('documentPicker.success')}: ${results.length} 个`);
     } catch (e) {
       if (documentPicker.isCancel(e)) {
-        log('ℹ️ 用户取消选择');
+        log(`ℹ️ ${t('documentPicker.userCancelledInfo')}`);
       } else {
-        log(`❌ 选择视频失败: ${describe(e)}`);
+        log(`❌ ${t('documentPicker.video')} ${t('documentPicker.failed')}: ${describe(e)}`);
       }
     }
   };
@@ -103,12 +105,12 @@ export function DocumentPickerTab({ busy, append }: Props) {
         type: types.audio,
       });
       setPickedFiles(results.map((r:any) => ({ uri: r.uri, name: r.name })));
-      log(`✅ 选择音频成功: ${results.length} 个`);
+      log(`✅ ${t('documentPicker.audio')} ${t('documentPicker.success')}: ${results.length} 个`);
     } catch (e) {
       if (documentPicker.isCancel(e)) {
-        log('ℹ️ 用户取消选择');
+        log(`ℹ️ ${t('documentPicker.userCancelledInfo')}`);
       } else {
-        log(`❌ 选择音频失败: ${describe(e)}`);
+        log(`❌ ${t('documentPicker.audio')} ${t('documentPicker.failed')}: ${describe(e)}`);
       }
     }
   };
@@ -120,12 +122,12 @@ export function DocumentPickerTab({ busy, append }: Props) {
         type: types.pdf,
       });
       setPickedFiles(results.map((r:any) => ({ uri: r.uri, name: r.name })));
-      log(`✅ 选择 PDF 成功: ${results.length} 个`);
+      log(`✅ ${t('documentPicker.pdf')} ${t('documentPicker.success')}: ${results.length} 个`);
     } catch (e) {
       if (documentPicker.isCancel(e)) {
-        log('ℹ️ 用户取消选择');
+        log(`ℹ️ ${t('documentPicker.userCancelledInfo')}`);
       } else {
-        log(`❌ 选择 PDF 失败: ${describe(e)}`);
+        log(`❌ ${t('documentPicker.pdf')} ${t('documentPicker.failed')}: ${describe(e)}`);
       }
     }
   };
@@ -137,12 +139,12 @@ export function DocumentPickerTab({ busy, append }: Props) {
         type: types.zip,
       });
       setPickedFiles(results.map((r:any) => ({ uri: r.uri, name: r.name })));
-      log(`✅ 选择压缩包成功: ${results.length} 个`);
+      log(`✅ ${t('documentPicker.zip')} ${t('documentPicker.success')}: ${results.length} 个`);
     } catch (e) {
       if (documentPicker.isCancel(e)) {
-        log('ℹ️ 用户取消选择');
+        log(`ℹ️ ${t('documentPicker.userCancelledInfo')}`);
       } else {
-        log(`❌ 选择压缩包失败: ${describe(e)}`);
+        log(`❌ ${t('documentPicker.zip')} ${t('documentPicker.failed')}: ${describe(e)}`);
       }
     }
   };
@@ -154,12 +156,12 @@ export function DocumentPickerTab({ busy, append }: Props) {
         type: types.plainText,
       });
       setPickedFiles(results.map((r:any) => ({ uri: r.uri, name: r.name })));
-      log(`✅ 选择纯文本成功: ${results.length} 个`);
+      log(`✅ ${t('documentPicker.plainText')} ${t('documentPicker.success')}: ${results.length} 个`);
     } catch (e) {
       if (documentPicker.isCancel(e)) {
-        log('ℹ️ 用户取消选择');
+        log(`ℹ️ ${t('documentPicker.userCancelledInfo')}`);
       } else {
-        log(`❌ 选择纯文本失败: ${describe(e)}`);
+        log(`❌ ${t('documentPicker.plainText')} ${t('documentPicker.failed')}: ${describe(e)}`);
       }
     }
   };
@@ -171,12 +173,12 @@ export function DocumentPickerTab({ busy, append }: Props) {
         type: types.doc,
       });
       setPickedFiles(results.map((r:any) => ({ uri: r.uri, name: r.name })));
-      log(`✅ 选择 Word (.doc) 成功: ${results.length} 个`);
+      log(`✅ ${t('documentPicker.doc')} ${t('documentPicker.success')}: ${results.length} 个`);
     } catch (e) {
       if (documentPicker.isCancel(e)) {
-        log('ℹ️ 用户取消选择');
+        log(`ℹ️ ${t('documentPicker.userCancelledInfo')}`);
       } else {
-        log(`❌ 选择 Word (.doc) 失败: ${describe(e)}`);
+        log(`❌ ${t('documentPicker.doc')} ${t('documentPicker.failed')}: ${describe(e)}`);
       }
     }
   };
@@ -188,12 +190,12 @@ export function DocumentPickerTab({ busy, append }: Props) {
         type: types.docx,
       });
       setPickedFiles(results.map((r:any) => ({ uri: r.uri, name: r.name })));
-      log(`✅ 选择 Word (.docx) 成功: ${results.length} 个`);
+      log(`✅ ${t('documentPicker.docx')} ${t('documentPicker.success')}: ${results.length} 个`);
     } catch (e) {
       if (documentPicker.isCancel(e)) {
-        log('ℹ️ 用户取消选择');
+        log(`ℹ️ ${t('documentPicker.userCancelledInfo')}`);
       } else {
-        log(`❌ 选择 Word (.docx) 失败: ${describe(e)}`);
+        log(`❌ ${t('documentPicker.docx')} ${t('documentPicker.failed')}: ${describe(e)}`);
       }
     }
   };
@@ -205,12 +207,12 @@ export function DocumentPickerTab({ busy, append }: Props) {
         type: types.xls,
       });
       setPickedFiles(results.map((r:any) => ({ uri: r.uri, name: r.name })));
-      log(`✅ 选择 Excel (.xls) 成功: ${results.length} 个`);
+      log(`✅ ${t('documentPicker.xls')} ${t('documentPicker.success')}: ${results.length} 个`);
     } catch (e) {
       if (documentPicker.isCancel(e)) {
-        log('ℹ️ 用户取消选择');
+        log(`ℹ️ ${t('documentPicker.userCancelledInfo')}`);
       } else {
-        log(`❌ 选择 Excel (.xls) 失败: ${describe(e)}`);
+        log(`❌ ${t('documentPicker.xls')} ${t('documentPicker.failed')}: ${describe(e)}`);
       }
     }
   };
@@ -222,12 +224,12 @@ export function DocumentPickerTab({ busy, append }: Props) {
         type: types.xlsx,
       });
       setPickedFiles(results.map((r:any) => ({ uri: r.uri, name: r.name })));
-      log(`✅ 选择 Excel (.xlsx) 成功: ${results.length} 个`);
+      log(`✅ ${t('documentPicker.xlsx')} ${t('documentPicker.success')}: ${results.length} 个`);
     } catch (e) {
       if (documentPicker.isCancel(e)) {
-        log('ℹ️ 用户取消选择');
+        log(`ℹ️ ${t('documentPicker.userCancelledInfo')}`);
       } else {
-        log(`❌ 选择 Excel (.xlsx) 失败: ${describe(e)}`);
+        log(`❌ ${t('documentPicker.xlsx')} ${t('documentPicker.failed')}: ${describe(e)}`);
       }
     }
   };
@@ -239,12 +241,12 @@ export function DocumentPickerTab({ busy, append }: Props) {
         type: types.ppt,
       });
       setPickedFiles(results.map((r:any) => ({ uri: r.uri, name: r.name })));
-      log(`✅ 选择 PPT (.ppt) 成功: ${results.length} 个`);
+      log(`✅ ${t('documentPicker.ppt')} ${t('documentPicker.success')}: ${results.length} 个`);
     } catch (e) {
       if (documentPicker.isCancel(e)) {
-        log('ℹ️ 用户取消选择');
+        log(`ℹ️ ${t('documentPicker.userCancelledInfo')}`);
       } else {
-        log(`❌ 选择 PPT (.ppt) 失败: ${describe(e)}`);
+        log(`❌ ${t('documentPicker.ppt')} ${t('documentPicker.failed')}: ${describe(e)}`);
       }
     }
   };
@@ -256,12 +258,12 @@ export function DocumentPickerTab({ busy, append }: Props) {
         type: types.pptx,
       });
       setPickedFiles(results.map((r:any) => ({ uri: r.uri, name: r.name })));
-      log(`✅ 选择 PPT (.pptx) 成功: ${results.length} 个`);
+      log(`✅ ${t('documentPicker.pptx')} ${t('documentPicker.success')}: ${results.length} 个`);
     } catch (e) {
       if (documentPicker.isCancel(e)) {
-        log('ℹ️ 用户取消选择');
+        log(`ℹ️ ${t('documentPicker.userCancelledInfo')}`);
       } else {
-        log(`❌ 选择 PPT (.pptx) 失败: ${describe(e)}`);
+        log(`❌ ${t('documentPicker.pptx')} ${t('documentPicker.failed')}: ${describe(e)}`);
       }
     }
   };
@@ -273,12 +275,12 @@ export function DocumentPickerTab({ busy, append }: Props) {
         type: types.csv,
       });
       setPickedFiles(results.map((r:any) => ({ uri: r.uri, name: r.name })));
-      log(`✅ 选择 CSV 成功: ${results.length} 个`);
+      log(`✅ ${t('documentPicker.csv')} ${t('documentPicker.success')}: ${results.length} 个`);
     } catch (e) {
       if (documentPicker.isCancel(e)) {
-        log('ℹ️ 用户取消选择');
+        log(`ℹ️ ${t('documentPicker.userCancelledInfo')}`);
       } else {
-        log(`❌ 选择 CSV 失败: ${describe(e)}`);
+        log(`❌ ${t('documentPicker.csv')} ${t('documentPicker.failed')}: ${describe(e)}`);
       }
     }
   };
@@ -287,21 +289,20 @@ export function DocumentPickerTab({ busy, append }: Props) {
   const handlePickDirectory = async () => {
     try {
       const result = await documentPicker.pickDirectory();
-      setPickedFiles([{ uri: result.uri, name: '(目录)' }]);
-      log(`✅ pickDirectory 成功`);
+      setPickedFiles([{ uri: result.uri, name: t('documentPicker.directory') }]);
+      log(`✅ pickDirectory ${t('documentPicker.success')}`);
       log(`   URI: ${result.uri}`);
     } catch (e) {
       if (documentPicker.isCancel(e)) {
-        log('ℹ️ 用户取消选择');
+        log(`ℹ️ ${t('documentPicker.userCancelledInfo')}`);
       } else {
-        log(`❌ pickDirectory 失败: ${describe(e)}`);
+        log(`❌ pickDirectory ${t('documentPicker.pickDirectoryFailed')}: ${describe(e)}`);
       }
     }
   };
 
   // isCancel - 检查是否为取消错误
   const handleTestIsCancel = () => {
-    // 模拟取消错误
     const cancelError = new Error('User canceled');
     const otherError = new Error('Some other error');
 
@@ -325,20 +326,20 @@ export function DocumentPickerTab({ busy, append }: Props) {
     try {
       const uris = pickedFiles.map((f) => f.uri);
       if (uris.length === 0) {
-        log('ℹ️ 请先选择文件再测试 releaseSecureAccess');
+        log(`ℹ️ ${t('documentPicker.tryReleaseFirst')}`);
         return;
       }
       await documentPicker.releaseSecureAccess(uris);
-      log(`✅ releaseSecureAccess 成功，释放了 ${uris.length} 个 URI`);
+      log(`✅ ${t('documentPicker.releaseSuccess')} ${uris.length} ${t('documentPicker.uris')}`);
     } catch (e) {
-      log(`❌ releaseSecureAccess 失败: ${describe(e)}`);
+      log(`❌ releaseSecureAccess ${t('documentPicker.failed')}: ${describe(e)}`);
     }
   };
 
   // 清除记录
   const handleClear = () => {
     setPickedFiles([]);
-    log('🗑️ 已清除选择记录');
+    log('🗑️ Cleared selection');
   };
 
   return (
@@ -346,7 +347,7 @@ export function DocumentPickerTab({ busy, append }: Props) {
       {/* 文件选择结果 */}
       {pickedFiles.length > 0 && (
         <View style={shared.card}>
-          <Text style={shared.cardTitle}>已选择的文件</Text>
+          <Text style={shared.cardTitle}>{t('documentPicker.selectedFiles')}</Text>
           {pickedFiles.map((file, index) => (
             <Text key={index} style={shared.mono} numberOfLines={1}>
               {file.name}
@@ -357,10 +358,10 @@ export function DocumentPickerTab({ busy, append }: Props) {
 
       {/* 基础选择 */}
       <View style={shared.card}>
-        <Text style={shared.cardTitle}>基础选择</Text>
+        <Text style={shared.cardTitle}>Basic Selection</Text>
         <View style={styles.buttonGroup}>
           <Button size="sm" onPress={handlePick} disabled={busy}>
-            pick (多选)
+            pick (multi)
           </Button>
           <Button size="sm" variant="outline" onPress={handlePickSingle} disabled={busy}>
             pickSingle
@@ -373,32 +374,32 @@ export function DocumentPickerTab({ busy, append }: Props) {
 
       {/* 按类型选择 - 基础 */}
       <View style={shared.card}>
-        <Text style={shared.cardTitle}>按类型选择（基础）</Text>
+        <Text style={shared.cardTitle}>By Type (Basic)</Text>
         <View style={styles.buttonGroup}>
           <Button size="sm" onPress={handlePickImages} disabled={busy}>
-            图片
+            {t('documentPicker.images')}
           </Button>
           <Button size="sm" variant="outline" onPress={handlePickVideos} disabled={busy}>
-            视频
+            {t('documentPicker.video')}
           </Button>
           <Button size="sm" variant="outline" onPress={handlePickPdf} disabled={busy}>
             PDF
           </Button>
           <Button size="sm" variant="outline" onPress={handlePickAudio} disabled={busy}>
-            音频
+            {t('documentPicker.audio')}
           </Button>
           <Button size="sm" variant="outline" onPress={handlePickZip} disabled={busy}>
-            压缩包
+            {t('documentPicker.zip')}
           </Button>
           <Button size="sm" variant="outline" onPress={handlePickPlainText} disabled={busy}>
-            纯文本
+            {t('documentPicker.plainText')}
           </Button>
         </View>
       </View>
 
       {/* 按类型选择 - Office 文档 */}
       <View style={shared.card}>
-        <Text style={shared.cardTitle}>按类型选择（Office 文档）</Text>
+        <Text style={shared.cardTitle}>By Type (Office)</Text>
         <View style={styles.buttonGroup}>
           <Button size="sm" variant="outline" onPress={handlePickDoc} disabled={busy}>
             Word (.doc)
@@ -423,13 +424,13 @@ export function DocumentPickerTab({ busy, append }: Props) {
           </Button>
         </View>
         <Text style={styles.hint}>
-          Office 文档类型在部分平台可能不被支持
+          Office types may not be supported on all platforms
         </Text>
       </View>
 
       {/* 工具方法 */}
       <View style={shared.card}>
-        <Text style={shared.cardTitle}>工具方法</Text>
+        <Text style={shared.cardTitle}>Utilities</Text>
         <View style={styles.buttonGroup}>
           <Button size="sm" variant="outline" onPress={handleTestIsCancel} disabled={busy}>
             isCancel
@@ -447,7 +448,7 @@ export function DocumentPickerTab({ busy, append }: Props) {
       <View style={shared.card}>
         <View style={styles.buttonGroup}>
           <Button size="sm" variant="ghost" onPress={handleClear} disabled={busy}>
-            清除记录
+            {t('documentPicker.clear')}
           </Button>
         </View>
       </View>
@@ -456,7 +457,7 @@ export function DocumentPickerTab({ busy, append }: Props) {
       <View style={shared.card}>
         <Text style={shared.cardTitle}>@itc/document-picker</Text>
         <Text style={shared.mono}>
-          {`- 统一封装 iOS/Android/HarmonyOS 文档选择 API\n`}
+          {`- Unified wrapper for iOS/Android/HarmonyOS document picker API\n`}
           {`- iOS/Android: @react-native-documents/picker v12\n`}
           {`- HarmonyOS: @react-native-ohos/react-native-document-picker`}
         </Text>

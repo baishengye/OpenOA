@@ -2,8 +2,13 @@ import React from 'react';
 import { StatusBar, StyleSheet, Text, View } from 'react-native';
 import { currentPlatform, logger } from '@itc/base';
 import { UIProvider } from '@itc/uikit';
+import { I18nProvider } from '@itc/i18n';
 import { DemoScreen } from './screens/DemoScreen';
 import { usePush } from './utils/usePush';
+
+// 导入 locales
+import enUS from './locales/en-US.json';
+import zhCN from './locales/zh-CN.json';
 
 logger.info('app', `OpenOA 启动，平台=${currentPlatform}`);
 
@@ -14,17 +19,27 @@ export default function App(): React.JSX.Element {
   usePush(); // 初始化推送（首次渲染时自动执行）
 
   return (
-    <UIProvider defaultMode="light">
-      <View style={styles.root}>
-        <StatusBar barStyle="dark-content" />
-        <View style={styles.markBar}>
-          <Text style={styles.markText}>
-            🟢 {BUILD_MARK} · {currentPlatform}
-          </Text>
+    <I18nProvider
+      options={{
+        lng: 'en-US',
+        resources: {
+          'en-US': { translation: enUS },
+          'zh-CN': { translation: zhCN },
+        },
+      }}
+    >
+      <UIProvider defaultMode="light">
+        <View style={styles.root}>
+          <StatusBar barStyle="dark-content" />
+          <View style={styles.markBar}>
+            <Text style={styles.markText}>
+              🟢 {BUILD_MARK} · {currentPlatform}
+            </Text>
+          </View>
+          <DemoScreen />
         </View>
-        <DemoScreen />
-      </View>
-    </UIProvider>
+      </UIProvider>
+    </I18nProvider>
   );
 }
 

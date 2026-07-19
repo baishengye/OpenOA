@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { fs } from '@itc/fs';
+import { useTranslation } from '@itc/i18n';
 import { Button } from '@itc/uikit';
 import { describe, shared } from './shared';
 
@@ -10,9 +11,10 @@ interface Props {
 }
 
 export function FsTab({ busy, append }: Props) {
+  const { t } = useTranslation();
   const [testPath] = useState(() => `${fs.DocumentDirectoryPath}/test.txt`);
   const [dirPath] = useState(() => `${fs.DocumentDirectoryPath}/test_dir`);
-  const [fsInfo, setFsInfo] = useState<string>('—');
+  const [fsInfo, setFsInfo] = useState('—');
 
   const log = useCallback((line: string) => {
     append?.(line);
@@ -22,13 +24,13 @@ export function FsTab({ busy, append }: Props) {
     try {
       const info = await fs.getFSInfo();
       const usedSpace = info.totalSpace - info.freeSpace;
-      setFsInfo(`总空间: ${formatBytes(info.totalSpace)} | 空闲: ${formatBytes(info.freeSpace)} | 已用: ${formatBytes(usedSpace)}`);
-      log(`✅ getFSInfo 成功`);
+      setFsInfo(`${t('fs.totalSpace')}: ${formatBytes(info.totalSpace)} | ${t('fs.freeSpace')}: ${formatBytes(info.freeSpace)} | ${t('fs.usedSpace')}: ${formatBytes(usedSpace)}`);
+      log(`${t('common.success')} ${t('fs.getFsInfoSuccess')}`);
     } catch (e) {
-      setFsInfo(`获取失败: ${describe(e)}`);
-      log(`❌ getFSInfo 失败: ${describe(e)}`);
+      setFsInfo(`${t('common.error')}: ${describe(e)}`);
+      log(`${t('common.error')} ${t('fs.getFsInfoFailed')}: ${describe(e)}`);
     }
-  }, [log]);
+  }, [log, t]);
 
   useEffect(() => {
     loadFsInfo();
@@ -38,54 +40,54 @@ export function FsTab({ busy, append }: Props) {
   const handleExists = async () => {
     try {
       const result = await fs.exists(testPath);
-      log(`✅ exists: ${result}`);
+      log(`${t('common.success')} exists: ${result}`);
     } catch (e) {
-      log(`❌ exists 失败: ${describe(e)}`);
+      log(`${t('common.error')} exists ${t('common.failed')}: ${describe(e)}`);
     }
   };
 
   const handleWriteFile = async () => {
     try {
       await fs.writeFile(testPath, 'Hello from @itc/fs!\n' + new Date().toISOString());
-      log(`✅ writeFile 成功`);
+      log(`${t('common.success')} writeFile ${t('common.success')}`);
     } catch (e) {
-      log(`❌ writeFile 失败: ${describe(e)}`);
+      log(`${t('common.error')} writeFile ${t('common.failed')}: ${describe(e)}`);
     }
   };
 
   const handleReadFile = async () => {
     try {
       const content = await fs.readFile(testPath);
-      log(`✅ readFile: ${content.substring(0, 50)}...`);
+      log(`${t('common.success')} readFile: ${content.substring(0, 50)}...`);
     } catch (e) {
-      log(`❌ readFile 失败: ${describe(e)}`);
+      log(`${t('common.error')} readFile ${t('common.failed')}: ${describe(e)}`);
     }
   };
 
   const handleAppendFile = async () => {
     try {
       await fs.appendFile(testPath, `\nAppended at ${Date.now()}`);
-      log(`✅ appendFile 成功`);
+      log(`${t('common.success')} appendFile ${t('common.success')}`);
     } catch (e) {
-      log(`❌ appendFile 失败: ${describe(e)}`);
+      log(`${t('common.error')} appendFile ${t('common.failed')}: ${describe(e)}`);
     }
   };
 
   const handleStat = async () => {
     try {
       const result = await fs.stat(testPath);
-      log(`✅ stat: size=${result.size}, isFile=${result.isFile()}`);
+      log(`${t('common.success')} stat: size=${result.size}, isFile=${result.isFile()}`);
     } catch (e) {
-      log(`❌ stat 失败: ${describe(e)}`);
+      log(`${t('common.error')} stat ${t('common.failed')}: ${describe(e)}`);
     }
   };
 
   const handleUnlink = async () => {
     try {
       await fs.unlink(testPath);
-      log(`✅ unlink 成功`);
+      log(`${t('common.success')} unlink ${t('common.success')}`);
     } catch (e) {
-      log(`❌ unlink 失败: ${describe(e)}`);
+      log(`${t('common.error')} unlink ${t('common.failed')}: ${describe(e)}`);
     }
   };
 
@@ -93,27 +95,27 @@ export function FsTab({ busy, append }: Props) {
   const handleWriteForCopyMove = async () => {
     try {
       await fs.writeFile(testPath, 'Source content for copy/move test');
-      log(`✅ 写入源文件成功`);
+      log(`${t('common.success')} ${t('fs.writeSourceSuccess')}`);
     } catch (e) {
-      log(`❌ 写入源文件失败: ${describe(e)}`);
+      log(`${t('common.error')} ${t('fs.writeSourceFailed')}: ${describe(e)}`);
     }
   };
 
   const handleCopyFile = async () => {
     try {
       await fs.copyFile(testPath, `${fs.DocumentDirectoryPath}/test_copy.txt`);
-      log(`✅ copyFile 成功`);
+      log(`${t('common.success')} copyFile ${t('common.success')}`);
     } catch (e) {
-      log(`❌ copyFile 失败: ${describe(e)}`);
+      log(`${t('common.error')} copyFile ${t('common.failed')}: ${describe(e)}`);
     }
   };
 
   const handleMoveFile = async () => {
     try {
       await fs.moveFile(testPath, `${fs.DocumentDirectoryPath}/test_move.txt`);
-      log(`✅ moveFile 成功`);
+      log(`${t('common.success')} moveFile ${t('common.success')}`);
     } catch (e) {
-      log(`❌ moveFile 失败: ${describe(e)}`);
+      log(`${t('common.error')} moveFile ${t('common.failed')}: ${describe(e)}`);
     }
   };
 
@@ -123,9 +125,9 @@ export function FsTab({ busy, append }: Props) {
         fs.unlink(`${fs.DocumentDirectoryPath}/test_copy.txt`),
         fs.unlink(`${fs.DocumentDirectoryPath}/test_move.txt`),
       ]);
-      log(`✅ 清理测试文件成功`);
+      log(`${t('common.success')} ${t('fs.cleanupSuccess')}`);
     } catch (e) {
-      log(`❌ 清理测试文件失败: ${describe(e)}`);
+      log(`${t('common.error')} ${t('fs.cleanupFailed')}: ${describe(e)}`);
     }
   };
 
@@ -133,27 +135,27 @@ export function FsTab({ busy, append }: Props) {
   const handleMkdir = async () => {
     try {
       await fs.mkdir(dirPath);
-      log(`✅ mkdir 成功`);
+      log(`${t('common.success')} mkdir ${t('common.success')}`);
     } catch (e) {
-      log(`❌ mkdir 失败: ${describe(e)}`);
+      log(`${t('common.error')} mkdir ${t('common.failed')}: ${describe(e)}`);
     }
   };
 
   const handleReaddir = async () => {
     try {
       const items = await fs.readDir(fs.DocumentDirectoryPath);
-      log(`✅ readDir: 共 ${items.length} 个条目`);
+      log(`${t('common.success')} ${t('fs.readDirCount').replace('{{count}}', String(items.length))}`);
     } catch (e) {
-      log(`❌ readDir 失败: ${describe(e)}`);
+      log(`${t('common.error')} readDir ${t('common.failed')}: ${describe(e)}`);
     }
   };
 
   const handleRmdir = async () => {
     try {
       await fs.unlink(dirPath);
-      log(`✅ rmdir (unlink) 成功`);
+      log(`${t('common.success')} rmdir (unlink) ${t('common.success')}`);
     } catch (e) {
-      log(`❌ rmdir 失败: ${describe(e)}`);
+      log(`${t('common.error')} rmdir ${t('common.failed')}: ${describe(e)}`);
     }
   };
 
@@ -162,27 +164,27 @@ export function FsTab({ busy, append }: Props) {
     try {
       await fs.writeFile(testPath, 'test content for hash');
       const hash = await fs.hash(testPath, 'md5');
-      log(`✅ md5: ${hash}`);
+      log(`${t('common.success')} md5: ${hash}`);
     } catch (e) {
-      log(`❌ hash(md5) 失败: ${describe(e)}`);
+      log(`${t('common.error')} hash(md5) ${t('common.failed')}: ${describe(e)}`);
     }
   };
 
   const handleHashSha256 = async () => {
     try {
       const hash = await fs.hash(testPath, 'sha256');
-      log(`✅ sha256: ${hash}`);
+      log(`${t('common.success')} sha256: ${hash}`);
     } catch (e) {
-      log(`❌ hash(sha256) 失败: ${describe(e)}`);
+      log(`${t('common.error')} hash(sha256) ${t('common.failed')}: ${describe(e)}`);
     }
   };
 
   const handleHashSha1 = async () => {
     try {
       const hash = await fs.hash(testPath, 'sha1');
-      log(`✅ sha1: ${hash}`);
+      log(`${t('common.success')} sha1: ${hash}`);
     } catch (e) {
-      log(`❌ hash(sha1) 失败: ${describe(e)}`);
+      log(`${t('common.error')} hash(sha1) ${t('common.failed')}: ${describe(e)}`);
     }
   };
 
@@ -190,27 +192,27 @@ export function FsTab({ busy, append }: Props) {
   const handleWriteAt = async () => {
     try {
       await fs.write(testPath, 'POS=0', 0, 'utf8');
-      log(`✅ write at position 0 成功`);
+      log(`${t('common.success')} write at position 0 ${t('common.success')}`);
     } catch (e) {
-      log(`❌ write 失败: ${describe(e)}`);
+      log(`${t('common.error')} write ${t('common.failed')}: ${describe(e)}`);
     }
   };
 
   const handleReadAt = async () => {
     try {
       const content = await fs.read(testPath, 10, 0, 'utf8');
-      log(`✅ read at position 0: "${content}"`);
+      log(`${t('common.success')} read at position 0: "${content}"`);
     } catch (e) {
-      log(`❌ read 失败: ${describe(e)}`);
+      log(`${t('common.error')} read ${t('common.failed')}: ${describe(e)}`);
     }
   };
 
   const handleTouch = async () => {
     try {
       await fs.touch(testPath);
-      log(`✅ touch 成功`);
+      log(`${t('common.success')} touch ${t('common.success')}`);
     } catch (e) {
-      log(`❌ touch 失败: ${describe(e)}`);
+      log(`${t('common.error')} touch ${t('common.failed')}: ${describe(e)}`);
     }
   };
 
@@ -218,14 +220,14 @@ export function FsTab({ busy, append }: Props) {
     <View>
       {/* 文件系统信息 */}
       <View style={shared.card}>
-        <Text style={shared.cardTitle}>文件系统信息（@itc/fs）</Text>
+        <Text style={shared.cardTitle}>{t('fs.title')}</Text>
         <Text style={shared.mono}>{fsInfo}</Text>
-        <Button size="sm" variant="outline" onPress={loadFsInfo} disabled={busy}>刷新</Button>
+        <Button size="sm" variant="outline" onPress={loadFsInfo} disabled={busy}>{t('fs.refresh')}</Button>
       </View>
 
       {/* 路径常量 */}
       <View style={shared.card}>
-        <Text style={shared.cardTitle}>路径常量</Text>
+        <Text style={shared.cardTitle}>{t('fs.pathConstants')}</Text>
         <Text style={shared.mono} selectable>
           {`DocumentDirectoryPath: ${fs.DocumentDirectoryPath}\n`}
           {`CachesDirectoryPath: ${fs.CachesDirectoryPath}\n`}
@@ -237,7 +239,7 @@ export function FsTab({ busy, append }: Props) {
 
       {/* 基础文件操作 */}
       <View style={shared.card}>
-        <Text style={shared.cardTitle}>基础文件操作</Text>
+        <Text style={shared.cardTitle}>{t('fs.basicFileOps')}</Text>
         <View style={styles.buttonGroup}>
           <Button size="sm" onPress={handleExists} disabled={busy}>exists</Button>
           <Button size="sm" onPress={handleWriteFile} disabled={busy}>writeFile</Button>
@@ -250,18 +252,18 @@ export function FsTab({ busy, append }: Props) {
 
       {/* 复制/移动文件 */}
       <View style={shared.card}>
-        <Text style={shared.cardTitle}>复制 / 移动文件</Text>
+        <Text style={shared.cardTitle}>{t('fs.copyMove')}</Text>
         <View style={styles.buttonGroup}>
-          <Button size="sm" variant="outline" onPress={handleWriteForCopyMove} disabled={busy}>写入源文件</Button>
+          <Button size="sm" variant="outline" onPress={handleWriteForCopyMove} disabled={busy}>write source</Button>
           <Button size="sm" onPress={handleCopyFile} disabled={busy}>copyFile</Button>
           <Button size="sm" onPress={handleMoveFile} disabled={busy}>moveFile</Button>
-          <Button size="sm" variant="ghost" onPress={handleCleanup} disabled={busy}>清理</Button>
+          <Button size="sm" variant="ghost" onPress={handleCleanup} disabled={busy}>cleanup</Button>
         </View>
       </View>
 
       {/* 目录操作 */}
       <View style={shared.card}>
-        <Text style={shared.cardTitle}>目录操作</Text>
+        <Text style={shared.cardTitle}>{t('fs.dirOps')}</Text>
         <View style={styles.buttonGroup}>
           <Button size="sm" onPress={handleMkdir} disabled={busy}>mkdir</Button>
           <Button size="sm" onPress={handleReaddir} disabled={busy}>readDir</Button>
@@ -271,8 +273,8 @@ export function FsTab({ busy, append }: Props) {
 
       {/* 哈希计算 */}
       <View style={shared.card}>
-        <Text style={shared.cardTitle}>哈希计算</Text>
-        <Text style={styles.hint}>需要先创建测试文件</Text>
+        <Text style={shared.cardTitle}>{t('fs.hashCalc')}</Text>
+        <Text style={styles.hint}>{t('fs.needTestFileFirst')}</Text>
         <View style={styles.buttonGroup}>
           <Button size="sm" onPress={handleHashMd5} disabled={busy}>writeFile + md5</Button>
           <Button size="sm" variant="outline" onPress={handleHashSha256} disabled={busy}>sha256</Button>
@@ -282,8 +284,8 @@ export function FsTab({ busy, append }: Props) {
 
       {/* 随机读写 */}
       <View style={shared.card}>
-        <Text style={shared.cardTitle}>随机读写</Text>
-        <Text style={styles.hint}>在指定位置读写文件内容</Text>
+        <Text style={shared.cardTitle}>{t('fs.randomRw')}</Text>
+        <Text style={styles.hint}>{t('fs.readWriteAtPos')}</Text>
         <View style={styles.buttonGroup}>
           <Button size="sm" onPress={handleWriteAt} disabled={busy}>write at pos=0</Button>
           <Button size="sm" variant="outline" onPress={handleReadAt} disabled={busy}>read</Button>
@@ -293,11 +295,11 @@ export function FsTab({ busy, append }: Props) {
 
       {/* 说明 */}
       <View style={shared.card}>
-        <Text style={shared.cardTitle}>操作说明</Text>
+        <Text style={shared.cardTitle}>{t('fs.instructions')}</Text>
         <Text style={shared.mono}>
-          {`- 基于 @itc/fs 统一接口\n`}
-          {`- 自动适配 iOS / Android / HarmonyOS\n`}
-          {`- 底层使用 react-native-fs-turbo (iOS/Android) / @react-native-ohos/react-native-fs (HarmonyOS)`}
+          {`- ${t('fs.basedOn')}\n`}
+          {`- ${t('fs.autoAdapt')}\n`}
+          {`- ${t('fs.underlyingTech')}`}
         </Text>
       </View>
     </View>

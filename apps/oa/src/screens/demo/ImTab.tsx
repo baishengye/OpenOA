@@ -6,6 +6,7 @@ import { Text as UiText, Button, Card, YStack, XStack } from '@itc/uikit';
 import { ImDemoMain } from '../demo/imDemo';
 import type { TabProps } from './shared';
 import { logger } from '@itc/base';
+import { useTranslation } from '@itc/i18n';
 
 // 生成唯一操作ID（时间戳 + 随机数）
 const getOperationID = () => {
@@ -26,6 +27,7 @@ const LOGIN_API = 'http://172.16.204.62:10008/account/login';
 
 /** IM 测试 Tab - 入口页面 */
 export function ImTab({ append, busy: _busy }: TabProps) {
+  const { t } = useTranslation();
   const [ready, setReady] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
   const [loginUserId, setLoginUserId] = useState('');
@@ -51,60 +53,60 @@ export function ImTab({ append, busy: _busy }: TabProps) {
 
   // 设置连接状态监听器
   useEffect(() => {
-    log('🔍 useEffect 触发, ready=' + ready);
+    log(`${t('common.info')} useEffect ${t('common.triggered')}, ready=` + ready);
 
     if (!ready) {
-      log('🔍 ready 为 false，跳过监听器设置');
+      log(`${t('common.info')} ready ${t('common.is')} false，${t('im.skipListenerSetup')}`);
       return;
     }
 
-    log('🔍 开始设置事件监听器...');
+    log(`${t('common.info')} ${t('im.settingUpListeners')}...`);
 
     // 监听连接状态变化
     const unsubscribe1 = eventBus.on('im:connectionChanged', (state: ConnectionState) => {
-      log(`📡 收到 im:connectionChanged: ${state}`);
+      log(`${t('im.connectionChanged')}: ${state}`);
       if (state === 'connected') {
         setLoggedIn(true);
-        log('✅ 登录成功');
+        log(`${t('common.success')} ${t('im.loginSuccess')}`);
       } else if (state === 'disconnected' || state === 'kickedOffline') {
         setLoggedIn(false);
-        log(`❌ 连接断开: ${state}`);
+        log(`${t('common.error')} ${t('im.connectionLost')}: ${state}`);
       }
     });
-    log('📡 已订阅 im:connectionChanged');
+    log(`${t('im.subscribed')} im:connectionChanged`);
 
     // 监听被踢下线
     const unsubscribe2 = eventBus.on('im:kickedOffline', () => {
-      log('⚠️ 被踢下线');
+      log(`${t('common.warning')} ${t('im.kickedOffline')}`);
       setLoggedIn(false);
     });
-    log('📡 已订阅 im:kickedOffline');
+    log(`${t('im.subscribed')} im:kickedOffline`);
 
     // 监听 Token 过期
     const unsubscribe3 = eventBus.on('im:tokenExpired', () => {
-      log('⚠️ Token 已过期');
+      log(`${t('common.warning')} ${t('im.tokenExpired')}`);
       setLoggedIn(false);
     });
-    log('📡 已订阅 im:tokenExpired');
+    log(`${t('im.subscribed')} im:tokenExpired`);
 
-    log('📡 所有监听器设置完成');
+    log(`${t('im.allListenersSetup')}`);
 
     return () => {
-      log('🧹 清理监听器');
+      log(`${t('im.cleaningUpListeners')}`);
       unsubscribe1();
       unsubscribe2();
       unsubscribe3();
     };
-  }, [ready, log]);
+  }, [ready, log, t]);
 
   // 注册
   const handleRegister = async () => {
     if (!loginUserId.trim()) {
-      Alert.alert('提示', '请输入要注册的用户ID');
+      Alert.alert(t('common.info'), t('im.pleaseInputUserId'));
       return;
     }
     try {
-      log(`正在注册: ${loginUserId}...`);
+      log(`${t('im.registering')}: ${loginUserId}...`);
       const response = await fetch(`${API_ADDR}/auth/register`, {
         method: 'POST',
         headers: {
@@ -116,44 +118,44 @@ export function ImTab({ append, busy: _busy }: TabProps) {
       });
       const data = await response.json();
       if (data.code === 0 || data.errCode === 0) {
-        log(`✅ 注册成功，用户ID: ${loginUserId}`);
+        log(`${t('common.success')} ${t('im.registerSuccess')}，${t('im.userId')}: ${loginUserId}`);
         // 自动填充 token（如果有返回）
         if (data.data?.token) {
           setToken(data.data.token);
-          log(`Token 已自动填充`);
+          log(`${t('im.tokenAutoFilled')}`);
         }
       } else {
-        log(`❌ 注册失败: ${data.msg || data.errmsg || JSON.stringify(data)}`);
+        log(`${t('common.error')} ${t('im.registerFailed')}: ${data.msg || data.errmsg || JSON.stringify(data)}`);
       }
     } catch (e: any) {
-      log(`❌ 注册失败: ${e.message}`);
+      log(`${t('common.error')} ${t('im.registerFailed')}: ${e.message}`);
     }
   };
 
   // 初始化 SDK
   const handleInit = async () => {
     try {
-      log('正在初始化 SDK...');
+      log(`${t('im.initializing')} SDK...`);
       await itcOpenIM.initSDK({
         apiAddr: API_ADDR,
         wsAddr: WS_ADDR,
         dataDir: 'itc_openim_data',
       });
       setReady(true);
-      log('✅ SDK 初始化成功');
+      log(`${t('common.success')} ${t('im.initSuccess')}`);
     } catch (e: any) {
-      log(`❌ 初始化失败: ${e.message}`);
+      log(`${t('common.error')} ${t('im.initFailed')}: ${e.message}`);
     }
   };
 
   // 从服务器登录获取 Token
   const handleGetToken = async () => {
     if (!loginUserId.trim()) {
-      Alert.alert('提示', '请输入要登录的用户ID');
+      Alert.alert(t('common.info'), t('im.pleaseInputUserId'));
       return;
     }
     try {
-      log(`正在从服务器获取 Token: ${loginUserId}...`);
+      log(`${t('im.gettingToken')}: ${loginUserId}...`);
       const response = await fetch(LOGIN_API, {
         method: 'POST',
         headers: {
@@ -165,29 +167,29 @@ export function ImTab({ append, busy: _busy }: TabProps) {
       const data = await response.json();
       if (data.code === 0 && data.data?.token) {
         setToken(data.data.token);
-        log(`✅ Token 获取成功`);
+        log(`${t('common.success')} ${t('im.tokenSuccess')}`);
       } else {
-        log(`❌ 获取 Token 失败: ${data.msg || JSON.stringify(data)}`);
+        log(`${t('common.error')} ${t('im.tokenFailed')}: ${data.msg || JSON.stringify(data)}`);
       }
     } catch (e: any) {
-      log(`❌ 获取 Token 失败: ${e.message}`);
+      log(`${t('common.error')} ${t('im.tokenFailed')}: ${e.message}`);
     }
   };
 
   // 登录
   const handleLogin = async () => {
     if (!loginUserId || !token) {
-      Alert.alert('提示', '请输入 UserID 和 Token');
+      Alert.alert(t('common.info'), t('im.pleaseInputCredentials'));
       return;
     }
     try {
-      log(`正在登录: ${loginUserId}...`);
+      log(`${t('im.loggingIn')}: ${loginUserId}...`);
       logger.info(TAG, `login called with userID=${loginUserId}, token length=${token.length}`);
       await itcOpenIM.login({ userID: loginUserId.trim(), token: token.trim() });
       logger.info(TAG, 'login() completed without throwing');
     } catch (e: any) {
-      logger.error(TAG, `登录失败: ${e.message}`, e);
-      log(`❌ 登录失败: ${e.message}`);
+      logger.error(TAG, `${t('im.loginFailed')}: ${e.message}`, e);
+      log(`${t('common.error')} ${t('im.loginFailed')}: ${e.message}`);
     }
   };
 
@@ -196,16 +198,16 @@ export function ImTab({ append, busy: _busy }: TabProps) {
     try {
       await itcOpenIM.logout();
       setLoggedIn(false);
-      log('✅ 已登出');
+      log(`${t('common.success')} ${t('im.logoutSuccess')}`);
     } catch (e: any) {
-      log(`❌ 登出失败: ${e.message}`);
+      log(`${t('common.error')} ${t('im.logoutFailed')}: ${e.message}`);
     }
   };
 
   // 跳转到测试页面
   const navigateToDemo = () => {
     if (!loggedIn) {
-      Alert.alert('提示', '请先登录');
+      Alert.alert(t('common.info'), t('im.pleaseLoginFirst'));
       return;
     }
     setShowDemo(true);
@@ -231,12 +233,12 @@ export function ImTab({ append, busy: _busy }: TabProps) {
       {/* 初始化卡片 */}
       <Card padding={16}>
         <YStack gap={12}>
-          <UiText variant="h2">IM 功能测试</UiText>
+          <UiText variant="h2">{t('im.imTest')}</UiText>
           {!ready ? (
-            <Button onPress={handleInit}>初始化 SDK</Button>
+            <Button onPress={handleInit}>{t('im.initSdk')}</Button>
           ) : (
             <XStack align="center" gap={8}>
-              <UiText color="$green9">✓ 已初始化</UiText>
+              <UiText color="$green9">✓ {t('im.initialized')}</UiText>
             </XStack>
           )}
         </YStack>
@@ -245,16 +247,16 @@ export function ImTab({ append, busy: _busy }: TabProps) {
       {/* 注册卡片 */}
       <Card padding={16}>
         <YStack gap={12}>
-          <UiText variant="h3">注册</UiText>
+          <UiText variant="h3">{t('im.register')}</UiText>
           <TextInput
             style={styles.input}
-            placeholder="用户ID"
+            placeholder={t('im.userId')}
             value={loginUserId}
             onChangeText={setLoginUserId}
             autoCapitalize="none"
           />
           <Button onPress={handleRegister} disabled={!ready}>
-            注册
+            {t('im.register')}
           </Button>
         </YStack>
       </Card>
@@ -262,17 +264,17 @@ export function ImTab({ append, busy: _busy }: TabProps) {
       {/* 登录卡片 */}
       <Card padding={16}>
         <YStack gap={12}>
-          <UiText variant="h3">登录</UiText>
+          <UiText variant="h3">{t('im.login')}</UiText>
           <TextInput
             style={styles.input}
-            placeholder="UserID"
+            placeholder={t('im.userId')}
             value={loginUserId}
             onChangeText={setLoginUserId}
             autoCapitalize="none"
           />
           <TextInput
             style={styles.input}
-            placeholder="Token"
+            placeholder={t('im.token')}
             value={token}
             onChangeText={setToken}
             autoCapitalize="none"
@@ -280,16 +282,16 @@ export function ImTab({ append, busy: _busy }: TabProps) {
           {!loggedIn ? (
             <XStack gap={8}>
               <Button onPress={handleGetToken} disabled={!ready}>
-                获取 Token
+                {t('im.getToken')}
               </Button>
               <Button onPress={handleLogin} disabled={!ready || !token}>
-                登录
+                {t('im.login')}
               </Button>
             </XStack>
           ) : (
             <YStack gap={8}>
-              <UiText color="$green9">✓ 已登录: {loginUserId}</UiText>
-              <Button onPress={handleLogout}>登出</Button>
+              <UiText color="$green9">✓ {t('im.loggedIn')}: {loginUserId}</UiText>
+              <Button onPress={handleLogout}>{t('im.logout')}</Button>
             </YStack>
           )}
         </YStack>
@@ -299,12 +301,12 @@ export function ImTab({ append, busy: _busy }: TabProps) {
       {loggedIn && (
         <Card padding={16}>
           <YStack gap={12}>
-            <UiText variant="h3">完整功能测试</UiText>
+            <UiText variant="h3">{t('im.fullTest')}</UiText>
             <UiText variant="caption" color="$gray9">
-              测试用户信息、好友管理、群组管理、会话列表、消息发送等功能
+              {t('im.fullTestDesc')}
             </UiText>
             <Button onPress={navigateToDemo}>
-              进入 IM 测试
+              {t('im.enterTest')}
             </Button>
           </YStack>
         </Card>

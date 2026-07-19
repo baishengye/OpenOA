@@ -3,6 +3,7 @@ import { Text, View, StyleSheet, Pressable, Switch, Image } from 'react-native';
 import { FlashList, MessageList } from '@itc/flash-list';
 import { describe, shared } from './shared';
 import type { RunFn } from './shared';
+import { useTranslation } from '@itc/i18n';
 
 type ItemType = 'normal' | 'special' | 'highlight' | 'ad';
 type MsgType = 'text' | 'image' | 'voice' | 'file' | 'card' | 'system' | 'recall' | 'forward';
@@ -37,8 +38,8 @@ interface ChatMessage {
 }
 
 // 生成 200 条复杂测试数据
-const generateDemoData = (): DemoItem[] => {
-  const badges = ['新', '热', '荐', '顶', '荐', '', ''];
+const generateDemoData = (t: (key: string) => string): DemoItem[] => {
+  const badges = [t('flashlist.badge.new'), t('flashlist.badge.hot'), t('flashlist.badge.recommend'), t('flashlist.badge.top'), t('flashlist.badge.recommend'), '', ''];
   const types: ItemType[] = ['normal', 'normal', 'normal', 'special', 'highlight', 'ad'];
   const users = ['用户A', '用户B', '用户C', '用户D', '用户E', '用户F'];
   const data: DemoItem[] = [];
@@ -51,7 +52,7 @@ const generateDemoData = (): DemoItem[] => {
     const avatarIdx = i % 70;
     data.push({
       id: String(i),
-      title: `列表项 ${i} - ${users[userIdx]!}`,
+      title: `${t('flashlist.listItem')} ${i} - ${users[userIdx]!}`,
       subtitle: `这是第 ${i} 条数据的详细描述内容，可能包含较长文本、需要换行显示的信息，以及一些附加的元数据说明。${i % 5 === 0 ? '这是一段特别长的描述，用于测试列表项的高度自适应能力和布局表现。' : ''}`,
       type,
       badge: badge || undefined,
@@ -63,8 +64,6 @@ const generateDemoData = (): DemoItem[] => {
   }
   return data;
 };
-
-const DEMO_DATA: DemoItem[] = generateDemoData();
 
 // 生成 100 条复杂消息数据
 const generateChatData = (): ChatMessage[] => {
@@ -136,7 +135,7 @@ interface Props {
   busy: boolean;
 }
 
-function formatTime(timestamp: number): string {
+function formatTime(timestamp: number, t: (key: string) => string): string {
   const date = new Date(timestamp);
   const now = new Date();
   const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
@@ -144,9 +143,17 @@ function formatTime(timestamp: number): string {
   if (diffDays === 0) {
     return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
   } else if (diffDays === 1) {
-    return '昨天';
+    return t('flashlist.yesterday');
   } else if (diffDays < 7) {
-    const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+    const weekdays = [
+      t('flashlist.sunday'),
+      t('flashlist.monday'),
+      t('flashlist.tuesday'),
+      t('flashlist.wednesday'),
+      t('flashlist.thursday'),
+      t('flashlist.friday'),
+      t('flashlist.saturday'),
+    ];
     return weekdays[date.getDay()] ?? '';
   } else {
     return `${date.getMonth() + 1}/${date.getDate()}`;
@@ -161,26 +168,30 @@ function formatViews(views: number): string {
 }
 
 export function FlashListTab({ run, append }: Props): React.JSX.Element {
+  const { t } = useTranslation();
   const [useMessageList, setUseMessageList] = useState(false);
   const [showBadge, setShowBadge] = useState(true);
 
+  // 使用 useState 延迟生成数据，以便获取翻译函数
+  const [demoData] = useState(() => generateDemoData(t));
+
   const handleFlashListPress = useCallback(
     (item: DemoItem) => {
-      append(`点击: ${item.title}`);
+      append(`${t('flashlist.clicked')}: ${item.title}`);
     },
-    [append],
+    [append, t],
   );
 
   const handleMessagePress = useCallback(
     (msg: ChatMessage) => {
-      append(`消息: ${msg.content.substring(0, 15)}...`);
+      append(`${t('flashlist.message')}: ${msg.content.substring(0, 15)}...`);
     },
-    [append],
+    [append, t],
   );
 
   const handleEndReached = useCallback(() => {
-    append('触底加载更多...');
-  }, [append]);
+    append(`${t('flashlist.endReached')}`);
+  }, [append, t]);
 
   const renderDemoItem = useCallback(
     ({ item }: { item: DemoItem }) => {
@@ -215,7 +226,7 @@ export function FlashListTab({ run, append }: Props): React.JSX.Element {
                 {item.title}
               </Text>
               {item.timestamp && (
-                <Text style={styles.itemTime}>{formatTime(item.timestamp)}</Text>
+                <Text style={styles.itemTime}>{formatTime(item.timestamp, t)}</Text>
               )}
             </View>
             <Text style={[styles.itemSubtitle, isAd && styles.itemSubtitleAd]} numberOfLines={2}>
@@ -236,7 +247,7 @@ export function FlashListTab({ run, append }: Props): React.JSX.Element {
         </Pressable>
       );
     },
-    [handleFlashListPress, showBadge],
+    [handleFlashListPress, showBadge, t],
   );
 
   const renderChatItem = useCallback(
@@ -327,13 +338,13 @@ export function FlashListTab({ run, append }: Props): React.JSX.Element {
             {item.type === 'forward' && (
               <View style={[styles.chatBubble, styles.chatBubbleForward, isMe ? styles.chatBubbleRight : styles.chatBubbleLeft]}>
                 <Text style={styles.forwardIcon}>🔄</Text>
-                <Text style={styles.forwardText}>转发 {item.forwardCount} 条消息</Text>
+                <Text style={styles.forwardText}>{t('flashlist.forwardCount').replace('{{count}}', String(item.forwardCount))}</Text>
               </View>
             )}
 
             {/* 时间戳和状态 */}
             <View style={[styles.chatFooter, isMe && styles.chatFooterRight]}>
-              <Text style={styles.chatTime}>{formatTime(item.timestamp)}</Text>
+              <Text style={styles.chatTime}>{formatTime(item.timestamp, t)}</Text>
               {isMe && (
                 <Text style={styles.chatStatus}>
                   {item.status === 'read' ? '✓✓' : item.status === 'sent' ? '✓' : '⏳'}
@@ -354,7 +365,7 @@ export function FlashListTab({ run, append }: Props): React.JSX.Element {
         </Pressable>
       );
     },
-    [handleMessagePress],
+    [handleMessagePress, t],
   );
 
   const keyExtractor = useCallback((item: DemoItem) => item.id, []);
@@ -366,10 +377,10 @@ export function FlashListTab({ run, append }: Props): React.JSX.Element {
     <View style={styles.container}>
       {/* 控制区 */}
       <View style={shared.card}>
-        <Text style={shared.cardTitle}>FlashList Demo</Text>
+        <Text style={shared.cardTitle}>{t('flashlist.title')}</Text>
 
         <View style={styles.controlRow}>
-          <Text style={styles.controlLabel}>使用 MessageList（倒序）</Text>
+          <Text style={styles.controlLabel}>{t('flashlist.useMessageList')}</Text>
           <Switch
             value={useMessageList}
             onValueChange={setUseMessageList}
@@ -378,7 +389,7 @@ export function FlashListTab({ run, append }: Props): React.JSX.Element {
         </View>
 
         <View style={styles.controlRow}>
-          <Text style={styles.controlLabel}>显示徽章</Text>
+          <Text style={styles.controlLabel}>{t('flashlist.showBadge')}</Text>
           <Switch
             value={showBadge}
             onValueChange={setShowBadge}
@@ -388,8 +399,8 @@ export function FlashListTab({ run, append }: Props): React.JSX.Element {
 
         <Text style={styles.hint}>
           {useMessageList
-            ? 'MessageList 倒序排列，支持多种消息类型'
-            : `FlashList 普通列表，${DEMO_DATA.length} 条数据，多种 Item 类型`}
+            ? t('flashlist.messageListHint')
+            : t('flashlist.flashListHint').replace('{{count}}', String(demoData.length))}
         </Text>
       </View>
 
@@ -408,7 +419,7 @@ export function FlashListTab({ run, append }: Props): React.JSX.Element {
           />
         ) : (
           <FlashList<DemoItem>
-            data={DEMO_DATA}
+            data={demoData}
             renderItem={renderDemoItem}
             keyExtractor={keyExtractor}
             getItemType={getItemType}
@@ -422,12 +433,12 @@ export function FlashListTab({ run, append }: Props): React.JSX.Element {
       </View>
 
       <View style={shared.card}>
-        <Text style={shared.cardTitle}>说明</Text>
+        <Text style={shared.cardTitle}>{t('flashlist.description')}</Text>
         <Text style={styles.infoText}>
-          列表项数量: {useMessageList ? CHAT_DATA.length : DEMO_DATA.length}
+          {t('flashlist.itemCount')}: {useMessageList ? CHAT_DATA.length : demoData.length}
         </Text>
         <Text style={styles.infoText}>
-          点击列表项可查看日志输出
+          {t('flashlist.clickToViewLog')}
         </Text>
       </View>
     </View>

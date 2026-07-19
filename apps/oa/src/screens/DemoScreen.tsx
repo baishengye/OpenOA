@@ -1,7 +1,8 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useMemo } from 'react';
 import { ActivityIndicator, ScrollView, Text, View, StyleSheet } from 'react-native';
 import { currentPlatform } from '@itc/base';
 import { TabLayout, Tab } from '@itc/uikit';
+import { useTranslation, useLanguage } from '@itc/i18n';
 import { CapsTab } from './demo/CapsTab';
 import { AuthTab } from './demo/AuthTab';
 import { KeyTab } from './demo/KeyTab';
@@ -15,28 +16,17 @@ import { FlashListTab } from './demo/FlashListTab';
 import { PermissionTab } from './demo/PermissionTab';
 import { FsTab } from './demo/FsTab';
 import { DocumentPickerTab } from './demo/DocumentPickerTab';
+import { I18nTab } from './demo/I18nTab';
 import { describe, shared } from './demo/shared';
 import type { RunFn } from './demo/shared';
 
-type TabKey = 'caps' | 'auth' | 'key' | 'storage' | 'db' | 'hotfix' | 'uikit' | 'push' | 'im' | 'flashlist' | 'permission' | 'fs' | 'docpicker';
-const TAB_KEYS: TabKey[] = ['caps', 'auth', 'key', 'storage', 'db', 'hotfix', 'uikit', 'push', 'im', 'flashlist', 'permission', 'fs', 'docpicker'];
-const TAB_LABELS: Record<TabKey, string> = {
-  caps:      '能力',
-  auth:      '认证',
-  key:       '免密',
-  storage:   '存储',
-  db:        'DB',
-  hotfix:    '热更新',
-  uikit:     'UI',
-  push:      '推送',
-  im:        'IM',
-  flashlist: '列表',
-  permission:'权限',
-  fs:        '文件',
-  docpicker: '文档',
-};
+type TabKey = 'caps' | 'auth' | 'key' | 'storage' | 'db' | 'hotfix' | 'uikit' | 'push' | 'im' | 'flashlist' | 'permission' | 'fs' | 'docpicker' | 'i18n';
+const TAB_KEYS: TabKey[] = ['caps', 'auth', 'key', 'storage', 'db', 'hotfix', 'uikit', 'push', 'im', 'flashlist', 'permission', 'fs', 'docpicker', 'i18n'];
 
 export function DemoScreen(): React.JSX.Element {
+  const { t } = useTranslation();
+  // 订阅语言变化，触发 TAB_LABELS 重新计算
+  const { language: _lang } = useLanguage();
   const [tab, setTab] = useState<TabKey>('uikit');
   const [busy, setBusy] = useState(false);
   const [log, setLog] = useState<string[]>([]);
@@ -51,16 +41,34 @@ export function DemoScreen(): React.JSX.Element {
       try {
         await fn();
       } catch (e) {
-        append(`${label} 失败: ${describe(e)}`);
+        append(`${label} ${t('common.error')}: ${describe(e)}`);
       } finally {
         setBusy(false);
       }
     },
-    [append],
+    [append, t],
   );
 
   const tabProps = { run, append, busy };
   const currentIndex = TAB_KEYS.indexOf(tab);
+
+  // 使用 useMemo 确保 TAB_LABELS 响应语言变化
+  const TAB_LABELS = useMemo<Record<TabKey, string>>(() => ({
+    caps:      t('demo.caps'),
+    auth:      t('demo.auth'),
+    key:       t('demo.key'),
+    storage:   t('demo.storage'),
+    db:        t('demo.db'),
+    hotfix:    t('demo.hotfix'),
+    uikit:     t('demo.uikit'),
+    push:      t('demo.push'),
+    im:        t('demo.im'),
+    flashlist: t('demo.flashlist'),
+    permission:t('demo.permission'),
+    fs:        t('demo.fs'),
+    docpicker: t('demo.docpicker'),
+    i18n:      t('demo.i18n'),
+  }), [t]);
 
   const renderTabContent = ({ index }: { index: number }) => {
     const key = TAB_KEYS[index];
@@ -89,11 +97,12 @@ export function DemoScreen(): React.JSX.Element {
         {key === 'permission' && <PermissionTab busy={busy} append={append} />}
         {key === 'fs'         && <FsTab        busy={busy} append={append} />}
         {key === 'docpicker'  && <DocumentPickerTab busy={busy} append={append} />}
+        {key === 'i18n'       && <I18nTab      busy={busy} />}
 
         {busy && <ActivityIndicator style={styles.spinner} />}
 
         <View style={shared.card}>
-          <Text style={shared.cardTitle}>日志（可复制）</Text>
+          <Text style={shared.cardTitle}>{t('log.title')}</Text>
           {log.length === 0 ? (
             <Text style={shared.mono} selectable>—</Text>
           ) : (

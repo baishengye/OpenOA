@@ -4,6 +4,7 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "lib": ["ESNext", "DOM"],
+    "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
       "@itc/base": [
@@ -26,6 +27,24 @@
       ],
       "@itc/uikit": [
         "../../packages/uikit/src/index.ts"
+      ],
+      "@itc/i18n": [
+        "../../packages/i18n/src/index.ts"
+      ],
+      "@itc/permission": [
+        "../../packages/permission/src/index.ts"
+      ],
+      "@itc/document-picker": [
+        "../../packages/document-picker/src/index.ts"
+      ],
+      "@itc/fs": [
+        "../../packages/fs/src/index.ts"
+      ],
+      "@itc/flash-list": [
+        "../../packages/flash-list/src/index.ts"
+      ],
+      "@itc/db": [
+        "../../packages/db/src/index.ts"
       ]
     }
   },

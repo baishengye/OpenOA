@@ -1,107 +1,13 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { TabLayout, Tab, Button } from '@itc/uikit';
 import { permission, ITC_PERMISSIONS } from '@itc/permission';
 import type { PermissionStatus } from '@itc/permission';
+import { useTranslation } from '@itc/i18n';
 
 // ── 组件内部状态类型（包含 REQUESTING 状态）─────────────────────────────────
 
 type ItemStatus = PermissionStatus | 'REQUESTING';
-
-// ── 权限状态配置 ───────────────────────────────────────────────────────────────
-
-const STATUS_CONFIG = {
-  granted: { label: '已授权', color: '#fff', bgColor: '#22c55e' },
-  denied: { label: '已拒绝', color: '#fff', bgColor: '#ef4444' },
-  blocked: { label: '永久拒绝', color: '#fff', bgColor: '#6b7280' },
-  unavailable: { label: '不可用', color: '#fff', bgColor: '#9ca3af' },
-  limited: { label: '受限', color: '#fff', bgColor: '#f59e0b' },
-  REQUESTING: { label: '请求中', color: '#fff', bgColor: '#3b82f6' },
-} as const;
-
-function getStatusConfig(status: ItemStatus) {
-  return STATUS_CONFIG[status] ?? STATUS_CONFIG.denied;
-}
-
-// ── 平台权限数据 ──────────────────────────────────────────────────────────────
-
-const PLATFORM_PERMISSIONS = {
-  ANDROID: [
-    { key: ITC_PERMISSIONS.ANDROID.CAMERA, label: '相机' },
-    { key: ITC_PERMISSIONS.ANDROID.RECORD_AUDIO, label: '麦克风' },
-    { key: ITC_PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION, label: '精确位置' },
-    { key: ITC_PERMISSIONS.ANDROID.ACCESS_COARSE_LOCATION, label: '模糊位置' },
-    { key: ITC_PERMISSIONS.ANDROID.ACCESS_BACKGROUND_LOCATION, label: '后台位置' },
-    { key: ITC_PERMISSIONS.ANDROID.READ_CONTACTS, label: '读取联系人' },
-    { key: ITC_PERMISSIONS.ANDROID.WRITE_CONTACTS, label: '写入联系人' },
-    { key: ITC_PERMISSIONS.ANDROID.READ_CALENDAR, label: '读取日历' },
-    { key: ITC_PERMISSIONS.ANDROID.WRITE_CALENDAR, label: '写入日历' },
-    { key: ITC_PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE, label: '读取存储' },
-    { key: ITC_PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE, label: '写入存储' },
-    { key: ITC_PERMISSIONS.ANDROID.READ_MEDIA_IMAGES, label: '读取图片' },
-    { key: ITC_PERMISSIONS.ANDROID.READ_MEDIA_VIDEO, label: '读取视频' },
-    { key: ITC_PERMISSIONS.ANDROID.READ_MEDIA_AUDIO, label: '读取音频' },
-    { key: ITC_PERMISSIONS.ANDROID.BLUETOOTH_SCAN, label: '蓝牙扫描' },
-    { key: ITC_PERMISSIONS.ANDROID.BLUETOOTH_CONNECT, label: '蓝牙连接' },
-    { key: ITC_PERMISSIONS.ANDROID.BLUETOOTH_ADVERTISE, label: '蓝牙广播' },
-    { key: ITC_PERMISSIONS.ANDROID.POST_NOTIFICATIONS, label: '通知' },
-    { key: ITC_PERMISSIONS.ANDROID.BODY_SENSORS, label: '身体传感器' },
-    { key: ITC_PERMISSIONS.ANDROID.ACTIVITY_RECOGNITION, label: '活动识别' },
-    { key: ITC_PERMISSIONS.ANDROID.ACCEPT_HANDOVER, label: '通话转接' },
-    { key: ITC_PERMISSIONS.ANDROID.ACCESS_MEDIA_LOCATION, label: '媒体位置' },
-    { key: ITC_PERMISSIONS.ANDROID.ADD_VOICEMAIL, label: '语音邮件' },
-    { key: ITC_PERMISSIONS.ANDROID.ANSWER_PHONE_CALLS, label: '接听电话' },
-    { key: ITC_PERMISSIONS.ANDROID.CALL_PHONE, label: '拨打电话' },
-    { key: ITC_PERMISSIONS.ANDROID.GET_ACCOUNTS, label: '获取账户' },
-    { key: ITC_PERMISSIONS.ANDROID.NEARBY_WIFI_DEVICES, label: '附近WiFi设备' },
-    { key: ITC_PERMISSIONS.ANDROID.PROCESS_OUTGOING_CALLS, label: '处理外呼' },
-    { key: ITC_PERMISSIONS.ANDROID.READ_CALL_LOG, label: '读取通话记录' },
-    { key: ITC_PERMISSIONS.ANDROID.WRITE_CALL_LOG, label: '写入通话记录' },
-    { key: ITC_PERMISSIONS.ANDROID.READ_PHONE_NUMBERS, label: '读取电话号码' },
-    { key: ITC_PERMISSIONS.ANDROID.READ_PHONE_STATE, label: '读取手机状态' },
-    { key: ITC_PERMISSIONS.ANDROID.READ_SMS, label: '读取短信' },
-    { key: ITC_PERMISSIONS.ANDROID.RECEIVE_SMS, label: '接收短信' },
-    { key: ITC_PERMISSIONS.ANDROID.RECEIVE_MMS, label: '接收彩信' },
-    { key: ITC_PERMISSIONS.ANDROID.SEND_SMS, label: '发送短信' },
-    { key: ITC_PERMISSIONS.ANDROID.USE_SIP, label: '使用SIP' },
-    { key: ITC_PERMISSIONS.ANDROID.UWB_RANGING, label: 'UWB测距' },
-  ],
-  IOS: [
-    { key: ITC_PERMISSIONS.IOS.CAMERA, label: '相机' },
-    { key: ITC_PERMISSIONS.IOS.MICROPHONE, label: '麦克风' },
-    { key: ITC_PERMISSIONS.IOS.LOCATION_WHEN_IN_USE, label: '位置(使用时)' },
-    { key: ITC_PERMISSIONS.IOS.LOCATION_ALWAYS, label: '位置(始终)' },
-    { key: ITC_PERMISSIONS.IOS.CONTACTS, label: '联系人' },
-    { key: ITC_PERMISSIONS.IOS.CALENDARS, label: '日历' },
-    { key: ITC_PERMISSIONS.IOS.PHOTO_LIBRARY, label: '照片库' },
-    { key: ITC_PERMISSIONS.IOS.MEDIA_LIBRARY, label: '媒体库' },
-    { key: ITC_PERMISSIONS.IOS.REMINDERS, label: '提醒' },
-    { key: ITC_PERMISSIONS.IOS.SPEECH_RECOGNITION, label: '语音识别' },
-    { key: ITC_PERMISSIONS.IOS.MOTION, label: '运动与健身' },
-    { key: ITC_PERMISSIONS.IOS.APP_TRACKING_TRANSPARENCY, label: '追踪透明化' },
-    { key: ITC_PERMISSIONS.IOS.FACE_ID, label: 'Face ID' },
-    // 注意：Siri 权限需要 com.apple.developer.siri entitlement，应用未配置会崩溃
-    // { key: ITC_PERMISSIONS.IOS.SIRI, label: 'Siri' },
-    { key: ITC_PERMISSIONS.IOS.STOREKIT, label: 'StoreKit' },
-    { key: ITC_PERMISSIONS.IOS.BLUETOOTH, label: '蓝牙' },
-  ],
-  HARMONY: [
-    { key: ITC_PERMISSIONS.HARMONY.CAMERA, label: '相机' },
-    { key: ITC_PERMISSIONS.HARMONY.MICROPHONE, label: '麦克风' },
-    { key: ITC_PERMISSIONS.HARMONY.LOCATION, label: '精确位置' },
-    { key: ITC_PERMISSIONS.HARMONY.APPROXIMATELY_LOCATION, label: '模糊位置' },
-    { key: ITC_PERMISSIONS.HARMONY.READ_CONTACTS, label: '读取联系人' },
-    { key: ITC_PERMISSIONS.HARMONY.WRITE_CONTACTS, label: '写入联系人' },
-    { key: ITC_PERMISSIONS.HARMONY.READ_CALENDAR, label: '读取日历' },
-    { key: ITC_PERMISSIONS.HARMONY.WRITE_CALENDAR, label: '写入日历' },
-    { key: ITC_PERMISSIONS.HARMONY.READ_HEALTH_DATA, label: '健康数据' },
-    { key: ITC_PERMISSIONS.HARMONY.ACTIVITY_MOTION, label: '活动识别' },
-    { key: ITC_PERMISSIONS.HARMONY.READ_MEDIA, label: '读取媒体' },
-    { key: ITC_PERMISSIONS.HARMONY.MEDIA_LOCATION, label: '媒体位置' },
-    { key: ITC_PERMISSIONS.HARMONY.ACCESS_BLUETOOTH, label: '蓝牙连接' },
-    { key: ITC_PERMISSIONS.HARMONY.DISTRIBUTED_DATASYNC, label: '分布式数据同步' },
-  ],
-};
 
 // ── 单个权限项组件 ───────────────────────────────────────────────────────────
 
@@ -111,6 +17,7 @@ interface PermissionItemProps {
   status: ItemStatus;
   disabled: boolean;
   onRequest: (key: string) => void;
+  t: (key: string) => string;
 }
 
 function PermissionItem({
@@ -119,9 +26,20 @@ function PermissionItem({
   status,
   disabled,
   onRequest,
+  t,
 }: PermissionItemProps) {
   const isRequesting = status === 'REQUESTING';
-  const config = getStatusConfig(status);
+
+  const statusConfig: Record<string, { label: string; color: string; bgColor: string }> = {
+    granted: { label: t('permission.granted'), color: '#fff', bgColor: '#22c55e' },
+    denied: { label: t('permission.denied'), color: '#fff', bgColor: '#ef4444' },
+    blocked: { label: t('permission.blocked'), color: '#fff', bgColor: '#6b7280' },
+    unavailable: { label: t('permission.unavailable'), color: '#fff', bgColor: '#9ca3af' },
+    limited: { label: t('permission.limited'), color: '#fff', bgColor: '#f59e0b' },
+    REQUESTING: { label: t('permission.requesting'), color: '#fff', bgColor: '#3b82f6' },
+  };
+
+  const config = statusConfig[status] ?? statusConfig.denied!;
 
   return (
     <View style={styles.permissionItem}>
@@ -143,7 +61,7 @@ function PermissionItem({
         loading={isRequesting}
         onPress={() => onRequest(permissionKey)}
       >
-        {status === 'granted' ? '重新申请' : '请求'}
+        {status === 'granted' ? t('permission.reRequest') : t('permission.request')}
       </Button>
     </View>
   );
@@ -155,12 +73,14 @@ interface PlatformPermissionListProps {
   permissions: { key: string; label: string }[];
   busy: boolean;
   append: (line: string) => void;
+  t: (key: string) => string;
 }
 
 function PlatformPermissionList({
   permissions,
   busy,
   append,
+  t,
 }: PlatformPermissionListProps) {
   const [statuses, setStatuses] = useState<Record<string, ItemStatus>>({});
 
@@ -169,8 +89,8 @@ function PlatformPermissionList({
     const results = await permission.checkMultiple(keys);
     setStatuses(results);
     const grantedCount = Object.values(results).filter(s => s === 'granted').length;
-    append(`✅ 批量检查完成: ${grantedCount}/${permissions.length} 已授权`);
-  }, [permissions, append]);
+    append(`${t('common.success')} ${t('permission.batchCheckDone').replace('{{granted}}', String(grantedCount)).replace('{{total}}', String(permissions.length))}`);
+  }, [permissions, append, t]);
 
   useEffect(() => {
     checkAll();
@@ -188,22 +108,22 @@ function PlatformPermissionList({
         setStatuses(prev => ({ ...prev, [key]: result }));
 
         if (result === 'granted') {
-          append(`✅ ${label} 授权成功`);
+          append(`${t('common.success')} ${label} ${t('permission.grantSuccess')}`);
         } else if (result === 'denied') {
-          append(`❌ ${label} 授权被拒绝`);
+          append(`${t('common.error')} ${label} ${t('permission.grantDenied')}`);
         } else if (result === 'blocked') {
-          append(`⚠️ ${label} 永久拒绝，请在设置中开启`);
+          append(`${t('common.warning')} ${label} ${t('permission.grantBlocked')}`);
         } else if (result === 'unavailable') {
-          append(`⚠️ ${label} 设备不支持该权限`);
+          append(`${t('common.warning')} ${label} ${t('permission.notSupported')}`);
         } else {
-          append(`ℹ️ ${label} 状态: ${result}`);
+          append(`${t('common.info')} ${label} ${t('common.status')}: ${result}`);
         }
       } catch (error) {
         setStatuses(prev => ({ ...prev, [key]: 'denied' }));
-        append(`❌ ${label} 请求异常: ${error}`);
+        append(`${t('common.error')} ${label} ${t('permission.requestError')}: ${error}`);
       }
     },
-    [permissions, append],
+    [permissions, append, t],
   );
 
   return (
@@ -216,6 +136,7 @@ function PlatformPermissionList({
           status={statuses[perm.key] ?? 'denied'}
           disabled={busy}
           onRequest={requestPermission}
+          t={t}
         />
       ))}
     </ScrollView>
@@ -230,14 +151,101 @@ interface PermissionTabProps {
 }
 
 export function PermissionTab({ busy, append }: PermissionTabProps) {
+  const { t } = useTranslation();
   const safeAppend = append ?? (() => {});
+
+  const PLATFORM_PERMISSIONS = [
+    {
+      key: 'android',
+      label: t('permission.android'),
+      permissions: [
+        { key: ITC_PERMISSIONS.ANDROID.CAMERA, label: 'Camera' },
+        { key: ITC_PERMISSIONS.ANDROID.RECORD_AUDIO, label: 'Microphone' },
+        { key: ITC_PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION, label: 'Precise Location' },
+        { key: ITC_PERMISSIONS.ANDROID.ACCESS_COARSE_LOCATION, label: 'Coarse Location' },
+        { key: ITC_PERMISSIONS.ANDROID.ACCESS_BACKGROUND_LOCATION, label: 'Background Location' },
+        { key: ITC_PERMISSIONS.ANDROID.READ_CONTACTS, label: 'Read Contacts' },
+        { key: ITC_PERMISSIONS.ANDROID.WRITE_CONTACTS, label: 'Write Contacts' },
+        { key: ITC_PERMISSIONS.ANDROID.READ_CALENDAR, label: 'Read Calendar' },
+        { key: ITC_PERMISSIONS.ANDROID.WRITE_CALENDAR, label: 'Write Calendar' },
+        { key: ITC_PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE, label: 'Read Storage' },
+        { key: ITC_PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE, label: 'Write Storage' },
+        { key: ITC_PERMISSIONS.ANDROID.READ_MEDIA_IMAGES, label: 'Read Images' },
+        { key: ITC_PERMISSIONS.ANDROID.READ_MEDIA_VIDEO, label: 'Read Video' },
+        { key: ITC_PERMISSIONS.ANDROID.READ_MEDIA_AUDIO, label: 'Read Audio' },
+        { key: ITC_PERMISSIONS.ANDROID.BLUETOOTH_SCAN, label: 'Bluetooth Scan' },
+        { key: ITC_PERMISSIONS.ANDROID.BLUETOOTH_CONNECT, label: 'Bluetooth Connect' },
+        { key: ITC_PERMISSIONS.ANDROID.BLUETOOTH_ADVERTISE, label: 'Bluetooth Advertise' },
+        { key: ITC_PERMISSIONS.ANDROID.POST_NOTIFICATIONS, label: 'Notifications' },
+        { key: ITC_PERMISSIONS.ANDROID.BODY_SENSORS, label: 'Body Sensors' },
+        { key: ITC_PERMISSIONS.ANDROID.ACTIVITY_RECOGNITION, label: 'Activity Recognition' },
+        { key: ITC_PERMISSIONS.ANDROID.ACCEPT_HANDOVER, label: 'Call Handover' },
+        { key: ITC_PERMISSIONS.ANDROID.ACCESS_MEDIA_LOCATION, label: 'Media Location' },
+        { key: ITC_PERMISSIONS.ANDROID.ADD_VOICEMAIL, label: 'Voicemail' },
+        { key: ITC_PERMISSIONS.ANDROID.ANSWER_PHONE_CALLS, label: 'Answer Phone Calls' },
+        { key: ITC_PERMISSIONS.ANDROID.CALL_PHONE, label: 'Make Calls' },
+        { key: ITC_PERMISSIONS.ANDROID.GET_ACCOUNTS, label: 'Get Accounts' },
+        { key: ITC_PERMISSIONS.ANDROID.NEARBY_WIFI_DEVICES, label: 'Nearby WiFi Devices' },
+        { key: ITC_PERMISSIONS.ANDROID.PROCESS_OUTGOING_CALLS, label: 'Process Outgoing Calls' },
+        { key: ITC_PERMISSIONS.ANDROID.READ_CALL_LOG, label: 'Read Call Log' },
+        { key: ITC_PERMISSIONS.ANDROID.WRITE_CALL_LOG, label: 'Write Call Log' },
+        { key: ITC_PERMISSIONS.ANDROID.READ_PHONE_NUMBERS, label: 'Read Phone Numbers' },
+        { key: ITC_PERMISSIONS.ANDROID.READ_PHONE_STATE, label: 'Read Phone State' },
+        { key: ITC_PERMISSIONS.ANDROID.READ_SMS, label: 'Read SMS' },
+        { key: ITC_PERMISSIONS.ANDROID.RECEIVE_SMS, label: 'Receive SMS' },
+        { key: ITC_PERMISSIONS.ANDROID.RECEIVE_MMS, label: 'Receive MMS' },
+        { key: ITC_PERMISSIONS.ANDROID.SEND_SMS, label: 'Send SMS' },
+        { key: ITC_PERMISSIONS.ANDROID.USE_SIP, label: 'Use SIP' },
+        { key: ITC_PERMISSIONS.ANDROID.UWB_RANGING, label: 'UWB Ranging' },
+      ],
+    },
+    {
+      key: 'ios',
+      label: t('permission.ios'),
+      permissions: [
+        { key: ITC_PERMISSIONS.IOS.CAMERA, label: 'Camera' },
+        { key: ITC_PERMISSIONS.IOS.MICROPHONE, label: 'Microphone' },
+        { key: ITC_PERMISSIONS.IOS.LOCATION_WHEN_IN_USE, label: 'Location (In Use)' },
+        { key: ITC_PERMISSIONS.IOS.LOCATION_ALWAYS, label: 'Location (Always)' },
+        { key: ITC_PERMISSIONS.IOS.CONTACTS, label: 'Contacts' },
+        { key: ITC_PERMISSIONS.IOS.CALENDARS, label: 'Calendars' },
+        { key: ITC_PERMISSIONS.IOS.PHOTO_LIBRARY, label: 'Photo Library' },
+        { key: ITC_PERMISSIONS.IOS.MEDIA_LIBRARY, label: 'Media Library' },
+        { key: ITC_PERMISSIONS.IOS.REMINDERS, label: 'Reminders' },
+        { key: ITC_PERMISSIONS.IOS.SPEECH_RECOGNITION, label: 'Speech Recognition' },
+        { key: ITC_PERMISSIONS.IOS.MOTION, label: 'Motion & Fitness' },
+        { key: ITC_PERMISSIONS.IOS.APP_TRACKING_TRANSPARENCY, label: 'App Tracking' },
+        { key: ITC_PERMISSIONS.IOS.FACE_ID, label: 'Face ID' },
+        { key: ITC_PERMISSIONS.IOS.STOREKIT, label: 'StoreKit' },
+        { key: ITC_PERMISSIONS.IOS.BLUETOOTH, label: 'Bluetooth' },
+      ],
+    },
+    {
+      key: 'harmony',
+      label: t('permission.harmony'),
+      permissions: [
+        { key: ITC_PERMISSIONS.HARMONY.CAMERA, label: 'Camera' },
+        { key: ITC_PERMISSIONS.HARMONY.MICROPHONE, label: 'Microphone' },
+        { key: ITC_PERMISSIONS.HARMONY.LOCATION, label: 'Precise Location' },
+        { key: ITC_PERMISSIONS.HARMONY.APPROXIMATELY_LOCATION, label: 'Coarse Location' },
+        { key: ITC_PERMISSIONS.HARMONY.READ_CONTACTS, label: 'Read Contacts' },
+        { key: ITC_PERMISSIONS.HARMONY.WRITE_CONTACTS, label: 'Write Contacts' },
+        { key: ITC_PERMISSIONS.HARMONY.READ_CALENDAR, label: 'Read Calendar' },
+        { key: ITC_PERMISSIONS.HARMONY.WRITE_CALENDAR, label: 'Write Calendar' },
+        { key: ITC_PERMISSIONS.HARMONY.READ_HEALTH_DATA, label: 'Health Data' },
+        { key: ITC_PERMISSIONS.HARMONY.ACTIVITY_MOTION, label: 'Activity Recognition' },
+        { key: ITC_PERMISSIONS.HARMONY.READ_MEDIA, label: 'Read Media' },
+        { key: ITC_PERMISSIONS.HARMONY.MEDIA_LOCATION, label: 'Media Location' },
+        { key: ITC_PERMISSIONS.HARMONY.ACCESS_BLUETOOTH, label: 'Bluetooth Connect' },
+        { key: ITC_PERMISSIONS.HARMONY.DISTRIBUTED_DATASYNC, label: 'Distributed Data' },
+      ],
+    },
+  ];
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>权限演示 (@itc/permission)</Text>
-      <Text style={styles.description}>
-        跨平台权限请求，支持 Android / iOS / HarmonyOS
-      </Text>
+      <Text style={styles.title}>{t('permission.title')}</Text>
+      <Text style={styles.description}>{t('permission.description')}</Text>
       <TabLayout
         defaultValue={0}
         tabSize={50}
@@ -254,24 +262,20 @@ export function PermissionTab({ busy, append }: PermissionTabProps) {
           </View>
         )}
         renderTabContent={({ index }) => {
-          const platformData = [
-            { label: 'Android', permissions: PLATFORM_PERMISSIONS.ANDROID },
-            { label: 'iOS', permissions: PLATFORM_PERMISSIONS.IOS },
-            { label: 'HarmonyOS', permissions: PLATFORM_PERMISSIONS.HARMONY },
-          ];
-          const current = platformData[index];
+          const current = PLATFORM_PERMISSIONS[index];
           return (
             <PlatformPermissionList
               permissions={current?.permissions ?? []}
               busy={busy}
               append={safeAppend}
+              t={t}
             />
           );
         }}
       >
-        <Tab label="Android" />
-        <Tab label="iOS" />
-        <Tab label="HarmonyOS" />
+        {PLATFORM_PERMISSIONS.map(p => (
+          <Tab key={p.key} label={p.label} />
+        ))}
       </TabLayout>
     </View>
   );
