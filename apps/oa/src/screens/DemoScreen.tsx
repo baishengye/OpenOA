@@ -26,7 +26,7 @@ const TAB_KEYS: TabKey[] = ['caps', 'auth', 'key', 'storage', 'db', 'hotfix', 'u
 export function DemoScreen(): React.JSX.Element {
   const { t } = useTranslation();
   // 订阅语言变化，触发 TAB_LABELS 重新计算
-  const { language: _lang } = useLanguage();
+  const { language, direction, isChanging, changeLanguage, availableLanguages } = useLanguage();
   const [tab, setTab] = useState<TabKey>('uikit');
   const [busy, setBusy] = useState(false);
   const [log, setLog] = useState<string[]>([]);
@@ -68,7 +68,7 @@ export function DemoScreen(): React.JSX.Element {
     fs:        t('demo.fs'),
     docpicker: t('demo.docpicker'),
     i18n:      t('demo.i18n'),
-  }), [t]);
+  }), [language]);
 
   const renderTabContent = ({ index }: { index: number }) => {
     const key = TAB_KEYS[index];
