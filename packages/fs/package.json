@@ -1,0 +1,76 @@
+{
+  "name": "@itc/fs",
+  "version": "0.1.0",
+  "description": "OpenOA 项目的文件系统管理模块，通过 FsProvider 接口抽象文件系统能力，统一封装 iOS/Android/HarmonyOS 三端的原生文件系统 API，提供跨平台一致的文件操作体验。",
+  "keywords": [
+    "react-native",
+    "filesystem",
+    "harmonyos",
+    "ios",
+    "android",
+    "file"
+  ],
+  "license": "UNLICENSED",
+  "author": "OpenOA Team",
+  "main": "./lib/module/index.js",
+  "module": "./lib/module/index.js",
+  "types": "./lib/typescript/commonjs/index.d.ts",
+  "source": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/typescript/commonjs/index.d.ts",
+      "default": "./lib/module/index.js",
+      "source": "./src/index.ts",
+      "react-native": "./src/index.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "lib"
+  ],
+  "scripts": {
+    "build": "bob build",
+    "clean": "rimraf lib",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@itc/base": "workspace:*",
+    "@react-native-ohos/react-native-fs": "2.20.2-beta.2",
+    "react-native-fs-turbo": "^0.5.1"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-native": ">=0.82.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "@types/react-native": "^0.73.0",
+    "react-native": "0.82.1",
+    "react-native-builder-bob": "^0.32.1",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.3"
+  },
+  "react-native-builder-bob": {
+    "source": "src",
+    "output": "lib",
+    "targets": [
+      [
+        "module",
+        {
+          "esm": true
+        }
+      ],
+      [
+        "typescript",
+        {
+          "esm": true
+        }
+      ]
+    ]
+  },
+  "publishConfig": {
+    "access": "restricted"
+  },
+  "sideEffects": false
+}

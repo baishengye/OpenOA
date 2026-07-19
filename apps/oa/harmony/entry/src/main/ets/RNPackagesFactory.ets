@@ -12,6 +12,7 @@ import { CodePushPackage } from '@react-native-ohos/react-native-code-push/ts';
 // safe-area-context 鸿蒙移植包（@react-native-ohos 5.6.3，RNOH 0.82）；取代旧 stub 降级。
 import { SafeAreaViewPackage } from '@react-native-ohos/react-native-safe-area-context/ts';
 import {PermissionsPackage} from '@react-native-ohos/react-native-permissions/ts';
+import { FsPackage } from '@react-native-ohos/react-native-fs/ts';
 
 export function createRNPackages(ctx: RNPackageContext): RNPackage[] {
   return [
@@ -22,5 +23,6 @@ export function createRNPackages(ctx: RNPackageContext): RNPackage[] {
     new CodePushPackage(ctx),
     new SafeAreaViewPackage(ctx),
     new PermissionsPackage(ctx),
+    new FsPackage(ctx),
   ];
 }

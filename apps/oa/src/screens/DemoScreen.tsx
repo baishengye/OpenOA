@@ -13,11 +13,12 @@ import { PushTab } from './demo/PushTab';
 import { ImTab } from './demo/ImTab';
 import { FlashListTab } from './demo/FlashListTab';
 import { PermissionTab } from './demo/PermissionTab';
+import { FsTab } from './demo/FsTab';
 import { describe, shared } from './demo/shared';
 import type { RunFn } from './demo/shared';
 
-type TabKey = 'caps' | 'auth' | 'key' | 'storage' | 'db' | 'hotfix' | 'uikit' | 'push' | 'im' | 'flashlist' | 'permission';
-const TAB_KEYS: TabKey[] = ['caps', 'auth', 'key', 'storage', 'db', 'hotfix', 'uikit', 'push', 'im', 'flashlist', 'permission'];
+type TabKey = 'caps' | 'auth' | 'key' | 'storage' | 'db' | 'hotfix' | 'uikit' | 'push' | 'im' | 'flashlist' | 'permission' | 'fs';
+const TAB_KEYS: TabKey[] = ['caps', 'auth', 'key', 'storage', 'db', 'hotfix', 'uikit', 'push', 'im', 'flashlist', 'permission', 'fs'];
 const TAB_LABELS: Record<TabKey, string> = {
   caps:      '能力',
   auth:      '认证',
@@ -30,6 +31,7 @@ const TAB_LABELS: Record<TabKey, string> = {
   im:        'IM',
   flashlist: '列表',
   permission:'权限',
+  fs:        '文件',
 };
 
 export function DemoScreen(): React.JSX.Element {
@@ -83,6 +85,7 @@ export function DemoScreen(): React.JSX.Element {
         {key === 'push'       && <PushTab       {...tabProps} />}
         {key === 'im'         && <ImTab         {...tabProps} />}
         {key === 'permission' && <PermissionTab busy={busy} append={append} />}
+        {key === 'fs'         && <FsTab        busy={busy} append={append} />}
 
         {busy && <ActivityIndicator style={styles.spinner} />}
 

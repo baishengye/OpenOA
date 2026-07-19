@@ -30,6 +30,9 @@ add_subdirectory("${OH_MODULE_DIR}/@react-native-ohos/react-native-code-push/src
 # 权限申请
 add_subdirectory("${OH_MODULE_DIR}/@react-native-ohos/react-native-permissions/src/main/cpp" ./permissions)
 
+# 文件访问
+add_subdirectory("${OH_MODULE_DIR}/@react-native-ohos/react-native-fs/src/main/cpp" ./fs)
+
 # codegen-harmony v1 产物（app 级）：biometric 的 C++ 已迁到其库里，此处现为空壳。
 file(GLOB GENERATED_CPP_FILES "${CMAKE_CURRENT_SOURCE_DIR}/generated/*.cpp")
 
@@ -50,4 +53,4 @@ add_library(rnoh_app SHARED
 )
 
 target_include_directories(rnoh_app PUBLIC "${BIOMETRIC_LIB_CPP}" "${OPENIM_LIB_CPP}")
-target_link_libraries(rnoh_app PUBLIC rnoh rnoh_rn_op_sqlite rnoh_mmkv_storage rnoh_safe_area rnoh_code_push rnoh_permissions)
+target_link_libraries(rnoh_app PUBLIC rnoh rnoh_rn_op_sqlite rnoh_mmkv_storage rnoh_safe_area rnoh_code_push rnoh_permissions rnoh_fs)
