@@ -13,6 +13,7 @@ import { CodePushPackage } from '@react-native-ohos/react-native-code-push/ts';
 import { SafeAreaViewPackage } from '@react-native-ohos/react-native-safe-area-context/ts';
 import {PermissionsPackage} from '@react-native-ohos/react-native-permissions/ts';
 import { FsPackage } from '@react-native-ohos/react-native-fs/ts';
+import { DocumentPickerPackage } from '@react-native-ohos/react-native-document-picker/ts';
 
 export function createRNPackages(ctx: RNPackageContext): RNPackage[] {
   return [
@@ -24,5 +25,6 @@ export function createRNPackages(ctx: RNPackageContext): RNPackage[] {
     new SafeAreaViewPackage(ctx),
     new PermissionsPackage(ctx),
     new FsPackage(ctx),
+    new DocumentPickerPackage(ctx),
   ];
 }

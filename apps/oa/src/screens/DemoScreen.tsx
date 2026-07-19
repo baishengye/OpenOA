@@ -14,11 +14,12 @@ import { ImTab } from './demo/ImTab';
 import { FlashListTab } from './demo/FlashListTab';
 import { PermissionTab } from './demo/PermissionTab';
 import { FsTab } from './demo/FsTab';
+import { DocumentPickerTab } from './demo/DocumentPickerTab';
 import { describe, shared } from './demo/shared';
 import type { RunFn } from './demo/shared';
 
-type TabKey = 'caps' | 'auth' | 'key' | 'storage' | 'db' | 'hotfix' | 'uikit' | 'push' | 'im' | 'flashlist' | 'permission' | 'fs';
-const TAB_KEYS: TabKey[] = ['caps', 'auth', 'key', 'storage', 'db', 'hotfix', 'uikit', 'push', 'im', 'flashlist', 'permission', 'fs'];
+type TabKey = 'caps' | 'auth' | 'key' | 'storage' | 'db' | 'hotfix' | 'uikit' | 'push' | 'im' | 'flashlist' | 'permission' | 'fs' | 'docpicker';
+const TAB_KEYS: TabKey[] = ['caps', 'auth', 'key', 'storage', 'db', 'hotfix', 'uikit', 'push', 'im', 'flashlist', 'permission', 'fs', 'docpicker'];
 const TAB_LABELS: Record<TabKey, string> = {
   caps:      '能力',
   auth:      '认证',
@@ -32,6 +33,7 @@ const TAB_LABELS: Record<TabKey, string> = {
   flashlist: '列表',
   permission:'权限',
   fs:        '文件',
+  docpicker: '文档',
 };
 
 export function DemoScreen(): React.JSX.Element {
@@ -86,6 +88,7 @@ export function DemoScreen(): React.JSX.Element {
         {key === 'im'         && <ImTab         {...tabProps} />}
         {key === 'permission' && <PermissionTab busy={busy} append={append} />}
         {key === 'fs'         && <FsTab        busy={busy} append={append} />}
+        {key === 'docpicker'  && <DocumentPickerTab busy={busy} append={append} />}
 
         {busy && <ActivityIndicator style={styles.spinner} />}
 

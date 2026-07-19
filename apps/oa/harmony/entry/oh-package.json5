@@ -14,6 +14,7 @@
     "@react-native-oh-tpl/react-native-mmkv-storage": "file:../../node_modules/@react-native-oh-tpl/react-native-mmkv-storage/harmony/mmkv_storage.har",
     "@react-native-ohos/react-native-code-push": "file:../../node_modules/@react-native-ohos/react-native-code-push/harmony/codePush.har",
     "@react-native-ohos/react-native-safe-area-context": "file:../../node_modules/@react-native-ohos/react-native-safe-area-context/harmony/safe_area.har",
-    "@react-native-ohos/react-native-fs": "file:../../node_modules/@react-native-ohos/react-native-fs/harmony/fs.har"
+    "@react-native-ohos/react-native-fs": "file:../../node_modules/@react-native-ohos/react-native-fs/harmony/fs.har",
+    "@react-native-ohos/react-native-document-picker": "file:../../node_modules/@react-native-ohos/react-native-document-picker/harmony/document_picker.har"
   }
 }

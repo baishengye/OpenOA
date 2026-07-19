@@ -23,6 +23,7 @@
     "@itc/base": "workspace:*",
     "@itc/biometric": "workspace:*",
     "@itc/db": "workspace:*",
+    "@itc/document-picker": "workspace:*",
     "@itc/flash-list": "workspace:*",
     "@itc/fs": "workspace:*",
     "@itc/hotfix": "workspace:*",
@@ -43,6 +44,8 @@
     "react-native-permissions": "^5.0.0",
     "@react-native-ohos/react-native-fs": "2.20.2-beta.2",
     "react-native-fs-turbo": "^0.5.1",
+    "@react-native-ohos/react-native-document-picker": "~9.3.2",
+    "@react-native-documents/picker": "^12.0.1",
     "react": "19.1.1",
     "react-native": "0.82.1"
   },

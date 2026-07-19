@@ -1,0 +1,76 @@
+{
+  "name": "@itc/document-picker",
+  "version": "0.1.0",
+  "description": "OpenOA 项目的文档选择器模块，通过 DocumentPickerProvider 接口抽象文档选择能力，统一封装 iOS/Android/HarmonyOS 三端的原生文档选择 API，提供跨平台一致的文档选择体验。",
+  "keywords": [
+    "react-native",
+    "document-picker",
+    "file-picker",
+    "harmonyos",
+    "ios",
+    "android"
+  ],
+  "license": "UNLICENSED",
+  "author": "OpenOA Team",
+  "main": "./lib/module/index.js",
+  "module": "./lib/module/index.js",
+  "types": "./lib/typescript/commonjs/index.d.ts",
+  "source": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/typescript/commonjs/index.d.ts",
+      "default": "./lib/module/index.js",
+      "source": "./src/index.ts",
+      "react-native": "./src/index.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "lib"
+  ],
+  "scripts": {
+    "build": "bob build",
+    "clean": "rimraf lib",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@itc/base": "workspace:*",
+    "@react-native-ohos/react-native-document-picker": "~9.3.2",
+    "@react-native-documents/picker": "^12.0.1"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-native": ">=0.82.0"
+  },
+  "devDependencies": {
+    "@types/react-native": "^0.73.0",
+    "@itc/base": "workspace:*",
+    "react-native": "0.82.1",
+    "react-native-builder-bob": "^0.32.1",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.3"
+  },
+  "react-native-builder-bob": {
+    "source": "src",
+    "output": "lib",
+    "targets": [
+      [
+        "module",
+        {
+          "esm": true
+        }
+      ],
+      [
+        "typescript",
+        {
+          "esm": true
+        }
+      ]
+    ]
+  },
+  "publishConfig": {
+    "access": "restricted"
+  },
+  "sideEffects": false
+}
