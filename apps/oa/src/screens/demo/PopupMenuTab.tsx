@@ -197,6 +197,121 @@ export function PopupMenuTab({ append }: Props): React.JSX.Element {
         </Menu>
       </View>
 
+      {/* 完全自定义菜单内容 */}
+      <View style={shared.card}>
+        <Text style={shared.cardTitle}>完全自定义 UI</Text>
+        <Text style={styles.description}>使用 renderContent 自定义整个菜单</Text>
+
+        <Menu onSelect={handleSelect}>
+          <MenuTrigger>
+            <Button>自定义菜单</Button>
+          </MenuTrigger>
+          <MenuOptions
+            offsetX={50}
+            offsetY={-100}
+            renderContent={({ close }) => (
+              <View style={styles.customMenuContainer}>
+                <View style={styles.customMenuHeader}>
+                  <Text style={styles.customMenuTitle}>操作</Text>
+                  <Pressable onPress={close}>
+                    <Text style={styles.customMenuClose}>✕</Text>
+                  </Pressable>
+                </View>
+                <Pressable
+                  style={styles.customMenuItem}
+                  onPress={() => { handleSelect('action1'); close(); }}
+                >
+                  <Text style={styles.customMenuIcon}>🚀</Text>
+                  <View>
+                    <Text style={styles.customMenuLabel}>发起流程</Text>
+                    <Text style={styles.customMenuDesc}>创建新的审批流程</Text>
+                  </View>
+                </Pressable>
+                <Pressable
+                  style={styles.customMenuItem}
+                  onPress={() => { handleSelect('action2'); close(); }}
+                >
+                  <Text style={styles.customMenuIcon}>📊</Text>
+                  <View>
+                    <Text style={styles.customMenuLabel}>数据统计</Text>
+                    <Text style={styles.customMenuDesc}>查看业务数据报表</Text>
+                  </View>
+                </Pressable>
+                <Pressable
+                  style={[styles.customMenuItem, styles.customMenuItemDisabled]}
+                  disabled
+                >
+                  <Text style={styles.customMenuIcon}>⚙️</Text>
+                  <View>
+                    <Text style={styles.customMenuLabelDisabled}>系统设置</Text>
+                    <Text style={styles.customMenuDesc}>暂无权限</Text>
+                  </View>
+                </Pressable>
+              </View>
+            )}
+          />
+        </Menu>
+      </View>
+
+      {/* 自定义单个选项 */}
+      <View style={shared.card}>
+        <Text style={shared.cardTitle}>自定义选项样式</Text>
+        <Text style={styles.description}>使用 renderOption 自定义单个选项</Text>
+
+        <Menu onSelect={handleSelect}>
+          <MenuTrigger>
+            <Button>带图标的菜单</Button>
+          </MenuTrigger>
+          <MenuOptions placement="bottom">
+            <MenuOption
+              value="profile"
+              renderOption={({ disabled, onPress }) => (
+                <Pressable
+                  style={[styles.iconMenuItem, disabled && styles.iconMenuItemDisabled]}
+                  onPress={onPress}
+                  disabled={disabled}
+                >
+                  <Text style={styles.iconMenuIcon}>👤</Text>
+                  <Text style={[styles.iconMenuText, disabled && styles.iconMenuTextDisabled]}>
+                    个人资料
+                  </Text>
+                </Pressable>
+              )}
+            />
+            <MenuOption
+              value="settings"
+              renderOption={({ disabled, onPress }) => (
+                <Pressable
+                  style={[styles.iconMenuItem, disabled && styles.iconMenuItemDisabled]}
+                  onPress={onPress}
+                  disabled={disabled}
+                >
+                  <Text style={styles.iconMenuIcon}>⚙️</Text>
+                  <Text style={[styles.iconMenuText, disabled && styles.iconMenuTextDisabled]}>
+                    设置
+                  </Text>
+                </Pressable>
+              )}
+            />
+            <MenuOption
+              value="logout"
+              renderOption={({ disabled, onPress }) => (
+                <Pressable
+                  style={[styles.iconMenuItem, styles.iconMenuItemDanger]}
+                  onPress={onPress}
+                  disabled={disabled}
+                >
+                  <Text style={styles.iconMenuIcon}>🚪</Text>
+                  <Text style={[styles.iconMenuText, styles.iconMenuTextDanger]}>
+                    退出登录
+                  </Text>
+                </Pressable>
+              )}
+            />
+          </MenuOptions>
+        </Menu>
+      </View>
+
       <View style={{ height: 100 }} />
     </ScrollView>
   );
@@ -229,5 +344,93 @@ const styles = StyleSheet.create({
   messageText: {
     fontSize: 14,
     color: '#333',
+  },
+  // 完全自定义菜单样式
+  customMenuContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    minWidth: 220,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+    overflow: 'hidden',
+  },
+  customMenuHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  customMenuTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1f2329',
+  },
+  customMenuClose: {
+    fontSize: 18,
+    color: '#999',
+    padding: 4,
+  },
+  customMenuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    gap: 12,
+  },
+  customMenuItemDisabled: {
+    opacity: 0.5,
+  },
+  customMenuIcon: {
+    fontSize: 20,
+  },
+  customMenuLabel: {
+    fontSize: 15,
+    color: '#1f2329',
+    fontWeight: '500',
+  },
+  customMenuLabelDisabled: {
+    fontSize: 15,
+    color: '#999',
+    fontWeight: '500',
+  },
+  customMenuDesc: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 2,
+  },
+  // 自定义选项样式
+  iconMenuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f5f5f5',
+  },
+  iconMenuItemDisabled: {
+    opacity: 0.5,
+  },
+  iconMenuItemDanger: {
+    borderBottomWidth: 0,
+  },
+  iconMenuIcon: {
+    fontSize: 18,
+  },
+  iconMenuText: {
+    fontSize: 15,
+    color: '#1f2329',
+  },
+  iconMenuTextDisabled: {
+    color: '#999',
+  },
+  iconMenuTextDanger: {
+    color: '#ff3b30',
   },
 });

@@ -63,6 +63,12 @@ export interface MenuOptionsProps {
   optionsStyle?: StyleProp<ViewStyle>;
   /** 自定义遮罩层样式 */
   overlayStyle?: StyleProp<ViewStyle>;
+  /** 完全自定义菜单内容（优先级高于 children） */
+  renderContent?: (props: { close: () => void }) => ReactNode;
+  /** X轴偏移量（向左，正值向左） */
+  offsetX?: number;
+  /** Y轴偏移量（向上，正值向上） */
+  offsetY?: number;
 }
 
 // ── MenuOption ─────────────────────────────────────────────────────────
@@ -77,6 +83,8 @@ export interface MenuOptionProps {
   disabled?: boolean;
   /** 选中回调 */
   onSelect?: (value: string | number | object) => void;
+  /** 完全自定义选项内容（优先级高于 children） */
+  renderOption?: (props: { disabled: boolean; onPress: () => void }) => ReactNode;
 }
 
 // ── Context 类型 ─────────────────────────────────────────────────────────

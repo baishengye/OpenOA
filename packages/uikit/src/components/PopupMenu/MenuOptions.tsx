@@ -21,6 +21,9 @@ export const MenuOptions: FC<MenuOptionsProps> = ({
   verticalDirection = 'down',
   optionsStyle,
   overlayStyle,
+  renderContent,
+  offsetX = 0,
+  offsetY = 0,
 }) => {
   const { visible, close, triggerLayout, config } = useMenuContext();
 
@@ -40,22 +43,48 @@ export const MenuOptions: FC<MenuOptionsProps> = ({
 
     if (placement === 'top') {
       return {
-        top: pageY - 8,
-        left: pageX,
+        top: pageY - 8 + offsetY,
+        left: pageX + offsetX,
       };
     }
 
     // 默认 bottom
     return {
-      top: pageY + height + 8,
-      left: pageX,
+      top: pageY + height + 8 + offsetY,
+      left: pageX + offsetX,
     };
-  }, [triggerLayout, placement]);
+  }, [triggerLayout, placement, offsetX, offsetY]);
 
   // 如果菜单不可见，不渲染
   if (!visible) return null;
 
   const position = getMenuPosition();
+
+  // 完全自定义菜单内容
+  if (renderContent) {
+    return (
+      <Modal
+        visible={visible}
+        transparent
+        animationType="fade"
+        onRequestClose={close}
+        statusBarTranslucent
+      >
+        <Pressable
+          style={[
+            menuStyles.overlay,
+            overlayStyle,
+            { backgroundColor: `rgba(0, 0, 0, ${config.overlayOpacity})` },
+          ]}
+          onPress={handleOverlayPress}
+        >
+          <View style={{ position: 'absolute', top: position.top, left: position.left }}>
+            {renderContent({ close })}
+          </View>
+        </Pressable>
+      </Modal>
+    );
+  }
 
   return (
     <Modal

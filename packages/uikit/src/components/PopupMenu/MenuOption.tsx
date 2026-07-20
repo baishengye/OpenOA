@@ -17,24 +17,35 @@ export const MenuOption: FC<MenuOptionProps> = ({
   style,
   disabled = false,
   onSelect,
+  renderOption,
 }) => {
-  const { select } = useMenuContext();
+  const { select, close } = useMenuContext();
 
-  const handlePress = useCallback(() => {
+  const handleSelect = useCallback(() => {
     if (disabled) return;
 
-    // 优先使用自身的 onSelect，否则使用 Context 的 select
     const finalValue = value ?? '';
     if (onSelect) {
       onSelect(finalValue);
     } else {
       select(finalValue);
     }
-  }, [disabled, value, onSelect, select]);
+    // 关闭菜单
+    close();
+  }, [disabled, value, onSelect, select, close]);
+
+  // 完全自定义渲染
+  if (renderOption) {
+    return (
+      <>
+        {renderOption({ disabled, onPress: handleSelect })}
+      </>
+    );
+  }
 
   return (
     <Pressable
-      onPress={handlePress}
+      onPress={handleSelect}
       disabled={disabled}
       style={({ pressed }) => [
         menuStyles.option,
