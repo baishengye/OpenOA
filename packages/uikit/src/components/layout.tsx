@@ -23,6 +23,10 @@ export interface StackProps {
   width?: number | string;
   /** 高度 */
   height?: number | string;
+  /** 最大宽度 */
+  maxWidth?: number | string;
+  /** 溢出处理 */
+  overflow?: 'visible' | 'hidden' | 'scroll';
   /** 内联样式 */
   style?: ViewStyle;
 }
@@ -38,6 +42,8 @@ function base(p: StackProps) {
     borderRadius: p.borderRadius,
     width: p.width,
     height: p.height,
+    maxWidth: p.maxWidth,
+    overflow: p.overflow,
     style: p.style,
   };
 }

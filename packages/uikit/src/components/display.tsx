@@ -1,16 +1,31 @@
 import React, { type ReactNode } from 'react';
 import { Card as TCard, Avatar as TAvatar, Spinner as TSpinner, View, SizableText } from 'tamagui';
+import type { ViewStyle } from 'react-native';
 
 // ── Card ──────────────────────────────────────────────────────────────────────
 export interface CardProps {
   children?: ReactNode;
   padding?: number;
   onPress?: () => void;
+  /** 自定义背景色 */
+  backgroundColor?: string;
+  /** 自定义圆角 */
+  borderRadius?: number;
+  /** 自定义样式 */
+  style?: ViewStyle;
 }
 /** 卡片容器（带边框 + 圆角） */
-export function Card({ children, padding = 16, onPress }: CardProps) {
+export function Card({ children, padding = 16, onPress, backgroundColor, borderRadius, style }: CardProps) {
   return (
-    <TCard borderWidth={1} borderColor="$borderColor" padding={padding} borderRadius="$4" onPress={onPress}>
+    <TCard
+      borderWidth={1}
+      borderColor="$borderColor"
+      padding={padding}
+      borderRadius={borderRadius ?? '$4'}
+      onPress={onPress}
+      backgroundColor={backgroundColor}
+      style={style}
+    >
       {children}
     </TCard>
   );

@@ -65,6 +65,6 @@ export type {
   MenuOptionsProps,
   MenuOptionProps,
   MenuConfig,
-  MenuPlacement,
-  VerticalDirection,
+  HorizontalAlign,
+  VerticalAlign,
 } from './components/PopupMenu';

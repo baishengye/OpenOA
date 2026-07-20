@@ -7,14 +7,30 @@ import { Text } from './Text';
 export interface DialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** 标题 */
   title?: string;
+  /** 内容 */
   children?: ReactNode;
   /** 确认回调；不传则不显确认按钮 */
   onConfirm?: () => void;
   /** 取消回调；不传则不显取消按钮 */
   onCancel?: () => void;
+  /** 确认按钮文本 */
   confirmText?: string;
+  /** 取消按钮文本 */
   cancelText?: string;
+  /** 自定义标题渲染 */
+  renderHeader?: () => ReactNode;
+  /** 自定义内容渲染 */
+  renderContent?: () => ReactNode;
+  /** 自定义底部渲染（优先级高于默认按钮） */
+  renderFooter?: () => ReactNode;
+  /** 完全自定义整个对话框内容 */
+  renderContainer?: (props: {
+    header: ReactNode;
+    content: ReactNode;
+    footer: ReactNode;
+  }) => ReactNode;
 }
 
 /**
@@ -36,15 +52,60 @@ export function Dialog({
   onCancel,
   confirmText = '确定',
   cancelText = '取消',
+  renderHeader,
+  renderContent,
+  renderFooter,
+  renderContainer,
 }: DialogProps) {
   const close = () => onOpenChange(false);
+
+  // 默认标题
+  const defaultHeader = title ? <Text variant="h3">{title}</Text> : null;
+
+  // 默认内容
+  const defaultContent =
+    typeof children === 'string' ? <Text>{children}</Text> : children;
+
+  // 默认底部按钮
+  const defaultFooter = (
+    <XStack gap={8} justifyContent="flex-end" paddingTop={8}>
+      {onCancel ? (
+        <Button variant="ghost" onPress={onCancel}>
+          {cancelText}
+        </Button>
+      ) : null}
+      {onConfirm ? <Button onPress={onConfirm}>{confirmText}</Button> : null}
+    </XStack>
+  );
+
+  const header = renderHeader ? renderHeader() : defaultHeader;
+  const content = renderContent ? renderContent() : defaultContent;
+  const footer = renderFooter ? renderFooter() : defaultFooter;
+
+  // 完全自定义容器
+  if (renderContainer) {
+    return (
+      <Modal
+        visible={open}
+        transparent
+        animationType="fade"
+        onRequestClose={close}
+        statusBarTranslucent
+      >
+        <Pressable style={styles.overlay} onPress={close}>
+          <Pressable onPress={(e) => e.stopPropagation()}>
+            {renderContainer({ header, content, footer })}
+          </Pressable>
+        </Pressable>
+      </Modal>
+    );
+  }
 
   return (
     <Modal
       visible={open}
       transparent
       animationType="fade"
-      // 硬件返回键：收起对话框，不冒泡到导航器（避免退出页面）
       onRequestClose={close}
       statusBarTranslucent
     >
@@ -62,16 +123,9 @@ export function Dialog({
             width={320}
             maxWidth="90%"
           >
-            {title ? <Text variant="h3">{title}</Text> : null}
-            {typeof children === 'string' ? <Text>{children}</Text> : children}
-            <XStack gap={8} justifyContent="flex-end" paddingTop={8}>
-              {onCancel ? (
-                <Button variant="ghost" onPress={onCancel}>
-                  {cancelText}
-                </Button>
-              ) : null}
-              {onConfirm ? <Button onPress={onConfirm}>{confirmText}</Button> : null}
-            </XStack>
+            {header}
+            {content}
+            {footer}
           </YStack>
         </Pressable>
       </Pressable>

@@ -15,7 +15,6 @@ export type {
   MenuOptionsProps,
   MenuOptionProps,
   MenuConfig,
-  MenuPlacement,
   HorizontalAlign,
   VerticalAlign,
   MenuContextValue,

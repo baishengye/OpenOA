@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Pressable } from 'react-native';
 import {
   YStack,
   XStack,
@@ -42,6 +42,9 @@ export function UikitTab() {
   const [cb, setCb] = useState(true);
   const [radio, setRadio] = useState('a');
   const [open, setOpen] = useState(false);
+  const [openCustom, setOpenCustom] = useState(false);
+  const [deviceDialogOpen, setDeviceDialogOpen] = useState(false);
+  const [selectedDevice, setSelectedDevice] = useState('');
 
   const [rows, setRows] = useState<Row[]>(page(1));
   const [refreshing, setRefreshing] = useState(false);
@@ -274,6 +277,14 @@ export function UikitTab() {
             <Button size="sm" onPress={() => Toast.show({ type: 'fail' })}>Fail</Button>
           </XStack>
           <Button onPress={() => setOpen(true)}>打开 Dialog</Button>
+          <Text variant="caption">自定义标题/内容/底部</Text>
+          <XStack gap={8}>
+            <Button size="sm" onPress={() => setOpenCustom(true)}>打开自定义弹窗</Button>
+          </XStack>
+          <Text variant="caption">完全自定义容器（renderContainer）</Text>
+          <XStack gap={8}>
+            <Button size="sm" onPress={() => setDeviceDialogOpen(true)}>选择设备</Button>
+          </XStack>
         </YStack>
       </Card>
 
@@ -498,6 +509,109 @@ export function UikitTab() {
       >
         这是一个对话框示例。
       </Dialog>
+
+      {/* 自定义标题/内容/底部 */}
+      <Dialog
+        open={openCustom}
+        onOpenChange={setOpenCustom}
+        onConfirm={() => setOpenCustom(false)}
+        renderHeader={() => (
+          <XStack align="center" gap={8} style={{ paddingBottom: 8 }}>
+            <Text variant="h2">🎯</Text>
+            <Text variant="h3">操作确认</Text>
+          </XStack>
+        )}
+        renderContent={() => (
+          <YStack gap={12}>
+            <Text>请确认以下操作：</Text>
+            <Card backgroundColor="#f4f4f4" padding={12} borderRadius={8}>
+              <Text variant="body" color="$primary">• 将删除选中文件</Text>
+              <Text variant="body" color="$primary">• 此操作不可撤销</Text>
+            </Card>
+          </YStack>
+        )}
+        renderFooter={() => (
+          <XStack gap={8} justify="space-between" style={{ paddingTop: 8 }}>
+            <Button variant="ghost" onPress={() => setOpenCustom(false)}>取消</Button>
+            <Button onPress={() => {
+              Toast.show({ type: 'success', message: '操作成功！' });
+              setOpenCustom(false);
+            }}>确认删除</Button>
+          </XStack>
+        )}
+      />
+
+      {/* 完全自定义容器 - 设备选择弹窗 */}
+      <Dialog
+        open={deviceDialogOpen}
+        onOpenChange={setDeviceDialogOpen}
+        renderContainer={() => (
+          <YStack
+            backgroundColor="#fff"
+            borderRadius={16}
+            width={340}
+            maxWidth="90%"
+            overflow="hidden"
+          >
+            {/* 圆角头部 */}
+            <View style={{ backgroundColor: '#4A90E2', paddingHorizontal: 20, paddingVertical: 16 }}>
+              <XStack justify="space-between" align="center">
+                <Text variant="h3" color="#fff">选择设备</Text>
+                <Pressable onPress={() => setDeviceDialogOpen(false)}>
+                  <Text color="#fff" fontSize={18}>✕</Text>
+                </Pressable>
+              </XStack>
+            </View>
+
+            {/* 内容区 */}
+            <YStack padding={16} gap={8}>
+              {['📱 iPhone 15 Pro', '💻 MacBook Pro', '⌚ Apple Watch', '🎧 AirPods Pro'].map((device) => (
+                <Pressable
+                  key={device}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    paddingVertical: 12,
+                    paddingHorizontal: 12,
+                    borderRadius: 8,
+                    backgroundColor: selectedDevice === device ? '#E8F4FD' : '#F5F5F5',
+                    borderWidth: 1,
+                    borderColor: selectedDevice === device ? '#4A90E2' : 'transparent',
+                  }}
+                  onPress={() => setSelectedDevice(device)}
+                >
+                  <Text fontSize={20} style={{ marginRight: 12 }}>{device.split(' ')[0]}</Text>
+                  <Text variant="body">{device.split(' ')[1]}</Text>
+                  {selectedDevice === device && (
+                    <Text fontSize={16} style={{ marginLeft: 'auto', color: '#4A90E2' }}>✓</Text>
+                  )}
+                </Pressable>
+              ))}
+            </YStack>
+
+            {/* 底部按钮 */}
+            <View style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: '#E5E5E5' }}>
+              <Pressable
+                style={{ flex: 1, paddingVertical: 14, alignItems: 'center', borderRightWidth: 1, borderRightColor: '#E5E5E5' }}
+                onPress={() => setDeviceDialogOpen(false)}
+              >
+                <Text color="#666">取消</Text>
+              </Pressable>
+              <Pressable
+                style={{ flex: 1, paddingVertical: 14, alignItems: 'center', backgroundColor: '#4A90E2' }}
+                onPress={() => {
+                  if (selectedDevice) {
+                    Toast.show({ type: 'success', message: `已选择: ${selectedDevice}` });
+                    setDeviceDialogOpen(false);
+                  }
+                }}
+              >
+                <Text color="#fff" fontWeight="600">确定</Text>
+              </Pressable>
+            </View>
+          </YStack>
+        )}
+      />
     </>
   );
 }
