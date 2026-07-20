@@ -37,6 +37,13 @@ export function FlashList<T>(props: FlashListProps<T>): React.JSX.Element {
     ...rest
   } = props;
 
+  // inverted 模式时，初始滚动到最后一个 item（最新消息）
+  const isInverted = inverted === true;
+  const effectiveInitialScrollIndex =
+    isInverted && initialScrollIndex === undefined && data.length > 0
+      ? data.length - 1
+      : initialScrollIndex;
+
   return (
     <FlashListBase<T>
       data={data}
@@ -56,7 +63,7 @@ export function FlashList<T>(props: FlashListProps<T>): React.JSX.Element {
       ItemSeparatorComponent={ItemSeparatorComponent as any}
       contentContainerStyle={contentContainerStyle}
       showsVerticalScrollIndicator={showsVerticalScrollIndicator}
-      initialScrollIndex={initialScrollIndex}
+      initialScrollIndex={effectiveInitialScrollIndex}
       onScroll={onScroll}
       scrollEventThrottle={scrollEventThrottle}
       pagingEnabled={pagingEnabled}

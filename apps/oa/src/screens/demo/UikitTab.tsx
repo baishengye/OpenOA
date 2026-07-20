@@ -18,6 +18,8 @@ import {
   List,
   Toast,
   useTheme,
+  TabLayout,
+  Tab,
 } from '@itc/uikit';
 import type { ToastType, ToastTypeDefaults } from '@itc/uikit';
 
@@ -272,6 +274,197 @@ export function UikitTab() {
             <Button size="sm" onPress={() => Toast.show({ type: 'fail' })}>Fail</Button>
           </XStack>
           <Button onPress={() => setOpen(true)}>打开 Dialog</Button>
+        </YStack>
+      </Card>
+
+      <Card>
+        <YStack gap={8}>
+          <Text variant="h3">TabLayout（平分模式 + 横向）</Text>
+          <TabLayout
+            mode="fill"
+            direction="horizontal"
+            defaultValue={0}
+            tabSize={50}
+            renderTabList={({ isActive, label }) => (
+              <XStack flex={1} align="center" justify="center" padding={8} style={{ borderBottomWidth: 2, borderBottomColor: isActive ? '$primary' : 'transparent' }}>
+                <Text color={isActive ? '$primary' : '$gray9'}>{label}</Text>
+              </XStack>
+            )}
+            renderTabContent={({ index }) => (
+              <XStack align="center" justify="center" padding={16}>
+                <Text>内容区域 #{index + 1}</Text>
+              </XStack>
+            )}
+          >
+            <Tab label="首页" />
+            <Tab label="分类" />
+            <Tab label="购物车" />
+            <Tab label="我的" />
+            <Tab label="更多" />
+            <Tab label="设置" />
+          </TabLayout>
+        </YStack>
+      </Card>
+
+      <Card>
+        <YStack gap={8}>
+          <Text variant="h3">TabLayout（滑动模式 + 横向）</Text>
+          <TabLayout
+            mode="scroll"
+            direction="horizontal"
+            defaultValue={0}
+            tabSize={50}
+            renderTabList={({ isActive, label }) => (
+              <XStack align="center" justify="center" padding={8} backgroundColor={isActive ? '$primary' : 'transparent'}>
+                <Text color={isActive ? '#fff' : '$gray9'}>{label}</Text>
+              </XStack>
+            )}
+            renderTabContent={({ index }) => (
+              <XStack align="center" justify="center" padding={16}>
+                <Text>内容区域 #{index + 1}</Text>
+              </XStack>
+            )}
+          >
+            <Tab label="首页" />
+            <Tab label="推荐" />
+            <Tab label="热门推荐" />
+            <Tab label="最新上架" />
+            <Tab label="促销活动" />
+            <Tab label="品牌专区" />
+            <Tab label="新品上市" />
+            <Tab label="清仓特卖" />
+          </TabLayout>
+        </YStack>
+      </Card>
+
+      <Card>
+        <YStack gap={8}>
+          <Text variant="h3">TabLayout（换行模式 + 横向）</Text>
+          <TabLayout
+            mode="wrap"
+            direction="horizontal"
+            defaultValue={0}
+            tabSize={60}
+            renderTabList={({ isActive, label }) => (
+              <XStack align="center" justify="center" padding={8} style={{ borderRadius: 4 }} backgroundColor={isActive ? '$primary' : '$gray4'}>
+                <Text color={isActive ? '#fff' : '$gray11'}>{label}</Text>
+              </XStack>
+            )}
+            renderTabContent={({ index }) => (
+              <XStack align="center" justify="center" padding={16}>
+                <Text>内容区域 #{index + 1}</Text>
+              </XStack>
+            )}
+          >
+            <Tab label="标签1" />
+            <Tab label="标签2" />
+            <Tab label="标签3" />
+            <Tab label="标签4" />
+            <Tab label="标签5" />
+            <Tab label="标签6" />
+            <Tab label="标签7" />
+            <Tab label="标签8" />
+            <Tab label="标签9" />
+          </TabLayout>
+        </YStack>
+      </Card>
+
+      <Card>
+        <YStack gap={8}>
+          <Text variant="h3">TabLayout（平分模式 + 纵向）</Text>
+          <XStack flex={1} height={200}>
+            <TabLayout
+              mode="fill"
+              direction="vertical"
+              tabPosition="start"
+              defaultValue={0}
+              tabSize={80}
+              renderTabList={({ isActive, label }) => (
+                <XStack flex={1} align="center" justify="center" padding={8} style={{ borderRightWidth: 2, borderRightColor: isActive ? '$primary' : 'transparent' }}>
+                  <Text color={isActive ? '$primary' : '$gray9'}>{label}</Text>
+                </XStack>
+              )}
+              renderTabContent={({ index }) => (
+                <XStack align="center" justify="center" padding={16}>
+                  <Text>内容 #{index + 1}</Text>
+                </XStack>
+              )}
+            >
+              <Tab label="首页" />
+              <Tab label="分类" />
+              <Tab label="购物车" />
+              <Tab label="我的" />
+            </TabLayout>
+          </XStack>
+        </YStack>
+      </Card>
+
+      <Card>
+        <YStack gap={8}>
+          <Text variant="h3">TabLayout（滑动模式 + 纵向）</Text>
+          <XStack flex={1} height={200}>
+            <TabLayout
+              mode="scroll"
+              direction="vertical"
+              tabPosition="start"
+              defaultValue={0}
+              tabSize={80}
+              renderTabList={({ isActive, label }) => (
+                <XStack flex={1} align="center" justify="center" padding={8} backgroundColor={isActive ? '$primary' : 'transparent'}>
+                  <Text color={isActive ? '#fff' : '$gray9'}>{label}</Text>
+                </XStack>
+              )}
+              renderTabContent={({ index }) => (
+                <XStack align="center" justify="center" padding={16}>
+                  <Text>内容 #{index + 1}</Text>
+                </XStack>
+              )}
+            >
+              <Tab label="首页" />
+              <Tab label="推荐" />
+              <Tab label="热门" />
+              <Tab label="最新" />
+              <Tab label="促销" />
+              <Tab label="品牌" />
+              <Tab label="新品" />
+              <Tab label="特卖" />
+            </TabLayout>
+          </XStack>
+        </YStack>
+      </Card>
+
+      <Card>
+        <YStack gap={8}>
+          <Text variant="h3">TabLayout（换行模式 + 纵向）</Text>
+          <XStack flex={1} height={200}>
+            <TabLayout
+              mode="wrap"
+              direction="vertical"
+              tabPosition="start"
+              defaultValue={0}
+              tabSize={80}
+              renderTabList={({ isActive, label }) => (
+                <XStack align="center" justify="center" padding={8} borderRadius={4} backgroundColor={isActive ? '$primary' : '$gray4'}>
+                  <Text color={isActive ? '#fff' : '$gray11'}>{label}</Text>
+                </XStack>
+              )}
+              renderTabContent={({ index }) => (
+                <XStack align="center" justify="center" padding={16}>
+                  <Text>内容 #{index + 1}</Text>
+                </XStack>
+              )}
+            >
+              <Tab label="A" />
+              <Tab label="B" />
+              <Tab label="C" />
+              <Tab label="D" />
+              <Tab label="E" />
+              <Tab label="F" />
+              <Tab label="G" />
+              <Tab label="H" />
+              <Tab label="I" />
+            </TabLayout>
+          </XStack>
         </YStack>
       </Card>
 

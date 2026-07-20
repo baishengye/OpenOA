@@ -34,9 +34,21 @@ export function FlashList<T>(props: FlashListProps<T>): React.JSX.Element {
     onScroll,
     scrollEventThrottle,
     pagingEnabled,
-    inverted: _inverted, // 废弃属性，不显式传递
+    inverted,
     ...rest
   } = props;
+
+  // inverted 模式时，需要滚动到最后一条显示最新消息
+  // HarmonyOS 使用 maintainVisibleContentPosition.startRenderingFromBottom 配合 initialScrollIndex
+  const isInverted = inverted === true;
+  const maintainVisibleContentPosition = isInverted
+    ? { startRenderingFromBottom: true }
+    : undefined;
+
+  // inverted 模式时，初始滚动到最后一个item（最新消息）
+  const scrollIndex = isInverted && initialScrollIndex === undefined && data.length > 0
+    ? data.length - 1
+    : initialScrollIndex;
 
   return (
     <FlashListOHOS<T>
@@ -57,10 +69,11 @@ export function FlashList<T>(props: FlashListProps<T>): React.JSX.Element {
       ItemSeparatorComponent={ItemSeparatorComponent as any}
       contentContainerStyle={contentContainerStyle}
       showsVerticalScrollIndicator={showsVerticalScrollIndicator}
-      initialScrollIndex={initialScrollIndex}
+      initialScrollIndex={scrollIndex}
       onScroll={onScroll}
       scrollEventThrottle={scrollEventThrottle}
       pagingEnabled={pagingEnabled}
+      maintainVisibleContentPosition={maintainVisibleContentPosition}
       {...rest}
     />
   );

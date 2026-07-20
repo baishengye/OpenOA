@@ -1,5 +1,6 @@
 import React, { type ReactNode } from 'react';
 import { View, Separator } from 'tamagui';
+import type { ViewStyle } from 'react-native';
 
 export type Align = 'flex-start' | 'center' | 'flex-end' | 'stretch';
 export type Justify =
@@ -18,6 +19,12 @@ export interface StackProps {
   justify?: Justify;
   backgroundColor?: string;
   borderRadius?: number;
+  /** 宽度 */
+  width?: number | string;
+  /** 高度 */
+  height?: number | string;
+  /** 内联样式 */
+  style?: ViewStyle;
 }
 
 function base(p: StackProps) {
@@ -29,6 +36,9 @@ function base(p: StackProps) {
     justifyContent: p.justify,
     backgroundColor: p.backgroundColor,
     borderRadius: p.borderRadius,
+    width: p.width,
+    height: p.height,
+    style: p.style,
   };
 }
 

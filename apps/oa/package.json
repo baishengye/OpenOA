@@ -17,7 +17,13 @@
     "clean": "rimraf android/app/build ios/build",
     "bundle-android": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res",
     "bundle-ios": "react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios/main.jsbundle",
-    "bundle-harmony": "react-native bundle --platform harmony --dev false --entry-file index.js --bundle-output harmony/entry/src/main/resources/rawfile/bundle.harmony.js --assets-dest harmony/entry/src/main/resources/rawfile --config metro.config.harmony.js"
+    "bundle-harmony": "react-native bundle --platform harmony --dev false --entry-file index.js --bundle-output harmony/entry/src/main/resources/rawfile/bundle.harmony.js --assets-dest harmony/entry/src/main/resources/rawfile --config metro.config.harmony.js",
+    "code-push:android-staging": "node scripts/codepush-release.js android Staging",
+    "code-push:android-production": "node scripts/codepush-release.js android Production",
+    "code-push:ios-staging": "node scripts/codepush-release.js ios Staging",
+    "code-push:ios-production": "node scripts/codepush-release.js ios Production",
+    "code-push:harmony-staging": "node scripts/codepush-release.js harmony Staging",
+    "code-push:harmony-production": "node scripts/codepush-release.js harmony Production"
   },
   "dependencies": {
     "@gorhom/portal": "^1.0.14",

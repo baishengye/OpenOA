@@ -127,7 +127,8 @@ export function DemoScreen(): React.JSX.Element {
       <TabLayout
         value={currentIndex}
         onChange={(index) => setTab(TAB_KEYS[index] ?? 'uikit')}
-        tabSize={52}
+        mode="wrap"
+        tabSize={44}
         tabPosition="start"
         renderTabList={({ isActive, label }) => (
           <View
@@ -141,6 +142,7 @@ export function DemoScreen(): React.JSX.Element {
                 styles.tabText,
                 isActive && styles.tabTextActive,
               ]}
+              numberOfLines={1}
             >
               {label}
             </Text>
@@ -162,9 +164,9 @@ const styles = StyleSheet.create({
   h1:            { fontSize: 22, fontWeight: '700', color: '#1f2329' },
   platform:      { fontSize: 13, color: '#646a73', marginBottom: 8 },
   container:     { padding: 20, gap: 12 },
-  tabItem:       { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 8 },
-  tabItemActive: { borderBottomWidth: 2, borderBottomColor: '#1456f0' },
+  tabItem:       { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 4 },
+  tabItemActive: { backgroundColor: '#e8f0fe' },
   tabText:       { fontSize: 13, color: '#646a73' },
-  tabTextActive: { color: '#1456f0', fontWeight: '700' },
+  tabTextActive: { color: '#1456f0', fontWeight: '600' },
   spinner:       { marginVertical: 4 },
 });

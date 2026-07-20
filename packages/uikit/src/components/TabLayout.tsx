@@ -7,13 +7,20 @@ import React, {
   Children,
   isValidElement,
 } from 'react';
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, ScrollView } from 'react-native';
 import { View } from 'tamagui';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
 export type TabLayoutDirection = 'horizontal' | 'vertical';
 export type TabLayoutTabPosition = 'start' | 'end';
+
+/** Tab 布局模式
+ * - `fill`: 平分模式，每个 Tab 平分父布局宽度
+ * - `scroll`: 滑动模式，Tab 宽度由内容决定，超出时可滚动
+ * - `wrap`: 换行模式，Tab 宽度由内容决定，超出时自动换行
+ */
+export type TabLayoutMode = 'fill' | 'scroll' | 'wrap';
 
 export interface TabLayoutProps {
   children?: ReactNode;
@@ -26,6 +33,13 @@ export interface TabLayoutProps {
 
   /** 标签列表的宽度（纵向布局时）或高度（横向布局时）。默认 80 */
   tabSize?: number;
+
+  /** Tab 布局模式。默认 'fill'
+   * - `fill`: 平分模式，每个 Tab 平分父布局宽度
+   * - `scroll`: 滑动模式，Tab 宽度由内容决定，超出时可滚动
+   * - `wrap`: 换行模式，Tab 宽度由内容决定，超出时自动换行
+   */
+  mode?: TabLayoutMode;
 
   /** 当前选中标签的索引。受控模式 */
   value?: number;
@@ -102,6 +116,7 @@ export const TabLayout: FC<TabLayoutProps> = ({
   direction = 'horizontal',
   tabPosition = 'start',
   tabSize = 80,
+  mode = 'fill',
   value: controlledValue,
   defaultValue = 0,
   onChange,
@@ -163,6 +178,80 @@ export const TabLayout: FC<TabLayoutProps> = ({
   // 当前激活的 tab 信息
   const activeTab = tabs[currentIndex] ?? { label: '' };
 
+  // Tab 列表容器
+  const renderTabListContainer = () => {
+    const tabListContent = tabs.map((tab, index) => {
+      const isActive = index === currentIndex;
+
+      const handlePress = () => {
+        if (!tab.disabled) {
+          handleTabPress(index);
+        }
+      };
+
+      const tabStyle = [
+        tab.disabled ? styles.tabDisabled : null,
+        !isVertical && mode === 'fill' ? styles.tabFill : null,
+        !isVertical && mode !== 'fill' ? styles.tabNoFill : null,
+      ];
+
+      return (
+        <Pressable
+          key={`tab-${index}`}
+          onPress={handlePress}
+          disabled={tab.disabled}
+          style={tabStyle}
+        >
+          {renderTabList({ isActive, index, label: tab.label })}
+        </Pressable>
+      );
+    });
+
+    // 根据 mode 决定容器类型
+    if (mode === 'scroll') {
+      // 滑动模式：超出可滚动
+      return (
+        <ScrollView
+          horizontal={!isVertical}
+          showsHorizontalScrollIndicator={false}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={
+            isVertical ? styles.scrollContentVertical : styles.scrollContentHorizontal
+          }
+        >
+          {tabListContent}
+        </ScrollView>
+      );
+    }
+
+    if (mode === 'wrap') {
+      // 换行模式：超出自动换行，使用 flexWrap + padding 实现间距
+      return (
+        <View
+          style={{
+            flexDirection: isVertical ? 'column' : 'row',
+            flexWrap: 'wrap',
+            alignContent: 'flex-start',
+            paddingRight: 4,
+          }}
+        >
+          {tabListContent.map((tab, index) => (
+            <View key={`tab-wrap-${index}`} style={{ marginRight: 4, marginBottom: 4 }}>
+              {tab}
+            </View>
+          ))}
+        </View>
+      );
+    }
+
+    // 默认 fill 模式
+    return (
+      <View flexDirection={isVertical ? 'column' : 'row'}>
+        {tabListContent}
+      </View>
+    );
+  };
+
   return (
     <View
       flexDirection={containerFlexDirection as any}
@@ -170,34 +259,8 @@ export const TabLayout: FC<TabLayoutProps> = ({
       overflow="hidden"
     >
       {/* 标签列表 */}
-      <View
-        style={tabContainerStyle}
-        flexDirection={isVertical ? 'column' : 'row'}
-      >
-        {tabs.map((tab, index) => {
-          const isActive = index === currentIndex;
-
-          const handlePress = () => {
-            if (!tab.disabled) {
-              handleTabPress(index);
-            }
-          };
-
-          return (
-            <Pressable
-              key={`tab-${index}`}
-              onPress={handlePress}
-              disabled={tab.disabled}
-              style={[
-                tab.disabled ? styles.tabDisabled : null,
-                isVertical ? null : styles.tabFlex,
-                isVertical ? { height: tabSize } : null,
-              ]}
-            >
-              {renderTabList({ isActive, index, label: tab.label })}
-            </Pressable>
-          );
-        })}
+      <View style={[tabContainerStyle, { paddingBottom: 8 }]}>
+        {renderTabListContainer()}
       </View>
 
       {/* 内容区域 */}
@@ -215,7 +278,16 @@ const styles = StyleSheet.create({
   tabDisabled: {
     opacity: 0.5,
   },
-  tabFlex: {
+  tabFill: {
     flex: 1,
+  },
+  tabNoFill: {
+    flex: 0,
+  },
+  scrollContentHorizontal: {
+    flexDirection: 'row',
+  },
+  scrollContentVertical: {
+    flexDirection: 'column',
   },
 });

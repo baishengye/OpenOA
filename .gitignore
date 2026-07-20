@@ -72,3 +72,6 @@ apps/oa/harmony/entry/.preview/
 local.properties
 oh_modules/
 /files
+
+apps/.codepush-tmp/
+apps/.codepush-files/

@@ -25,6 +25,12 @@
     "oa:clean": "pnpm --filter @itc-oa/app clean",
     "oa:uninstall": "pnpm store prune && node scripts/clean-node-modules.js",
     "ios-pod-install": "cd apps/oa/ios && bundle exec pod install",
+    "oa:code-push:android-staging": "pnpm --filter @itc-oa/app code-push:android-staging",
+    "oa:code-push:android-production": "pnpm --filter @itc-oa/app code-push:android-production",
+    "oa:code-push:ios-staging": "pnpm --filter @itc-oa/app code-push:ios-staging",
+    "oa:code-push:ios-production": "pnpm --filter @itc-oa/app code-push:ios-production",
+    "oa:code-push:harmony-staging": "pnpm --filter @itc-oa/app code-push:harmony-staging  ",
+    "oa:code-push:harmony-production": "pnpm --filter @itc-oa/app code-push:harmony-production",
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "pnpm build && changeset publish"

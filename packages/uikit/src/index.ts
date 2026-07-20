@@ -54,4 +54,4 @@ export type { ListProps } from './list/List';
 
 // ── Tab 布局 ─────────────────────────────────────────────────────────────────────
 export { TabLayout, Tab } from './components/TabLayout';
-export type { TabLayoutProps, TabProps, TabLayoutDirection, TabLayoutTabPosition } from './components/TabLayout';
+export type { TabLayoutProps, TabProps, TabLayoutDirection, TabLayoutTabPosition, TabLayoutMode } from './components/TabLayout';
