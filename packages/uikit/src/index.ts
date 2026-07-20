@@ -43,6 +43,11 @@ export type {
 export { Dialog } from './components/Dialog';
 export type { DialogProps } from './components/Dialog';
 
+// ── Toast ─────────────────────────────────────────────────────────────────────
+export { Toast, ToastProvider } from './components/Toast';
+export type { ToastProviderProps } from './components/Toast';
+export type { ToastOptions, ToastType, ToastTypeDefaults } from './components/Toast';
+
 // ── 列表 ────────────────────────────────────────────────────────────────────
 export { List } from './list/List';
 export type { ListProps } from './list/List';

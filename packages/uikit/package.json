@@ -26,11 +26,13 @@
     "patch:verify": "node scripts/verify-patch.mjs"
   },
   "dependencies": {
+    "@gorhom/portal": "^1.0.14",
     "@tamagui/animations-react-native": "^2.2.0",
     "@tamagui/config": "^2.2.0",
     "tamagui": "^2.2.0"
   },
   "peerDependencies": {
+    "@gorhom/portal": "^1.0.14",
     "react": "*",
     "react-native": ">=0.77.0",
     "react-native-safe-area-context": ">=4"

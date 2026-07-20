@@ -20,6 +20,7 @@
     "bundle-harmony": "react-native bundle --platform harmony --dev false --entry-file index.js --bundle-output harmony/entry/src/main/resources/rawfile/bundle.harmony.js --assets-dest harmony/entry/src/main/resources/rawfile --config metro.config.harmony.js"
   },
   "dependencies": {
+    "@gorhom/portal": "^1.0.14",
     "@itc/base": "workspace:*",
     "@itc/biometric": "workspace:*",
     "@itc/db": "workspace:*",

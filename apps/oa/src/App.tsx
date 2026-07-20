@@ -1,7 +1,8 @@
 import React from 'react';
 import { StatusBar, StyleSheet, Text, View } from 'react-native';
+import { PortalProvider } from '@gorhom/portal';
 import { currentPlatform, logger } from '@itc/base';
-import { UIProvider } from '@itc/uikit';
+import { UIProvider, ToastProvider } from '@itc/uikit';
 import { I18nProvider } from '@itc/i18n';
 import { DemoScreen } from './screens/DemoScreen';
 import { usePush } from './utils/usePush';
@@ -29,15 +30,24 @@ export default function App(): React.JSX.Element {
       }}
     >
       <UIProvider defaultMode="light">
-        <View style={styles.root}>
-          <StatusBar barStyle="dark-content" />
-          <View style={styles.markBar}>
-            <Text style={styles.markText}>
-              🟢 {BUILD_MARK} · {currentPlatform}
-            </Text>
-          </View>
-          <DemoScreen />
-        </View>
+        <PortalProvider>
+          <ToastProvider
+            defaultOptions={{
+              duration: 3000,
+              style: { backgroundColor: 'rgba(0,0,0,0.9)' },
+            }}
+          >
+            <View style={styles.root}>
+              <StatusBar barStyle="dark-content" />
+              <View style={styles.markBar}>
+                <Text style={styles.markText}>
+                  🟢 {BUILD_MARK} · {currentPlatform}
+                </Text>
+              </View>
+              <DemoScreen />
+            </View>
+          </ToastProvider>
+        </PortalProvider>
       </UIProvider>
     </I18nProvider>
   );

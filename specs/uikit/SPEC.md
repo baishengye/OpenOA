@@ -9,6 +9,7 @@
 - 提供布局组件（Stack / XStack / YStack / Divider）
 - 提供表单组件（Switch / Checkbox / RadioGroup）
 - 提供对话框（Dialog）
+- 提供 Toast 提示（全局 / 单次配置）
 - 提供列表组件（List，支持下拉刷新 + 上拉加载）
 - 提供 Tab 组件（TabLayout + Tab，分段控制器布局容器）
 - 提供主题系统（light/dark 切换 + 语义色）
@@ -25,6 +26,7 @@
 
 | 日期 | 版本 | 变更 | 备注 |
 |------|------|------|------|
+| 2026-07-20 | 0.3 | 新增 Toast 组件（全局提示） | 支持 info/warn/success/fail 四种类型，支持自定义内容和全局/单次样式 |
 | 2026-07-14 | 0.2 | 新增 TabLayout + Tab（分段控制器布局容器） | 支持横向/纵向布局 |
 | 2026-07-14 | 0.1 | 初版（List/Button/Input/Dialog 等） | 基线版本 |
 
@@ -334,6 +336,215 @@ export function Dialog(props: DialogProps): JSX.Element;
 
 ---
 
+## 7.1 Toast 组件
+
+Toast 是一种轻量级的全局提示组件，用于向用户展示操作结果、系统状态等临时信息。
+
+### 7.1.1 设计理念
+
+- **全局单例**：Toast 由 Provider 自动挂载，业务层通过 `Toast.show()` 调用，无需在每个页面手动放置
+- **类型化主题**：内置 `info` / `warn` / `success` / `fail` 四种视觉风格，每种对应特定语义
+- **完全可定制**：支持自定义渲染内容（custom content）和全局/单次样式覆盖
+- **自动消失**：默认 2 秒后自动关闭，支持手动控制
+
+### 7.1.2 ToastType 类型
+
+```typescript
+type ToastType = 'info' | 'warn' | 'success' | 'fail';
+```
+
+| 类型 | 语义 | 图标 | 默认颜色 |
+|------|------|------|----------|
+| info | 提示信息 | ℹ️ | $blue10 |
+| warn | 警告 | ⚠️ | $yellow10 |
+| success | 成功 | ✅ | $green10 |
+| fail | 失败 | ❌ | $red10 |
+
+### 7.1.3 ToastOptions 配置
+
+```typescript
+interface ToastOptions {
+  /** toast 类型，决定默认图标和颜色。可选值：info | warn | success | fail */
+  type?: ToastType;
+
+  /** toast 内容文本。如果传了 content，此字段会被忽略 */
+  message?: string;
+
+  /** 自定义渲染内容。优先级高于 message。 */
+  content?: ReactNode;
+
+  /** 显示时长（毫秒），默认 2000。传 0 则不自动关闭，需手动调用 Toast.hide() */
+  duration?: number;
+
+  /** 自定义 toast 容器样式，会与类型默认样式合并 */
+  style?: ViewStyle;
+
+  /** 自定义 toast 内部内容样式 */
+  contentStyle?: ViewStyle;
+
+  /** 自定义图标样式 */
+  iconStyle?: TextStyle;
+
+  /** 自定义图标文字，覆盖类型默认图标 */
+  icon?: string;
+
+  /** 自定义主文字样式 */
+  messageStyle?: TextStyle;
+}
+```
+
+### 7.1.4 Toast API
+
+```typescript
+/** 显示 toast */
+function show(options: ToastOptions): void;
+
+/** 立即隐藏 toast */
+function hide(): void;
+
+/** 配置全局默认样式，合并到所有 toast */
+function setDefaultOptions(options: ToastOptions): void;
+
+/** 重置全局样式为默认值 */
+function resetDefaultOptions(): void;
+```
+
+### 7.1.5 ToastProvider
+
+```typescript
+interface ToastProviderProps {
+  children: ReactNode;
+  /** 全局默认配置 */
+  defaultOptions?: ToastOptions;
+}
+
+/**
+ * Toast Provider。
+ * 在 App 根节点包一层，自动挂载 Toast 容器层。
+ * 必须在 UIProvider 内部使用。
+ */
+export function ToastProvider(props: ToastProviderProps): JSX.Element;
+```
+
+### 7.1.6 使用方式
+
+**基础用法（推荐在 App 根组件一次性配置）：**
+
+```tsx
+import { UIProvider, ToastProvider, Toast } from '@itc/uikit';
+
+function App() {
+  return (
+    <UIProvider>
+      <ToastProvider>
+        <MainApp />
+      </ToastProvider>
+    </UIProvider>
+  );
+}
+
+// 业务代码中直接使用
+Toast.show({ type: 'success', message: '保存成功' });
+Toast.show({ type: 'fail', message: '网络连接失败' });
+Toast.show({ type: 'warn', message: '数据即将过期' });
+Toast.show({ type: 'info', message: '新版本已发布' });
+```
+
+**自定义内容（完全自定义内部布局）：**
+
+```tsx
+Toast.show({
+  type: 'success',
+  content: (
+    <YStack alignItems="center" gap={8}>
+      <Text variant="h3">提交成功</Text>
+      <Text variant="caption">感谢您的反馈</Text>
+    </YStack>
+  ),
+  duration: 3000,
+});
+```
+
+**全局配置样式：**
+
+```tsx
+// 在 ToastProvider 上配置默认选项
+<ToastProvider
+  defaultOptions={{
+    type: 'info',
+    duration: 3000,
+    style: { borderRadius: 8 },
+  }}
+/>
+
+// 或运行时动态配置
+Toast.setDefaultOptions({
+  duration: 3000,
+  style: { backgroundColor: '#333' },
+});
+```
+
+**单次样式覆盖：**
+
+```tsx
+// 单次 show 覆盖全局配置
+Toast.setDefaultOptions({ duration: 2000 });
+
+Toast.show({ message: '默认2秒' });
+Toast.show({ message: '这个显示5秒', duration: 5000, style: { backgroundColor: '#f00' } });
+Toast.show({ message: '不自动关闭', duration: 0 }); // 手动 Toast.hide()
+```
+
+**手动关闭：**
+
+```tsx
+Toast.show({ type: 'loading', message: '加载中...', duration: 0 });
+
+// 异步操作完成后手动关闭
+setTimeout(() => {
+  Toast.hide();
+}, 2000);
+```
+
+**多 toast 堆叠展示：**
+
+```tsx
+// 短时间内多次调用 toast，会垂直排列显示
+Toast.show({ type: 'info', message: '消息1' });
+Toast.show({ type: 'success', message: '消息2' });
+Toast.show({ type: 'warn', message: '消息3' });
+// 显示效果：从上到下依次为 消息1、消息2、消息3
+```
+
+**隐藏所有 toast：**
+
+```tsx
+Toast.hide(); // 隐藏所有正在显示的 toast
+```
+
+### 7.1.7 实现要点
+
+- **多 toast 垂直堆叠**：支持同时显示多个 toast，最新 toast 显示在最下方，向上排列
+- **单例容器**：Toast 容器通过 React Portals 挂载到根节点，层级最高
+- **状态管理**：内部使用 `useReducer` 管理 toast 队列，支持多 toast 叠加展示
+- **动画**：使用 `react-native-reanimated` 实现淡入淡出 + 位移动画
+- **平台兼容**：优先使用 RN 原生 `Modal`，确保 HarmonyOS 触摸正确
+- **Z-Index**：toast 容器 zIndex 设为 9999，确保在最顶层显示
+
+### 7.1.8 目录结构
+
+```
+src/components/
+├── ...
+└── Toast/
+    ├── Toast.tsx          # Toast 组件核心（内部使用）
+    ├── ToastContainer.tsx # Toast 容器（Provider 内部）
+    ├── ToastProvider.tsx  # ToastProvider 组件
+    └── index.ts           # 导出
+```
+
+---
+
 ## 8. 列表组件
 
 ### 8.1 List
@@ -508,7 +719,7 @@ src/components/
 
 ---
 
-## 9. 目录结构
+## 13. 目录结构
 
 ```
 packages/uikit/
@@ -530,7 +741,12 @@ packages/uikit/
     │   ├── Dialog.tsx       # Dialog
     │   ├── form.tsx         # Switch / Checkbox / RadioGroup
     │   ├── display.tsx     # Card / Badge / Avatar / Spinner
-    │   └── TabLayout.tsx   # TabLayout / Tab
+    │   ├── TabLayout.tsx   # TabLayout / Tab
+    │   └── Toast/          # Toast
+    │       ├── Toast.tsx
+    │       ├── ToastContainer.tsx
+    │       ├── ToastProvider.tsx
+    │       └── index.ts
     ├── list/
     │   └── List.tsx         # List
     └── harmony/
@@ -539,12 +755,14 @@ packages/uikit/
 
 ---
 
-## 10. 依赖关系
+## 14. 依赖关系
 
 **dependencies：**
 - `@tamagui/animations-react-native@^2.2.0`
 - `@tamagui/config@^2.2.0`
 - `tamagui@^2.2.0`
+- `react-native-reanimated@^4.0.0`
+- `react-native-worklets`
 
 **peerDependencies：**
 - `react-native`：>= 0.77.0
@@ -555,9 +773,9 @@ packages/uikit/
 
 ---
 
-## 11. 使用示例
+## 15. 使用示例
 
-### 11.1 主题使用
+### 15.1 主题使用
 
 ```typescript
 import { UIProvider, useTheme, Text, YStack } from '@itc/uikit';
@@ -583,7 +801,7 @@ function HomePage() {
 }
 ```
 
-### 11.2 表单使用
+### 15.2 表单使用
 
 ```typescript
 import { Switch, Checkbox, RadioGroup, YStack } from '@itc/uikit';
@@ -612,7 +830,7 @@ function Settings() {
 }
 ```
 
-### 11.3 列表使用
+### 15.3 列表使用
 
 ```typescript
 import { List, Card, Text, Avatar } from '@itc/uikit';
@@ -658,7 +876,7 @@ function UserList() {
 }
 ```
 
-### 11.4 对话框使用
+### 15.4 对话框使用
 
 ```typescript
 import { Dialog, Button } from '@itc/uikit';
@@ -686,7 +904,7 @@ function DeleteConfirm() {
 
 ---
 
-## 12. 导出清单
+## 16. 导出清单
 
 ```typescript
 // 主题
@@ -719,6 +937,10 @@ export type { CardProps, BadgeProps, BadgeTone, AvatarProps, SpinnerProps };
 export { Dialog };
 export type { DialogProps };
 
+// Toast
+export { Toast, ToastProvider };
+export type { ToastOptions, ToastType };
+
 // 列表
 export { List };
 export type { ListProps };
@@ -730,7 +952,7 @@ export type { TabLayoutProps, TabProps, TabLayoutDirection, TabLayoutTabPosition
 
 ---
 
-## 13. 注意事项
+## 17. 注意事项
 
 1. **tamagui 不外泄**：所有组件内部使用 tamagui，但不从 index 导出 tamagui 任何内容
 2. **表单组件强制受控**：Switch/Checkbox/RadioGroup 必须配合 value + onChange 使用
@@ -743,3 +965,7 @@ export type { TabLayoutProps, TabProps, TabLayoutDirection, TabLayoutTabPosition
 9. **Button loading**：设置 `loading` 时自动禁用按钮并显示 Spinner
 10. **零依赖**：@itc/uikit 不依赖 @itc/base，保持独立
 11. **TabLayout 组件独立性**：TabLayout 不依赖具体平台 API，可在任意 RN 平台运行
+12. **ToastProvider 嵌套**：ToastProvider 必须在 UIProvider 内部使用
+13. **Toast 层级最高**：Toast 容器 zIndex 为 9999，显示在其他所有内容之上
+14. **Toast 自动关闭**：默认 duration 为 2000ms，传 0 可禁用自动关闭，需手动调用 `Toast.hide()`
+15. **Toast 自定义内容**：`content` 属性优先级高于 `message`，可传入任意 ReactNode

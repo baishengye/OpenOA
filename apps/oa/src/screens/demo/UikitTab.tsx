@@ -16,8 +16,10 @@ import {
   Divider,
   Dialog,
   List,
+  Toast,
   useTheme,
 } from '@itc/uikit';
+import type { ToastType, ToastTypeDefaults } from '@itc/uikit';
 
 interface Row {
   id: string;
@@ -152,6 +154,123 @@ export function UikitTab() {
       <Card>
         <YStack gap={8}>
           <Text variant="h3">反馈</Text>
+          <Text variant="caption">基础类型</Text>
+          <XStack gap={8}>
+            <Button size="sm" onPress={() => Toast.show({ type: 'info', message: '这是一条信息提示' })}>Info</Button>
+            <Button size="sm" onPress={() => Toast.show({ type: 'warn', message: '这是一条警告提示' })}>Warn</Button>
+            <Button size="sm" onPress={() => Toast.show({ type: 'success', message: '操作成功！' })}>Success</Button>
+            <Button size="sm" onPress={() => Toast.show({ type: 'fail', message: '操作失败，请重试' })}>Fail</Button>
+          </XStack>
+          <Text variant="caption">自定义图标</Text>
+          <XStack gap={8}>
+            <Button size="sm" onPress={() => Toast.show({ type: 'info', message: '自定义图标', icon: '🔔' })}>🔔</Button>
+            <Button size="sm" onPress={() => Toast.show({ type: 'success', message: '星星', icon: '⭐' })}>⭐</Button>
+          </XStack>
+          <Text variant="caption">手动关闭（duration=0）</Text>
+          <XStack gap={8}>
+            <Button size="sm" onPress={() => Toast.show({ type: 'info', message: '点击 Hide 关闭', duration: 0 })}>显示</Button>
+            <Button size="sm" onPress={() => Toast.hide()}>Hide All</Button>
+          </XStack>
+          <Text variant="caption">连续触发（竖直堆叠）</Text>
+          <Button size="sm" onPress={() => {
+            const types: ToastType[] = ['info', 'warn', 'success', 'fail'];
+            types.forEach((type, i) => {
+              setTimeout(() => Toast.show({ type, message: `Toast #${i + 1}` }), i * 300);
+            });
+          }}>连续显示 4 个</Button>
+          <Text variant="caption">自定义内容（content）</Text>
+          <XStack gap={8}>
+            <Button size="sm" onPress={() => Toast.show({
+              type: 'success',
+              content: (
+                <YStack gap={12} padding={4}>
+                  <XStack gap={8} align="center">
+                    <Text variant="h1">🎉</Text>
+                    <YStack gap={2}>
+                      <Text variant="body" color="#fff">恭喜完成！</Text>
+                      <Text variant="caption" color="rgba(255,255,255,0.8)">任务已全部达成</Text>
+                    </YStack>
+                  </XStack>
+                  <XStack gap={4}>
+                    <Badge tone="success">+100</Badge>
+                    <Badge tone="success">+20</Badge>
+                  </XStack>
+                </YStack>
+              ),
+            })}>任务完成</Button>
+            <Button size="sm" onPress={() => Toast.show({
+              type: 'info',
+              content: (
+                <YStack gap={8} padding={4}>
+                  <XStack gap={8} align="center">
+                    <Avatar fallback="张" />
+                    <YStack gap={2}>
+                      <Text variant="body" color="#fff">张三</Text>
+                      <Text variant="caption" color="rgba(255,255,255,0.8)">邀请你加入群聊</Text>
+                    </YStack>
+                  </XStack>
+                  <XStack gap={8}>
+                    <Button size="sm" variant="outline">拒绝</Button>
+                    <Button size="sm">同意</Button>
+                  </XStack>
+                </YStack>
+              ),
+            })}>邀请卡片</Button>
+          </XStack>
+          <Text variant="caption">全局默认 content（setDefaultOptions）</Text>
+          <XStack gap={8}>
+            <Button size="sm" onPress={() => {
+              Toast.setDefaultOptions({
+                content: (
+                  <XStack gap={8} align="center">
+                    <Text variant="h2">📢</Text>
+                    <Text variant="body" color="#fff">全局默认内容</Text>
+                  </XStack>
+                ),
+              });
+              Toast.show({ type: 'info' }); // 不传 content，使用默认
+            }}>设置默认</Button>
+            <Button size="sm" onPress={() => {
+              Toast.resetDefaultOptions();
+              Toast.show({ type: 'info', message: '已恢复默认' });
+            }}>恢复默认</Button>
+          </XStack>
+          <Text variant="caption">按类型默认 content（setTypeDefaultOptions）</Text>
+          <XStack gap={8}>
+            <Button size="sm" onPress={() => {
+              const typeDefaults: ToastTypeDefaults = {
+                contentInfo: (
+                  <XStack gap={8} align="center">
+                    <Text variant="h2">ℹ️</Text>
+                    <Text variant="body" color="#fff">信息通知</Text>
+                  </XStack>
+                ),
+                contentSuccess: (
+                  <XStack gap={8} align="center">
+                    <Text variant="h2">🎉</Text>
+                    <Text variant="body" color="#fff">操作成功！</Text>
+                  </XStack>
+                ),
+                contentWarn: (
+                  <XStack gap={8} align="center">
+                    <Text variant="h2">⚠️</Text>
+                    <Text variant="body" color="#fff">注意警告</Text>
+                  </XStack>
+                ),
+                contentFail: (
+                  <XStack gap={8} align="center">
+                    <Text variant="h2">❌</Text>
+                    <Text variant="body" color="#fff">操作失败</Text>
+                  </XStack>
+                ),
+              };
+              Toast.setTypeDefaultOptions(typeDefaults);
+              Toast.show({ type: 'info' });
+            }}>设置类型默认</Button>
+            <Button size="sm" onPress={() => Toast.show({ type: 'success' })}>Success</Button>
+            <Button size="sm" onPress={() => Toast.show({ type: 'warn' })}>Warn</Button>
+            <Button size="sm" onPress={() => Toast.show({ type: 'fail' })}>Fail</Button>
+          </XStack>
           <Button onPress={() => setOpen(true)}>打开 Dialog</Button>
         </YStack>
       </Card>
