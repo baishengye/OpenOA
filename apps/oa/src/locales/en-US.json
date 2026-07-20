@@ -90,7 +90,8 @@
     "permission": "Permission",
     "fs": "File",
     "docpicker": "Doc",
-    "i18n": "i18n"
+    "i18n": "i18n",
+    "popupmenu": "Menu"
   },
   "i18n": {
     "title": "Internationalization (@itc/i18n)",

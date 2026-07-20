@@ -12,6 +12,7 @@
 - 提供 Toast 提示（全局 / 单次配置）
 - 提供列表组件（List，支持下拉刷新 + 上拉加载）
 - 提供 Tab 组件（TabLayout + Tab，分段控制器布局容器）
+- 提供弹出菜单（PopupMenu，锚定在触发器上的弹出菜单）
 - 提供主题系统（light/dark 切换 + 语义色）
 
 **设计原则：**
@@ -26,6 +27,7 @@
 
 | 日期 | 版本 | 变更 | 备注 |
 |------|------|------|------|
+| 2026-07-20 | 0.4 | 新增 PopupMenu 组件（锚定弹出菜单） | 参考 react-native-popup-menu API，使用 RN 内置 Modal |
 | 2026-07-20 | 0.3 | 新增 Toast 组件（全局提示） | 支持 info/warn/success/fail 四种类型，支持自定义内容和全局/单次样式 |
 | 2026-07-14 | 0.2 | 新增 TabLayout + Tab（分段控制器布局容器） | 支持横向/纵向布局 |
 | 2026-07-14 | 0.1 | 初版（List/Button/Input/Dialog 等） | 基线版本 |
@@ -719,6 +721,283 @@ src/components/
 
 ---
 
+## 9. 弹出菜单（PopupMenu）
+
+PopupMenu 是一个锚定在指定 View 上的弹出菜单组件，参考 `react-native-popup-menu` API 设计风格，完全基于 RN 内置组件 + Tamagui 实现，零新增外部依赖。
+
+### 9.1 设计理念
+
+- **零外部依赖**：使用 RN 内置 `Modal` + Tamagui，不引入额外 npm 包
+- **API 兼容性**：参考 react-native-popup-menu 核心 API，方便迁移
+- **平台兼容**：Android/iOS/HarmonyOS 三端一致
+- **主题适配**：支持 Tamagui 主题系统
+
+### 9.2 MenuProvider
+
+全局 Provider，用于提供菜单上下文。应用根节点包一层即可。
+
+```typescript
+interface MenuProviderProps {
+  children: ReactNode;
+  /** 全局默认配置 */
+  config?: MenuConfig;
+}
+
+interface MenuConfig {
+  /** 动画时长（毫秒），默认 200 */
+  animationDuration?: number;
+
+  /** 遮罩透明度，默认 0.3 */
+  overlayOpacity?: number;
+
+  /** 点击外部是否关闭菜单，默认 true */
+  closeOnPressOutside?: boolean;
+
+  /** 点击选项后是否自动关闭，默认 true */
+  autoDismiss?: boolean;
+}
+
+/**
+ * Menu Provider。
+ * 在 App 根节点包一层，提供菜单上下文。
+ */
+export function MenuProvider(props: MenuProviderProps): JSX.Element;
+```
+
+### 9.3 Menu
+
+菜单根容器，管理菜单的打开/关闭状态和选项选择。
+
+```typescript
+interface MenuProps {
+  children: React.ReactNode;
+
+  /** 菜单打开回调 */
+  onOpen?: () => void;
+
+  /** 菜单关闭回调 */
+  onClose?: () => void;
+
+  /** 选项选中回调（MenuOption onSelect 的全局处理） */
+  onSelect?: (value: string | number | object) => void;
+}
+
+/**
+ * Menu 组件。
+ * 内部通过 React Context 管理菜单状态。
+ */
+export function Menu(props: MenuProps): JSX.Element;
+```
+
+### 9.4 MenuTrigger
+
+触发器组件，点击后打开菜单。自动测量自身在屏幕上的位置，菜单将锚定在触发器旁边弹出。
+
+```typescript
+interface MenuTriggerProps {
+  children: React.ReactNode;
+
+  /** 是否使用长按触发，默认 false（点击触发） */
+  triggerOnLongPress?: boolean;
+
+  /** 是否禁用触发器 */
+  disabled?: boolean;
+}
+
+/**
+ * Menu 触发器。
+ * 支持 onPress 和 onLongPress 两种触发方式。
+ */
+export function MenuTrigger(props: MenuTriggerProps): JSX.Element;
+```
+
+### 9.5 MenuOptions
+
+菜单选项容器，定义菜单的弹出位置和内容。
+
+```typescript
+type MenuPlacement = 'top' | 'bottom' | 'center' | 'auto';
+type VerticalDirection = 'up' | 'down';
+
+interface MenuOptionsProps {
+  children?: React.ReactNode;
+
+  /** 菜单位置相对于触发器。默认 'auto' */
+  placement?: MenuPlacement;
+
+  /** 弹出方向（上下）。默认 'down' */
+  verticalDirection?: VerticalDirection;
+
+  /** 自定义菜单容器样式 */
+  optionsStyle?: StyleProp<ViewStyle>;
+
+  /** 自定义遮罩层样式 */
+  overlayStyle?: StyleProp<ViewStyle>;
+}
+
+/**
+ * Menu 选项容器。
+ * 接收 MenuOption 作为子组件。
+ */
+export function MenuOptions(props: MenuOptionsProps): JSX.Element;
+```
+
+### 9.6 MenuOption
+
+单个菜单选项。
+
+```typescript
+interface MenuOptionProps {
+  children: React.ReactNode;
+
+  /** 选项值，传递给 onSelect 回调 */
+  value?: string | number | object;
+
+  /** 自定义选项样式 */
+  style?: StyleProp<ViewStyle>;
+
+  /** 是否禁用 */
+  disabled?: boolean;
+
+  /** 选中回调，覆盖 Menu 的 onSelect */
+  onSelect?: (value: string | number | object) => void;
+}
+
+/**
+ * Menu 单个选项。
+ */
+export function MenuOption(props: MenuOptionProps): JSX.Element;
+```
+
+### 9.7 使用示例
+
+**基础用法：**
+
+```tsx
+import {
+  MenuProvider,
+  Menu,
+  MenuTrigger,
+  MenuOptions,
+  MenuOption,
+} from '@itc/uikit';
+
+function MessageBubble() {
+  return (
+    <Menu>
+      <MenuTrigger>
+        <Text>长按或点击此消息</Text>
+      </MenuTrigger>
+      <MenuOptions>
+        <MenuOption value="copy">
+          <XStack alignItems="center" gap={8}>
+            <Text>📋</Text>
+            <Text>复制</Text>
+          </XStack>
+        </MenuOption>
+        <MenuOption value="forward">
+          <XStack alignItems="center" gap={8}>
+            <Text>🔗</Text>
+            <Text>转发</Text>
+          </XStack>
+        </MenuOption>
+        <MenuOption value="delete" disabled>
+          <Text color="$red10">删除</Text>
+        </MenuOption>
+      </MenuOptions>
+    </Menu>
+  );
+}
+```
+
+**长按触发：**
+
+```tsx
+<Menu>
+  <MenuTrigger triggerOnLongPress>
+    <Text>长按打开菜单</Text>
+  </MenuTrigger>
+  <MenuOptions placement="bottom">
+    <MenuOption value="reply"><Text>回复</Text></MenuOption>
+    <MenuOption value="delete"><Text>删除</Text></MenuOption>
+  </MenuOptions>
+</Menu>
+```
+
+**顶部弹出：**
+
+```tsx
+<MenuOptions placement="top" verticalDirection="up">
+  <MenuOption value="pin"><Text>置顶</Text></MenuOption>
+  <MenuOption value="mute"><Text>免打扰</Text></MenuOption>
+</MenuOptions>
+```
+
+**受控模式 + onSelect：**
+
+```tsx
+function ControlledMenu() {
+  const handleSelect = (value) => {
+    console.log('选中:', value);
+  };
+
+  return (
+    <Menu onSelect={handleSelect}>
+      <MenuTrigger>
+        <Button>操作菜单</Button>
+      </MenuTrigger>
+      <MenuOptions>
+        <MenuOption value="edit"><Text>编辑</Text></MenuOption>
+        <MenuOption value="share"><Text>分享</Text></MenuOption>
+        <MenuOption value="delete" onSelect={() => confirmDelete()}>
+          <Text color="$red10">删除</Text>
+        </MenuOption>
+      </MenuOptions>
+    </Menu>
+  );
+}
+```
+
+### 9.8 实现要点
+
+1. **位置测量**：使用 `onLayout` + `measureInWindow` 获取触发器在屏幕上的绝对位置
+2. **弹出定位**：根据 `placement` 和 `verticalDirection` 计算菜单位置
+3. **遮罩层**：使用 RN 内置 `Modal` 的透明背景实现
+4. **动画**：使用 RN `Animated` 或 `LayoutAnimation`
+5. **上下文**：通过 React Context 传递 Menu 状态
+
+### 9.9 目录结构
+
+```
+src/components/
+├── ...
+└── PopupMenu/
+    ├── index.ts           # 导出入口
+    ├── MenuProvider.tsx   # 全局 Provider
+    ├── Menu.tsx           # Menu 容器
+    ├── MenuTrigger.tsx    # 触发器
+    ├── MenuOptions.tsx    # 选项容器
+    ├── MenuOption.tsx     # 单个选项
+    ├── context.ts         # React Context 定义
+    ├── types.ts           # 类型定义
+    └── styles.ts          # 默认样式
+```
+
+### 9.10 与 react-native-popup-menu 的差异
+
+| 功能 | react-native-popup-menu | @itc/uikit PopupMenu |
+|------|-------------------------|----------------------|
+| 基础菜单 | ✅ | ✅ |
+| 长按触发 | ✅ | ✅ |
+| 位置控制 | ✅ | ✅ |
+| onSelect 回调 | ✅ | ✅ |
+| MenuOption disabled | ✅ | ✅ |
+| renderContentRenderer | ✅ | ❌（不需要，MenuOption 支持任意 children） |
+| 自定义动画 | ✅ | 后续支持 |
+| RTL 布局 | ✅ | 后续支持 |
+
+---
+
 ## 13. 目录结构
 
 ```
@@ -742,11 +1021,21 @@ packages/uikit/
     │   ├── form.tsx         # Switch / Checkbox / RadioGroup
     │   ├── display.tsx     # Card / Badge / Avatar / Spinner
     │   ├── TabLayout.tsx   # TabLayout / Tab
-    │   └── Toast/          # Toast
-    │       ├── Toast.tsx
-    │       ├── ToastContainer.tsx
-    │       ├── ToastProvider.tsx
-    │       └── index.ts
+    ├── Toast/          # Toast
+    │   ├── Toast.tsx
+    │   ├── ToastContainer.tsx
+    │   ├── ToastProvider.tsx
+    │   └── index.ts
+    └── PopupMenu/      # PopupMenu
+        ├── index.ts
+        ├── MenuProvider.tsx
+        ├── Menu.tsx
+        ├── MenuTrigger.tsx
+        ├── MenuOptions.tsx
+        ├── MenuOption.tsx
+        ├── context.ts
+        ├── types.ts
+        └── styles.ts
     ├── list/
     │   └── List.tsx         # List
     └── harmony/
@@ -948,6 +1237,10 @@ export type { ListProps };
 // Tab 布局
 export { TabLayout, Tab };
 export type { TabLayoutProps, TabProps, TabLayoutDirection, TabLayoutTabPosition };
+
+// 弹出菜单
+export { MenuProvider, Menu, MenuTrigger, MenuOptions, MenuOption };
+export type { MenuProviderProps, MenuProps, MenuTriggerProps, MenuOptionsProps, MenuOptionProps, MenuConfig, MenuPlacement, VerticalDirection };
 ```
 
 ---
@@ -969,3 +1262,8 @@ export type { TabLayoutProps, TabProps, TabLayoutDirection, TabLayoutTabPosition
 13. **Toast 层级最高**：Toast 容器 zIndex 为 9999，显示在其他所有内容之上
 14. **Toast 自动关闭**：默认 duration 为 2000ms，传 0 可禁用自动关闭，需手动调用 `Toast.hide()`
 15. **Toast 自定义内容**：`content` 属性优先级高于 `message`，可传入任意 ReactNode
+16. **PopupMenu 零依赖**：使用 RN 内置 Modal + Tamagui，不引入额外 npm 包
+17. **PopupMenu 需要 MenuProvider**：必须在应用根节点或父级包一层 MenuProvider
+18. **PopupMenu 位置测量**：MenuTrigger 使用 measureInWindow 获取屏幕坐标，确保在 Modal 打开前测量
+19. **PopupMenu 触发方式**：默认点击触发，设置 `triggerOnLongPress` 可改为长按触发
+20. **PopupMenu children 灵活性**：MenuOption 支持任意 children，不需要 renderContentRenderer

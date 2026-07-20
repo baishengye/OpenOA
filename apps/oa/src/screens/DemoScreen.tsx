@@ -17,11 +17,12 @@ import { PermissionTab } from './demo/PermissionTab';
 import { FsTab } from './demo/FsTab';
 import { DocumentPickerTab } from './demo/DocumentPickerTab';
 import { I18nTab } from './demo/I18nTab';
+import { PopupMenuTab } from './demo/PopupMenuTab';
 import { describe, shared } from './demo/shared';
 import type { RunFn } from './demo/shared';
 
-type TabKey = 'caps' | 'auth' | 'key' | 'storage' | 'db' | 'hotfix' | 'uikit' | 'push' | 'im' | 'flashlist' | 'permission' | 'fs' | 'docpicker' | 'i18n';
-const TAB_KEYS: TabKey[] = ['caps', 'auth', 'key', 'storage', 'db', 'hotfix', 'uikit', 'push', 'im', 'flashlist', 'permission', 'fs', 'docpicker', 'i18n'];
+type TabKey = 'caps' | 'auth' | 'key' | 'storage' | 'db' | 'hotfix' | 'uikit' | 'push' | 'im' | 'flashlist' | 'permission' | 'fs' | 'docpicker' | 'i18n' | 'popupmenu';
+const TAB_KEYS: TabKey[] = ['caps', 'auth', 'key', 'storage', 'db', 'hotfix', 'uikit', 'push', 'im', 'flashlist', 'permission', 'fs', 'docpicker', 'i18n', 'popupmenu'];
 
 export function DemoScreen(): React.JSX.Element {
   const { t } = useTranslation();
@@ -68,6 +69,7 @@ export function DemoScreen(): React.JSX.Element {
     fs:        t('demo.fs'),
     docpicker: t('demo.docpicker'),
     i18n:      t('demo.i18n'),
+    popupmenu: t('demo.popupmenu'),
   }), [language]);
 
   const renderTabContent = ({ index }: { index: number }) => {
@@ -98,6 +100,7 @@ export function DemoScreen(): React.JSX.Element {
         {key === 'fs'         && <FsTab        busy={busy} append={append} />}
         {key === 'docpicker'  && <DocumentPickerTab busy={busy} append={append} />}
         {key === 'i18n'       && <I18nTab      busy={busy} />}
+        {key === 'popupmenu' && <PopupMenuTab {...tabProps} />}
 
         {busy && <ActivityIndicator style={styles.spinner} />}
 

@@ -55,3 +55,16 @@ export type { ListProps } from './list/List';
 // ── Tab 布局 ─────────────────────────────────────────────────────────────────────
 export { TabLayout, Tab } from './components/TabLayout';
 export type { TabLayoutProps, TabProps, TabLayoutDirection, TabLayoutTabPosition, TabLayoutMode } from './components/TabLayout';
+
+// ── 弹出菜单 ─────────────────────────────────────────────────────────────────────
+export { MenuProvider, Menu, MenuTrigger, MenuOptions, MenuOption } from './components/PopupMenu';
+export type {
+  MenuProviderProps,
+  MenuProps,
+  MenuTriggerProps,
+  MenuOptionsProps,
+  MenuOptionProps,
+  MenuConfig,
+  MenuPlacement,
+  VerticalDirection,
+} from './components/PopupMenu';

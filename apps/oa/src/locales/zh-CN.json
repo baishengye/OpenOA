@@ -90,7 +90,8 @@
     "permission": "权限",
     "fs": "文件",
     "docpicker": "文档",
-    "i18n": "i18n"
+    "i18n": "i18n",
+    "popupmenu": "菜单"
   },
   "i18n": {
     "title": "国际化（@itc/i18n）",
