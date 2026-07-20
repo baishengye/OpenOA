@@ -66,6 +66,7 @@ const generateDemoData = (t: (key: string) => string): DemoItem[] => {
 };
 
 // 生成 100 条复杂消息数据
+// 数据格式：最旧在前，最新在后（数组尾部是最新的）
 const generateChatData = (): ChatMessage[] => {
   const users = [
     { id: 'user1', name: '张三', avatar: 'https://i.pravatar.cc/40?img=1' },
@@ -111,6 +112,7 @@ const generateChatData = (): ChatMessage[] => {
     const user = users[userIdx]!;
     const msgIdx = i % contents.length;
     const msgTemplate = contents[msgIdx]!;
+    // 使用 push 从尾部插入，最新消息在数组尾部
     messages.push({
       id: `msg_${i + 1}`,
       type: msgTemplate.type,

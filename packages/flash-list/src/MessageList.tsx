@@ -44,12 +44,11 @@ import type { MessageListProps } from './types';
  * ```
  */
 export function MessageList<T>(props: MessageListProps<T>): React.JSX.Element {
-  // MessageList 不使用 inverted，保持数据原序
-  // 通过 initialScrollIndex 自动滚动到最新消息（列表底部）
+  // MessageList 默认不使用 inverted，数据顺序即显示顺序
+  // 最新消息在数组尾部，显示在视觉底部
   const inverted = props.inverted !== undefined ? props.inverted : false;
 
-  // 如果用户没有指定 initialScrollIndex，默认滚动到最新消息（底部）
-  // 只有在有数据时才设置
+  // 自动滚动到最新消息（数组末尾）
   const hasData = props.data && props.data.length > 0;
   const initialScrollIndex = props.initialScrollIndex !== undefined
     ? props.initialScrollIndex
