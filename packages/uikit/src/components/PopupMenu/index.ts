@@ -16,7 +16,8 @@ export type {
   MenuOptionProps,
   MenuConfig,
   MenuPlacement,
-  VerticalDirection,
+  HorizontalAlign,
+  VerticalAlign,
   MenuContextValue,
   TriggerLayout,
 } from './types';

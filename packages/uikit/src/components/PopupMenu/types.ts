@@ -50,24 +50,26 @@ export interface MenuTriggerProps {
 
 // ── MenuOptions ─────────────────────────────────────────────────────────
 
-export type MenuPlacement = 'top' | 'bottom' | 'center' | 'auto';
-export type VerticalDirection = 'up' | 'down';
+/** 水平对齐方式 */
+export type HorizontalAlign = 'start' | 'center' | 'end';
+/** 垂直对齐方式 */
+export type VerticalAlign = 'top' | 'center' | 'bottom';
 
 export interface MenuOptionsProps {
   children?: ReactNode;
-  /** 菜单位置相对于触发器。默认 'auto' */
-  placement?: MenuPlacement;
-  /** 弹出方向（上下）。默认 'down' */
-  verticalDirection?: VerticalDirection;
+  /** 垂直对齐方式。默认 'bottom' */
+  verticalAlign?: VerticalAlign;
+  /** 水平对齐方式。默认 'start' */
+  horizontalAlign?: HorizontalAlign;
   /** 自定义菜单容器样式 */
   optionsStyle?: StyleProp<ViewStyle>;
   /** 自定义遮罩层样式 */
   overlayStyle?: StyleProp<ViewStyle>;
   /** 完全自定义菜单内容（优先级高于 children） */
   renderContent?: (props: { close: () => void }) => ReactNode;
-  /** X轴偏移量（向左，正值向左） */
+  /** X轴偏移量（正值向右，负值向左） */
   offsetX?: number;
-  /** Y轴偏移量（向上，正值向上） */
+  /** Y轴偏移量（正值向下，负值向上） */
   offsetY?: number;
 }
 

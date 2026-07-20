@@ -40,7 +40,7 @@ export function PopupMenuTab({ append }: Props): React.JSX.Element {
           <MenuTrigger>
             <Button>打开菜单</Button>
           </MenuTrigger>
-          <MenuOptions placement="bottom">
+          <MenuOptions>
             <MenuOption value="copy">
               <XStack align="center" gap={8}>
                 <Text>📋</Text>
@@ -74,7 +74,7 @@ export function PopupMenuTab({ append }: Props): React.JSX.Element {
               <Text>长按我</Text>
             </View>
           </MenuTrigger>
-          <MenuOptions placement="bottom">
+          <MenuOptions>
             <MenuOption value="reply">
               <XStack align="center" gap={8}>
                 <Text>↩️</Text>
@@ -106,7 +106,7 @@ export function PopupMenuTab({ append }: Props): React.JSX.Element {
           <MenuTrigger>
             <Button>顶部菜单</Button>
           </MenuTrigger>
-          <MenuOptions placement="top">
+          <MenuOptions verticalAlign="top">
             <MenuOption value="pin">
               <XStack align="center" gap={8}>
                 <Text>📌</Text>
@@ -132,7 +132,7 @@ export function PopupMenuTab({ append }: Props): React.JSX.Element {
           <MenuTrigger>
             <Button>操作菜单</Button>
           </MenuTrigger>
-          <MenuOptions placement="bottom">
+          <MenuOptions>
             <MenuOption value="edit">
               <XStack align="center" gap={8}>
                 <Text>✏️</Text>
@@ -168,7 +168,7 @@ export function PopupMenuTab({ append }: Props): React.JSX.Element {
               </Text>
             </View>
           </MenuTrigger>
-          <MenuOptions placement="top">
+          <MenuOptions verticalAlign="top">
             <MenuOption value="copy">
               <XStack align="center" gap={8}>
                 <Text>📋</Text>
@@ -262,7 +262,7 @@ export function PopupMenuTab({ append }: Props): React.JSX.Element {
           <MenuTrigger>
             <Button>带图标的菜单</Button>
           </MenuTrigger>
-          <MenuOptions placement="bottom">
+          <MenuOptions>
             <MenuOption
               value="profile"
               renderOption={({ disabled, onPress }) => (
@@ -308,6 +308,84 @@ export function PopupMenuTab({ append }: Props): React.JSX.Element {
                 </Pressable>
               )}
             />
+          </MenuOptions>
+        </Menu>
+      </View>
+
+      {/* 触发器居中对齐 */}
+      <View style={shared.card}>
+        <Text style={shared.cardTitle}>水平居中 + 垂直底部</Text>
+        <Text style={styles.description}>horizontalAlign="center" verticalAlign="bottom"</Text>
+
+        <Menu onSelect={handleSelect}>
+          <MenuTrigger>
+            <Button>水平居中</Button>
+          </MenuTrigger>
+          <MenuOptions horizontalAlign="center" verticalAlign="bottom">
+            <MenuOption value="action1">
+              <XStack align="center" gap={8}>
+                <Text>🔔</Text>
+                <Text>提醒</Text>
+              </XStack>
+            </MenuOption>
+            <MenuOption value="action2">
+              <XStack align="center" gap={8}>
+                <Text>🔕</Text>
+                <Text>静音</Text>
+              </XStack>
+            </MenuOption>
+          </MenuOptions>
+        </Menu>
+      </View>
+
+      {/* 垂直居中 */}
+      <View style={shared.card}>
+        <Text style={shared.cardTitle}>水平起始 + 垂直居中</Text>
+        <Text style={styles.description}>horizontalAlign="start" verticalAlign="center"</Text>
+
+        <Menu onSelect={handleSelect}>
+          <MenuTrigger>
+            <Button>垂直居中</Button>
+          </MenuTrigger>
+          <MenuOptions horizontalAlign="start" verticalAlign="center">
+            <MenuOption value="edit">
+              <XStack align="center" gap={8}>
+                <Text>✏️</Text>
+                <Text>编辑</Text>
+              </XStack>
+            </MenuOption>
+            <MenuOption value="delete">
+              <XStack align="center" gap={8}>
+                <Text>🗑️</Text>
+                <Text>删除</Text>
+              </XStack>
+            </MenuOption>
+          </MenuOptions>
+        </Menu>
+      </View>
+
+      {/* 右上角对齐 */}
+      <View style={shared.card}>
+        <Text style={shared.cardTitle}>水平末尾 + 垂直顶部</Text>
+        <Text style={styles.description}>horizontalAlign="end" verticalAlign="top"</Text>
+
+        <Menu onSelect={handleSelect}>
+          <MenuTrigger>
+            <Button>右上角</Button>
+          </MenuTrigger>
+          <MenuOptions horizontalAlign="end" verticalAlign="top">
+            <MenuOption value="pin">
+              <XStack align="center" gap={8}>
+                <Text>📌</Text>
+                <Text>置顶</Text>
+              </XStack>
+            </MenuOption>
+            <MenuOption value="mute">
+              <XStack align="center" gap={8}>
+                <Text>🔕</Text>
+                <Text>免打扰</Text>
+              </XStack>
+            </MenuOption>
           </MenuOptions>
         </Menu>
       </View>
