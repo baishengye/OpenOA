@@ -275,7 +275,7 @@ export type OfflinePush = {
   desc: string;
   ex: string;
   iOSPushSound: string;
-  iOSBadgeCount: number; // Go 后端期望 number 类型（0 或 1），而非 boolean
+  iOSBadgeCount: boolean;
 };
 export type PictureElem = {
   sourcePath: string;
