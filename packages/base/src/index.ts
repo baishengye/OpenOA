@@ -58,3 +58,5 @@ export {
   setStorage,
   storage,
 } from './storage';
+
+export { md5 } from './md5';

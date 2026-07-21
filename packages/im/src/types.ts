@@ -22,7 +22,7 @@ export interface IMMessage {
     desc: string;
     ex: string;
     iOSPushSound: string;
-    iOSBadgeCount: boolean;
+    iOSBadgeCount: number; // Go 后端期望 number 类型（0 或 1），而非 boolean
   };
   atText: string;
   faceUrl: string;

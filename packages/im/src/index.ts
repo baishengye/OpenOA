@@ -1268,26 +1268,6 @@ class IMModule extends BaseModule<IMInitOptions> {
     }
   }
 
-  /** 发送文本消息 */
-  async sendText(conversationId: string, text: string): Promise<MessageItem> {
-    try {
-      // 创建文本消息
-      const msgResult = await ItcOpenIMSDK.createTextMessage(text, generateOperationID());
-      const msgObj = JSON.parse(msgResult as string);
-
-      // 发送消息
-      const sendParams: SendMsgParams = {
-        message: msgObj,
-        conversationID: conversationId,
-      };
-      const sendResult = await ItcOpenIMSDK.sendMessage(JSON.stringify(sendParams), generateOperationID());
-      return JSON.parse(sendResult as string);
-    } catch (e) {
-      logger.error(TAG, '发送消息失败', e);
-      throw ItcError.from(e, 'im');
-    }
-  }
-
   /** 获取登录状态 */
   async getLoginStatus(): Promise<number> {
     try {

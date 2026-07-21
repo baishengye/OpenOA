@@ -11,6 +11,7 @@ import type {
   GroupJoinSource,
   GroupMemberFilter,
   GroupMemberRole,
+  LogLevel,
   MessageReceiveOptType,
   MessageType,
   SessionType,
@@ -22,7 +23,7 @@ export type InitOptions = {
   wsAddr: string;
   dataDir?: string;
   logFilePath?: string;
-  logLevel?: number;
+  logLevel?: LogLevel;
   isLogStandardOutput?: boolean;
 };
 
@@ -341,12 +342,11 @@ export type FaceMessageParams = {
 };
 
 export type SendMsgParams = {
-  recvID?: string;
-  groupID?: string;
+  recvID: string;
+  groupID: string;
   offlinePushInfo?: OfflinePush;
   message: MessageItem;
   isOnlineOnly?: boolean;
-  conversationID?: string;
 };
 
 export type TypingUpdateParams = {
