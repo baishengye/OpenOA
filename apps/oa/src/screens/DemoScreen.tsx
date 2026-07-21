@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useMemo } from 'react';
-import { ActivityIndicator, ScrollView, Text, View, StyleSheet } from 'react-native';
+import { ActivityIndicator, ScrollView, Text, View, StyleSheet, Pressable } from 'react-native';
 import { currentPlatform } from '@itc/base';
 import { TabLayout, Tab } from '@itc/uikit';
 import { useTranslation, useLanguage } from '@itc/i18n';
@@ -24,7 +24,11 @@ import type { RunFn } from './demo/shared';
 type TabKey = 'caps' | 'auth' | 'key' | 'storage' | 'db' | 'hotfix' | 'uikit' | 'push' | 'im' | 'flashlist' | 'permission' | 'fs' | 'docpicker' | 'i18n' | 'popupmenu';
 const TAB_KEYS: TabKey[] = ['caps', 'auth', 'key', 'storage', 'db', 'hotfix', 'uikit', 'push', 'im', 'flashlist', 'permission', 'fs', 'docpicker', 'i18n', 'popupmenu'];
 
-export function DemoScreen(): React.JSX.Element {
+export interface DemoScreenProps {
+  onGoBack?: () => void;
+}
+
+export function DemoScreen({ onGoBack }: DemoScreenProps = {}): React.JSX.Element {
   const { t } = useTranslation();
   // 订阅语言变化，触发 TAB_LABELS 重新计算
   const { language, direction, isChanging, changeLanguage, availableLanguages } = useLanguage();
@@ -122,8 +126,17 @@ export function DemoScreen(): React.JSX.Element {
     <View style={styles.root}>
       {/* 固定头部（标题 + 平台信息） */}
       <View style={styles.header}>
-        <Text style={styles.h1}>OA Demo v2 @172.16.80.101</Text>
-        <Text style={styles.platform}>当前平台：{currentPlatform}</Text>
+        <View style={styles.headerRow}>
+          {onGoBack && (
+            <Pressable onPress={onGoBack} style={styles.backButton}>
+              <Text style={styles.backButtonText}>← 返回</Text>
+            </Pressable>
+          )}
+          <View style={styles.headerTitle}>
+            <Text style={styles.h1}>OA Demo v2 @172.16.80.101</Text>
+            <Text style={styles.platform}>当前平台：{currentPlatform}</Text>
+          </View>
+        </View>
       </View>
 
       {/* TabLayout 标签列表 */}
@@ -164,6 +177,10 @@ export function DemoScreen(): React.JSX.Element {
 const styles = StyleSheet.create({
   root:          { flex: 1 },
   header:        { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 8 },
+  headerRow:     { flexDirection: 'row', alignItems: 'center' },
+  headerTitle:   { flex: 1 },
+  backButton:    { marginRight: 12, paddingVertical: 4, paddingRight: 8 },
+  backButtonText:{ fontSize: 16, color: '#007AFF', fontWeight: '500' },
   h1:            { fontSize: 22, fontWeight: '700', color: '#1f2329' },
   platform:      { fontSize: 13, color: '#646a73', marginBottom: 8 },
   container:     { padding: 20, gap: 12 },
