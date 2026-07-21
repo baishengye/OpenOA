@@ -274,7 +274,7 @@ export function useChat(options: UseChatOptions): UseChatResult {
       try {
         const msg = currentMessages.find((m: Message) => m.clientMsgID === msgID);
         if (msg) {
-          await revokeMessage(msg);
+          await revokeMessage(msg, conversationID);
           deleteMessage(conversationID, msgID);
         }
       } catch (err) {
@@ -290,7 +290,7 @@ export function useChat(options: UseChatOptions): UseChatResult {
       try {
         const msg = currentMessages.find((m: Message) => m.clientMsgID === msgID);
         if (msg) {
-          await deleteLocalMessage(msg);
+          await deleteLocalMessage(msg, conversationID);
           deleteMessage(conversationID, msgID);
         }
       } catch (err) {
