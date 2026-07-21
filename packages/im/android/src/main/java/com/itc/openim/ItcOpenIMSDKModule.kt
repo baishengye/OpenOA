@@ -592,17 +592,24 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
     fun sendMessage(params: String, operationID: String, promise: Promise) {
         val jsonParams = JSON.parseObject(params)
         val message = jsonParams.getJSONObject("message").toString()
-        val conversationID = jsonParams.getString("conversationID") ?: ""
-        val offlinePushInfo = if (jsonParams.containsKey("offlinePushInfo")) jsonParams.getString("offlinePushInfo") ?: "" else ""
-        val chatExp = if (jsonParams.containsKey("expireTime")) jsonParams.getIntValue("expireTime") else 0
+        val recvID = jsonParams.getString("recvID") ?: ""
+        val groupID = jsonParams.getString("groupID") ?: ""
+        val offlinePushInfoRaw = if (jsonParams.containsKey("offlinePushInfo")) jsonParams.getString("offlinePushInfo") ?: "" else ""
+        // 如果 offlinePushInfo 为空，构造一个默认的
+        val offlinePushInfo = if (offlinePushInfoRaw.isNullOrBlank()) {
+            """{"title":"新消息","desc":"","ex":"","iOSPushSound":"default","iOSBadgeCount":1}"""
+        } else {
+            offlinePushInfoRaw
+        }
+        val isOnlineOnly = if (jsonParams.containsKey("isOnlineOnly")) jsonParams.getBoolean("isOnlineOnly") ?: false else false
         Open_im_sdk.sendMessage(
             SendMsgCallBack(reactContext, promise, jsonParams.getJSONObject("message")),
             operationID,
             message,
-            conversationID,
+            recvID,
+            groupID,
             offlinePushInfo,
-            chatExp.toString(),
-            false
+            isOnlineOnly
         )
     }
 
@@ -612,7 +619,13 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
         val message = jsonParams.getJSONObject("message").toString()
         val receiver = jsonParams.getString("recvID") ?: ""
         val groupID = jsonParams.getString("groupID") ?: ""
-        val offlinePushInfo = if (jsonParams.containsKey("offlinePushInfo")) jsonParams.getString("offlinePushInfo") ?: "" else ""
+        val offlinePushInfoRaw = if (jsonParams.containsKey("offlinePushInfo")) jsonParams.getString("offlinePushInfo") ?: "" else ""
+        // 如果 offlinePushInfo 为空，构造一个默认的
+        val offlinePushInfo = if (offlinePushInfoRaw.isNullOrBlank()) {
+            """{"title":"新消息","desc":"","ex":"","iOSPushSound":"default","iOSBadgeCount":1}"""
+        } else {
+            offlinePushInfoRaw
+        }
         val isOnlineOnly = if (jsonParams.containsKey("isOnlineOnly")) jsonParams.getBoolean("isOnlineOnly") else false
         Open_im_sdk.sendMessageNotOss(
             SendMsgCallBack(reactContext, promise, jsonParams.getJSONObject("message")),

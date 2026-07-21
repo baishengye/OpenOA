@@ -32,6 +32,17 @@ export class TypedEventBus<M extends Record<string, unknown> = ItcEventMap> {
     };
   }
 
+  /** 取消订阅事件。 */
+  off<K extends keyof M>(event: K, handler: EventHandler<M[K]>): void {
+    const set = this.handlers.get(event);
+    if (set) {
+      set.delete(handler as EventHandler<unknown>);
+      if (set.size === 0) {
+        this.handlers.delete(event);
+      }
+    }
+  }
+
   /** 订阅一次后自动取消。 */
   once<K extends keyof M>(event: K, handler: EventHandler<M[K]>): Unsubscribe {
     const off = this.on(event, (payload) => {
