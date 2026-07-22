@@ -67,6 +67,15 @@ export const useChatStore = create<ChatState>()((set, get) => ({
   // ── 会话操作 ────────────────────────────────────────────────────────────────
 
   setConversations: (conversations: ConversationItem[]) => {
+    console.log('[chatStore] setConversations, 数量:', conversations.length);
+    conversations.forEach((conv, idx) => {
+      console.log(`[chatStore] 保存会话${idx}:`, {
+        conversationID: conv.conversationID,
+        conversationType: conv.conversationType,
+        userID: conv.userID,
+        groupID: conv.groupID,
+      });
+    });
     set({ conversations });
   },
 
@@ -206,7 +215,19 @@ export const useChatStore = create<ChatState>()((set, get) => ({
 // ── 便捷 Hooks ───────────────────────────────────────────────────────────────
 
 /** 获取会话列表 */
-export const useConversations = () => useChatStore((state) => state.conversations);
+export const useConversations = () => {
+  const conversations = useChatStore((state) => state.conversations);
+  console.log('[useConversations] 获取会话, 数量:', conversations.length);
+  conversations.forEach((conv, idx) => {
+    console.log(`[useConversations] 会话${idx}:`, {
+      conversationID: conv.conversationID,
+      conversationType: conv.conversationType,
+      userID: conv.userID,
+      groupID: conv.groupID,
+    });
+  });
+  return conversations;
+};
 
 /** 获取总未读数 */
 export const useTotalUnread = () => useChatStore((state) => state.totalUnread);

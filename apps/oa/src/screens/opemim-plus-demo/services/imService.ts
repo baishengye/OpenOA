@@ -176,7 +176,7 @@ export async function sendTextMessage(
   console.log('[IMService] sendTextMessage 开始:', { text, options });
   try {
     const message = await itcOpenIM.createTextMessage(text);
-    console.log('[IMService] createTextMessage 成功:', { clientMsgID: (message as any)?.clientMsgID });
+    console.log('[IMService] createTextMessage 成功, message:', JSON.stringify(message));
 
     // 优先使用 conversationID，其次使用 recvID/groupID
     const sendParams: SendMsgParams = {
@@ -387,11 +387,19 @@ function parseUserIDFromConversationID(conversationID: string, currentUserID: st
 }
 
 function convertToConversationItem(item: IMConversationItem, currentUserID?: string): ConversationItem {
+  console.log('[IMService] convertToConversationItem 原始数据:', {
+    conversationID: item.conversationID,
+    conversationType: item.conversationType,
+    userID: item.userID,
+    groupID: item.groupID,
+    showName: item.showName,
+  });
+
   // 从 conversationID 解析 userID
   const parsedUserID = currentUserID ? parseUserIDFromConversationID(item.conversationID, currentUserID) : undefined;
   const finalUserID = item.userID || parsedUserID;
 
-  return {
+  const result: ConversationItem = {
     conversationID: item.conversationID,
     conversationType: item.conversationType === 1 ? 'single' : 'group',
     userID: finalUserID,
@@ -405,6 +413,8 @@ function convertToConversationItem(item: IMConversationItem, currentUserID?: str
     isMuted: item.recvMsgOpt === 0 ? false : true,
     draftText: item.draftText,
   };
+  console.log('[IMService] convertToConversationItem 转换结果:', result);
+  return result;
 }
 
 /** 转换 IM SDK 消息项为应用消息项 */

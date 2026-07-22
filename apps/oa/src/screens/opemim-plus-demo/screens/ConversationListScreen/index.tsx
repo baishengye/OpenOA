@@ -20,7 +20,7 @@ import type { ConversationItem as ConversationItemType } from '../../types';
 
 export interface ConversationListScreenProps {
   /** 跳转到聊天页面 */
-  onNavigateToChat?: (conversationID: string, showName: string, userID?: string) => void;
+  onNavigateToChat?: (conversationID: string, showName: string, conversationType: 'single' | 'group', userID?: string, groupID?: string) => void;
   /** 跳转到通讯录 */
   onNavigateToContacts?: () => void;
   /** 跳转到我的页面 */
@@ -51,7 +51,20 @@ export const ConversationListScreen: React.FC<ConversationListScreenProps> = mem
   // 处理会话点击
   const handleConversationPress = useCallback(
     (conversation: ConversationItemType) => {
-      onNavigateToChat?.(conversation.conversationID, conversation.showName, conversation.userID);
+      console.log('[ConversationList] 点击会话:', {
+        conversationID: conversation.conversationID,
+        showName: conversation.showName,
+        conversationType: conversation.conversationType,
+        userID: conversation.userID,
+        groupID: conversation.groupID,
+      });
+      onNavigateToChat?.(
+        conversation.conversationID,
+        conversation.showName,
+        conversation.conversationType,
+        conversation.userID,
+        conversation.groupID
+      );
     },
     [onNavigateToChat]
   );

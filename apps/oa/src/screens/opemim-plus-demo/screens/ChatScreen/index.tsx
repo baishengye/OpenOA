@@ -11,7 +11,7 @@ import {
   Modal,
   TouchableOpacity,
   Platform,
-  Keyboard,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@itc/flash-list';
@@ -25,14 +25,27 @@ export interface ChatScreenProps {
   conversationID: string;
   /** 显示名称 */
   showName: string;
+  /** 会话类型：single 单聊，group 群聊 */
+  conversationType?: 'single' | 'group';
   /** 对方用户 ID（单聊） */
   userID?: string;
+  /** 群 ID（群聊） */
+  groupID?: string;
   /** 返回回调 */
   onGoBack?: () => void;
 }
 
 export const ChatScreen: React.FC<ChatScreenProps> = memo((props) => {
-  const { conversationID, showName, userID, onGoBack } = props;
+  const { conversationID, showName, conversationType = 'single', userID, groupID, onGoBack } = props;
+
+  console.log('[ChatScreen] 接收参数:', {
+    conversationID,
+    showName,
+    conversationType,
+    userID,
+    groupID,
+  });
+
   const insets = useSafeAreaInsets();
 
   const {
@@ -48,27 +61,12 @@ export const ChatScreen: React.FC<ChatScreenProps> = memo((props) => {
     revoke,
     removeMessage,
     loadMore,
-  } = useChat({ conversationID, conversationType: 'single', userID });
+  } = useChat({ conversationID, conversationType, userID, groupID });
 
   const listRef = useRef<any>(null);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-
-  // 监听键盘事件
-  useEffect(() => {
-    const showSub = Keyboard.addListener('keyboardWillShow', (e) => {
-      setKeyboardHeight(e.endCoordinates.height);
-    });
-    const hideSub = Keyboard.addListener('keyboardWillHide', () => {
-      setKeyboardHeight(0);
-    });
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, []);
 
   // 滚动到底部
   const scrollToBottom = useCallback(() => {
@@ -89,7 +87,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = memo((props) => {
         await sendText(text);
       } catch (error) {
         Toast.show({
-          content: '发送失败',
+          message: '发送失败',
           type: 'fail',
         });
       }
@@ -100,24 +98,16 @@ export const ChatScreen: React.FC<ChatScreenProps> = memo((props) => {
   // 处理发送图片
   const handleSendImage = useCallback(async () => {
     setShowMoreMenu(false);
-    try {
-      // 实际使用时需要调用图片选择器
-      Toast.show({
-        content: '请实现图片选择功能',
-        type: 'info',
-      });
-    } catch (error) {
-      Toast.show({
-        content: '发送失败',
-        type: 'fail',
-      });
-    }
+    Toast.show({
+      message: '请实现图片选择功能',
+      type: 'info',
+    });
   }, []);
 
   // 处理发送语音
   const handleSendVoice = useCallback(() => {
     Toast.show({
-      content: '请实现语音录制功能',
+      message: '请实现语音录制功能',
       type: 'info',
     });
   }, []);
@@ -129,7 +119,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = memo((props) => {
       await sendLocation(116.404, 39.915, '我的位置');
     } catch (error) {
       Toast.show({
-        content: '发送失败',
+        message: '发送位置失败',
         type: 'fail',
       });
     }
@@ -139,7 +129,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = memo((props) => {
   const handleSendFile = useCallback(() => {
     setShowMoreMenu(false);
     Toast.show({
-      content: '请实现文件选择功能',
+      message: '请实现文件选择功能',
       type: 'info',
     });
   }, []);
@@ -202,11 +192,12 @@ export const ChatScreen: React.FC<ChatScreenProps> = memo((props) => {
     </View>
   ), []);
 
-  // 计算输入框底部偏移（键盘高度 + 安全区域底部）
-  const inputBottom = keyboardHeight + insets.bottom;
-
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={0}
+    >
       {/* 顶部导航栏 */}
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <XStack align="center" gap={8}>
@@ -218,10 +209,10 @@ export const ChatScreen: React.FC<ChatScreenProps> = memo((props) => {
           </Text>
         </XStack>
         <XStack gap={16}>
-          <Pressable onPress={() => Toast.show({ content: '语音通话', type: 'info' })}>
+          <Pressable onPress={() => Toast.show({ message: '语音通话', type: 'info' })}>
             <Text variant="body" color="#007AFF">📞</Text>
           </Pressable>
-          <Pressable onPress={() => Toast.show({ content: '视频通话', type: 'info' })}>
+          <Pressable onPress={() => Toast.show({ message: '视频通话', type: 'info' })}>
             <Text variant="body" color="#007AFF">📹</Text>
           </Pressable>
         </XStack>
@@ -243,8 +234,8 @@ export const ChatScreen: React.FC<ChatScreenProps> = memo((props) => {
         />
       </View>
 
-      {/* 输入框 - 使用动态 bottom 偏移适配键盘 */}
-      <View style={[styles.inputWrapper, { paddingBottom: inputBottom }]}>
+      {/* 输入框 */}
+      <View style={[styles.inputWrapper, { paddingBottom: insets.bottom }]}>
         <ChatInput
           disabled={isSending}
           onSendText={handleSendText}
@@ -285,7 +276,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = memo((props) => {
           </View>
         </TouchableOpacity>
       </Modal>
-    </View>
+    </KeyboardAvoidingView>
   );
 });
 

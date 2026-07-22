@@ -48,8 +48,21 @@ const AppContent: React.FC<{ onLogout?: () => void }> = memo((props) => {
   }, [isInitialized, navigate]);
 
   // 导航到聊天页面
-  const handleNavigateToChat = useCallback((conversationID: string, showName: string, userID?: string) => {
-    navigate('Chat', { conversationID, showName, userID });
+  const handleNavigateToChat = useCallback((
+    conversationID: string,
+    showName: string,
+    conversationType: 'single' | 'group' = 'single',
+    userID?: string,
+    groupID?: string
+  ) => {
+    console.log('[App] handleNavigateToChat:', {
+      conversationID,
+      showName,
+      conversationType,
+      userID,
+      groupID,
+    });
+    navigate('Chat', { conversationID, showName, conversationType, userID, groupID });
   }, [navigate]);
 
   // 导航到个人中心
@@ -114,7 +127,9 @@ const AppContent: React.FC<{ onLogout?: () => void }> = memo((props) => {
           <ChatScreen
             conversationID={params.conversationID}
             showName={params.showName}
+            conversationType={params.conversationType}
             userID={params.userID}
+            groupID={params.groupID}
             onGoBack={handleGoBack}
           />
         );

@@ -67,6 +67,16 @@ export function useConversationList(
       setError(null);
       setLoadingConversations(true);
       const list = await getConversationList(currentUserID || undefined);
+      console.log('[useConversationList] 刷新会话列表, 数量:', list.length);
+      list.forEach((conv, idx) => {
+        console.log(`[useConversationList] 会话${idx}:`, {
+          conversationID: conv.conversationID,
+          conversationType: conv.conversationType,
+          userID: conv.userID,
+          groupID: conv.groupID,
+          showName: conv.showName,
+        });
+      });
       setConversations(list);
       // 计算总未读数
       const total = list.reduce((sum, c) => sum + c.unreadCount, 0);

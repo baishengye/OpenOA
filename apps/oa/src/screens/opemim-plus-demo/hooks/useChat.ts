@@ -100,12 +100,21 @@ export function useChat(options: UseChatOptions): UseChatResult {
 
   // 构建消息发送选项
   const getSendOptions = useCallback(
-    () => ({
-      senderID: currentUserID || '',
-      receiverID: conversationType === 'single' ? userID || '' : '',
-      groupID: conversationType === 'group' ? groupID || '' : undefined,
-      conversationID: conversationID,
-    }),
+    () => {
+      const options = {
+        senderID: currentUserID || '',
+        receiverID: conversationType === 'single' ? userID || '' : '',
+        groupID: conversationType === 'group' ? groupID || '' : undefined,
+        conversationID: conversationID,
+      };
+      console.log('[useChat] getSendOptions:', {
+        conversationType,
+        userID,
+        groupID,
+        result: options,
+      });
+      return options;
+    },
     [currentUserID, conversationType, userID, groupID, conversationID]
   );
 
