@@ -597,7 +597,7 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
         val offlinePushInfoRaw = if (jsonParams.containsKey("offlinePushInfo")) jsonParams.getString("offlinePushInfo") ?: "" else ""
         // 如果 offlinePushInfo 为空，构造一个默认的
         val offlinePushInfo = if (offlinePushInfoRaw.isNullOrBlank()) {
-            """{"title":"新消息","desc":"","ex":"","iOSPushSound":"default","iOSBadgeCount":1}"""
+            """{"title":"新消息","desc":"","ex":"","iOSPushSound":"default","iOSBadgeCount":true}"""
         } else {
             offlinePushInfoRaw
         }
@@ -622,7 +622,7 @@ class ItcOpenIMSDKModule(private val reactContext: ReactApplicationContext) : Re
         val offlinePushInfoRaw = if (jsonParams.containsKey("offlinePushInfo")) jsonParams.getString("offlinePushInfo") ?: "" else ""
         // 如果 offlinePushInfo 为空，构造一个默认的
         val offlinePushInfo = if (offlinePushInfoRaw.isNullOrBlank()) {
-            """{"title":"新消息","desc":"","ex":"","iOSPushSound":"default","iOSBadgeCount":1}"""
+            """{"title":"新消息","desc":"","ex":"","iOSPushSound":"default","iOSBadgeCount":true}"""
         } else {
             offlinePushInfoRaw
         }
