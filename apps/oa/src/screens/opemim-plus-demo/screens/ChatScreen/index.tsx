@@ -16,6 +16,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@itc/flash-list';
 import { XStack, Text, Toast } from '@itc/uikit';
+import { documentPicker, types } from '@itc/document-picker';
 import { useChat } from '../../hooks';
 import { MessageBubble, ChatInput } from '../../components';
 import type { Message } from '../../types';
@@ -98,11 +99,28 @@ export const ChatScreen: React.FC<ChatScreenProps> = memo((props) => {
   // 处理发送图片
   const handleSendImage = useCallback(async () => {
     setShowMoreMenu(false);
-    Toast.show({
-      message: '请实现图片选择功能',
-      type: 'info',
-    });
-  }, []);
+    try {
+      const result = await documentPicker.pickSingle({
+        type: [types.images],
+        copyTo: 'cachesDirectory',
+      });
+      console.log('[ChatScreen] 选择图片:', result);
+      // fileCopyUri 是复制到缓存目录后的本地路径
+      const localPath = result.fileCopyUri || result.uri;
+      console.log('[ChatScreen] 图片本地路径:', localPath);
+      await sendImage(localPath);
+    } catch (err) {
+      if (documentPicker.isCancel(err)) {
+        console.log('[ChatScreen] 用户取消选择图片');
+        return;
+      }
+      console.error('[ChatScreen] 选择图片失败:', err);
+      Toast.show({
+        message: '选择图片失败',
+        type: 'fail',
+      });
+    }
+  }, [sendImage]);
 
   // 处理发送语音
   const handleSendVoice = useCallback(() => {
@@ -111,6 +129,35 @@ export const ChatScreen: React.FC<ChatScreenProps> = memo((props) => {
       type: 'info',
     });
   }, []);
+
+  // 处理发送视频
+  const handleSendVideo = useCallback(async () => {
+    setShowMoreMenu(false);
+    try {
+      const result = await documentPicker.pickSingle({
+        type: [types.videos],
+        copyTo: 'cachesDirectory',
+      });
+      console.log('[ChatScreen] 选择视频:', result);
+      // fileCopyUri 是复制到缓存目录后的本地路径
+      const localPath = result.fileCopyUri || result.uri;
+      console.log('[ChatScreen] 视频本地路径:', localPath);
+      // 视频类型默认取原文件类型
+      const videoType = result.type || 'video/mp4';
+      // 视频时长和大小暂用默认值，实际可能需要用视频预览获取
+      await sendVideo(localPath, videoType, 0, result.size);
+    } catch (err) {
+      if (documentPicker.isCancel(err)) {
+        console.log('[ChatScreen] 用户取消选择视频');
+        return;
+      }
+      console.error('[ChatScreen] 选择视频失败:', err);
+      Toast.show({
+        message: '选择视频失败',
+        type: 'fail',
+      });
+    }
+  }, [sendVideo]);
 
   // 处理发送位置
   const handleSendLocation = useCallback(async () => {
@@ -126,13 +173,28 @@ export const ChatScreen: React.FC<ChatScreenProps> = memo((props) => {
   }, [sendLocation]);
 
   // 处理发送文件
-  const handleSendFile = useCallback(() => {
+  const handleSendFile = useCallback(async () => {
     setShowMoreMenu(false);
-    Toast.show({
-      message: '请实现文件选择功能',
-      type: 'info',
-    });
-  }, []);
+    try {
+      const result = await documentPicker.pickSingle({
+        copyTo: 'cachesDirectory',
+      });
+      console.log('[ChatScreen] 选择文件:', result);
+      const localPath = result.fileCopyUri || result.uri;
+      console.log('[ChatScreen] 文件本地路径:', localPath);
+      await sendFile(localPath, result.name, result.size);
+    } catch (err) {
+      if (documentPicker.isCancel(err)) {
+        console.log('[ChatScreen] 用户取消选择文件');
+        return;
+      }
+      console.error('[ChatScreen] 选择文件失败:', err);
+      Toast.show({
+        message: '选择文件失败',
+        type: 'fail',
+      });
+    }
+  }, [sendFile]);
 
   // 处理消息点击
   const handleMessagePress = useCallback((message: Message) => {
@@ -260,6 +322,9 @@ export const ChatScreen: React.FC<ChatScreenProps> = memo((props) => {
           <View style={styles.menuContainer}>
             <TouchableOpacity style={styles.menuItem} onPress={handleSendImage}>
               <Text>📷 图片</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.menuItem} onPress={handleSendVideo}>
+              <Text>🎬 视频</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.menuItem} onPress={handleSendLocation}>
               <Text>📍 位置</Text>

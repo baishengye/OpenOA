@@ -154,7 +154,8 @@ export function ImMessageScreen() {
       appendLog(`发送消息到: ${conversationId}`);
       const result = await itcOpenIM.sendMessage({
         message: createdMessage,
-        conversationID: conversationId,
+        recvID: targetId.trim(),
+        groupID: ''
       });
       const msg = typeof result === 'string' ? JSON.parse(result) : result;
       appendLog(`✅ 发送成功: ${msg.clientMsgID}`);
